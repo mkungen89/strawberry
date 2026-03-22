@@ -12,10 +12,12 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { TECH_STACKS, RECOMMENDATIONS } from "@/lib/services-data";
+import { useCurrency } from "@/lib/currency-context";
 
 interface Package {
   name: string;
   price: number;
+  priceGBP: number;
   features: string[];
 }
 
@@ -33,6 +35,7 @@ interface Props {
 
 export default function OrderForm({ service }: Props) {
   const router = useRouter();
+  const { format } = useCurrency();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
@@ -147,7 +150,7 @@ export default function OrderForm({ service }: Props) {
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-semibold">{pkg.name}</span>
-                    <span className="text-lg font-bold text-purple-400">{pkg.price} kr</span>
+                    <span className="text-lg font-bold text-purple-400">{format(pkg.price, pkg.priceGBP)}</span>
                   </div>
                   <ul className="mt-2 space-y-1">
                     {pkg.features.map((f) => (
@@ -307,7 +310,7 @@ export default function OrderForm({ service }: Props) {
                 <p className="text-sm text-gray-400">Selected package</p>
                 <p className="font-semibold">{service.name} — {selectedPackage.name}</p>
               </div>
-              <p className="text-2xl font-bold text-purple-400">{selectedPackage.price} kr</p>
+              <p className="text-2xl font-bold text-purple-400">{format(selectedPackage.price, selectedPackage.priceGBP)}</p>
             </div>
           </div>
         )}

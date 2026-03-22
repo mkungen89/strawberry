@@ -1,17 +1,22 @@
+"use client";
+
+import { use } from "react";
 import { notFound } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import OrderForm from "@/components/order/OrderForm";
 import { SERVICES } from "@/lib/services-data";
 import { Badge } from "@/components/ui/badge";
+import { useCurrency } from "@/lib/currency-context";
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
-export default async function ServicePage({ params }: Props) {
-  const { slug } = await params;
+export default function ServicePage({ params }: Props) {
+  const { slug } = use(params);
   const service = SERVICES.find((s) => s.slug === slug);
+  const { format } = useCurrency();
 
   if (!service) notFound();
 
@@ -53,7 +58,7 @@ export default async function ServicePage({ params }: Props) {
                   >
                     <div className="mb-2 flex items-center justify-between">
                       <span className="font-semibold">{pkg.name}</span>
-                      <span className="text-lg font-bold text-purple-400">{pkg.price} kr</span>
+                      <span className="text-lg font-bold text-purple-400">{format(pkg.price, pkg.priceGBP)}</span>
                     </div>
                     <ul className="space-y-1">
                       {pkg.features.map((f) => (

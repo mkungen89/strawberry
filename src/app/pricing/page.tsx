@@ -1,3 +1,5 @@
+"use client";
+
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
@@ -6,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { CheckCircle2, ArrowRight, HelpCircle } from "lucide-react";
 import { SERVICES } from "@/lib/services-data";
+import { useCurrency } from "@/lib/currency-context";
 
 const FAQ_ITEMS = [
   {
@@ -21,7 +24,7 @@ const FAQ_ITEMS = [
   {
     question: "What payment methods do you accept?",
     answer:
-      "We accept Swish, bank transfer, and most major credit/debit cards via Stripe. Payment is collected before work begins. For larger projects we can arrange milestone-based billing.",
+      "We accept most major credit/debit cards via Stripe. Payment is collected before work begins. For larger projects we can arrange milestone-based billing.",
   },
   {
     question: "Can I upgrade my package after ordering?",
@@ -29,9 +32,9 @@ const FAQ_ITEMS = [
       "Absolutely. If you decide you need more features during the project, simply contact us and we will arrange an upgrade. You only pay the difference between your current and new package.",
   },
   {
-    question: "Are prices in SEK inclusive of VAT?",
+    question: "Are prices inclusive of VAT?",
     answer:
-      "All prices listed are excluding VAT (ex. moms). Swedish VAT (25%) is added for orders from Sweden. Companies with a valid VAT number may be exempt depending on their jurisdiction.",
+      "All prices listed are excluding VAT. VAT may be applicable depending on your jurisdiction. Companies with a valid VAT number may be exempt depending on their location.",
   },
   {
     question: "How long does delivery take?",
@@ -41,6 +44,8 @@ const FAQ_ITEMS = [
 ];
 
 export default function PricingPage() {
+  const { format, currency } = useCurrency();
+
   return (
     <div className="bg-black text-white">
       <Navbar />
@@ -115,9 +120,13 @@ export default function PricingPage() {
                           </p>
                           <div className="mt-1 flex items-end gap-1">
                             <span className="text-4xl font-bold">
-                              {pkg.price.toLocaleString("sv-SE")}
+                              {currency === "USD"
+                                ? pkg.price.toLocaleString()
+                                : pkg.priceGBP.toLocaleString()}
                             </span>
-                            <span className="mb-1 text-sm text-gray-400">kr</span>
+                            <span className="mb-1 text-sm text-gray-400">
+                              {currency === "USD" ? "USD" : "GBP"}
+                            </span>
                           </div>
                           <p className="text-xs text-gray-500">One-time, ex. VAT</p>
                         </CardHeader>

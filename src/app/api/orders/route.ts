@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     line_items: [
       {
         price_data: {
-          currency: "sek",
+          currency: "usd",
           unit_amount: Math.round(price * 100),
           product_data: {
             name: `${serviceData.name} — ${packageName}`,

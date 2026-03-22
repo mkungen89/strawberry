@@ -85,7 +85,7 @@ export default function OrdersPage() {
             </div>
           </div>
           <div className="flex items-center gap-4 shrink-0">
-            <span className="text-lg font-bold text-purple-400">{order.totalPrice} kr</span>
+            <span className="text-lg font-bold text-purple-400">${order.totalPrice.toLocaleString()}</span>
             <Link href={`/orders/${order.id}`}>
               <Button size="sm" variant="outline" className="border-white/20 bg-transparent text-white hover:bg-white/10">
                 View

@@ -1,11 +1,16 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 import { SERVICES } from "@/lib/services-data";
+import { useCurrency } from "@/lib/currency-context";
 
 export default function ServicesSection() {
+  const { format } = useCurrency();
+
   return (
     <section className="px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -42,7 +47,7 @@ export default function ServicesSection() {
                   ))}
                 </ul>
                 <p className="mt-4 text-sm text-gray-500">
-                  From <span className="text-lg font-bold text-white">{service.basePrice} kr</span>
+                  From <span className="text-lg font-bold text-white">{format(service.basePrice, service.basePriceGBP)}</span>
                 </p>
               </CardContent>
               <CardFooter>

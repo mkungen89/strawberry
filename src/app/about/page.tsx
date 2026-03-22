@@ -1,3 +1,5 @@
+"use client";
+
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
@@ -16,6 +18,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { SERVICES } from "@/lib/services-data";
+import { useCurrency } from "@/lib/currency-context";
 
 const VALUES = [
   {
@@ -52,6 +55,8 @@ const STATS = [
 ];
 
 export default function AboutPage() {
+  const { format } = useCurrency();
+
   return (
     <div className="bg-black text-white">
       <Navbar />
@@ -215,7 +220,7 @@ export default function AboutPage() {
                       {service.name}
                     </p>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      From {service.basePrice.toLocaleString("sv-SE")} kr
+                      From {format(service.basePrice, service.basePriceGBP)}
                     </p>
                   </div>
                   <ArrowRight className="h-4 w-4 text-gray-600 transition-all group-hover:translate-x-1 group-hover:text-purple-400" />

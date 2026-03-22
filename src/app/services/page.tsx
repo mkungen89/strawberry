@@ -1,3 +1,5 @@
+"use client";
+
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
@@ -6,8 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 import { SERVICES } from "@/lib/services-data";
+import { useCurrency } from "@/lib/currency-context";
 
 export default function ServicesPage() {
+  const { format } = useCurrency();
+
   return (
     <div className="bg-black text-white">
       <Navbar />
@@ -52,7 +57,7 @@ export default function ServicesPage() {
                       className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2"
                     >
                       <span className="text-sm font-medium">{pkg.name}</span>
-                      <span className="text-sm font-bold text-purple-400">{pkg.price} kr</span>
+                      <span className="text-sm font-bold text-purple-400">{format(pkg.price, pkg.priceGBP)}</span>
                     </div>
                   ))}
                 </div>

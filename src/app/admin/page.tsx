@@ -93,7 +93,7 @@ export default function AdminPage() {
           {[
             { label: "Total orders", value: orders.length, icon: <Package className="h-5 w-5 text-purple-400" /> },
             { label: "Active orders", value: activeOrders.length, icon: <Clock className="h-5 w-5 text-blue-400" /> },
-            { label: "Revenue", value: `${totalRevenue.toLocaleString()} kr`, icon: <DollarSign className="h-5 w-5 text-green-400" /> },
+            { label: "Revenue", value: `$${totalRevenue.toLocaleString()}`, icon: <DollarSign className="h-5 w-5 text-green-400" /> },
             { label: "Customers", value: new Set(orders.map((o) => o.user.email)).size, icon: <Users className="h-5 w-5 text-yellow-400" /> },
           ].map((stat) => (
             <Card key={stat.label} className="border-white/10 bg-white/5 text-white">
@@ -134,7 +134,7 @@ export default function AdminPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="font-bold text-purple-400">{order.totalPrice} kr</span>
+                    <span className="font-bold text-purple-400">${order.totalPrice.toLocaleString()}</span>
                     <Select
                       value={order.status ?? "PENDING"}
                       onValueChange={(v) => v && updateStatus(order.id, v)}

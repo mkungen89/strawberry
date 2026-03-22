@@ -13,10 +13,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useCurrency } from "@/lib/currency-context";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { data: session } = useSession();
+  const { currency, setCurrency } = useCurrency();
 
   const navLinks = [
     { href: "/services", label: "Services" },
@@ -52,6 +54,10 @@ export default function Navbar() {
 
           {/* Auth buttons */}
           <div className="hidden items-center gap-3 md:flex">
+            <div className="flex items-center rounded-lg border border-white/20 text-xs">
+              <button onClick={() => setCurrency("USD")} className={`px-2 py-1 rounded-l-lg ${currency === "USD" ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"}`}>$</button>
+              <button onClick={() => setCurrency("GBP")} className={`px-2 py-1 rounded-r-lg ${currency === "GBP" ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"}`}>£</button>
+            </div>
             {session ? (
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-2 rounded-full outline-none">
@@ -117,6 +123,10 @@ export default function Navbar() {
               </Link>
             ))}
             <div className="mt-3 flex flex-col gap-2">
+              <div className="flex items-center rounded-lg border border-white/20 text-xs w-fit">
+                <button onClick={() => setCurrency("USD")} className={`px-2 py-1 rounded-l-lg ${currency === "USD" ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"}`}>$</button>
+                <button onClick={() => setCurrency("GBP")} className={`px-2 py-1 rounded-r-lg ${currency === "GBP" ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"}`}>£</button>
+              </div>
               {session ? (
                 <>
                   <Link href="/dashboard" onClick={() => setOpen(false)}>

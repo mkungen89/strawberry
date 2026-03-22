@@ -264,7 +264,7 @@ export default function AdminOrderDetailPage() {
                 )}
                 <div className="flex items-center justify-between border-t border-white/10 pt-3">
                   <span className="text-gray-400">Total price</span>
-                  <span className="text-xl font-bold text-purple-400">{order.totalPrice} kr</span>
+                  <span className="text-xl font-bold text-purple-400">${order.totalPrice.toLocaleString()}</span>
                 </div>
               </div>
             </CardContent>
