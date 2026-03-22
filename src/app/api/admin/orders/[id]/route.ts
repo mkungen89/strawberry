@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { headers } from "next/headers";
-import type { OrderStatus } from "@prisma/client";
 
 export async function GET(
   _req: NextRequest,
@@ -40,13 +39,13 @@ export async function PATCH(
   const { id } = await params;
   const body = await req.json();
 
-  const data: { status?: OrderStatus; invoiceUrl?: string } = {};
-  if (body.status !== undefined) data.status = body.status as OrderStatus;
+  const data: { status?: string; invoiceUrl?: string } = {};
+  if (body.status !== undefined) data.status = body.status;
   if (body.invoiceUrl !== undefined) data.invoiceUrl = body.invoiceUrl;
 
   const order = await db.order.update({
     where: { id },
-    data,
+    data: data as never,
   });
 
   return NextResponse.json(order);
