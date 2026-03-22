@@ -106,6 +106,50 @@ export const TECH_STACKS = {
   hosting: ["Vercel", "Netlify", "Railway", "DigitalOcean", "AWS", "Hetzner", "Cloudflare Pages"],
 };
 
+export interface Module {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  priceGBP: number;
+  category: string[]; // which service slugs this applies to
+}
+
+export const MODULES: Module[] = [
+  // Website modules
+  { id: "contact-form", name: "Contact Form", description: "Custom contact form with email notifications", price: 49, priceGBP: 39, category: ["website"] },
+  { id: "auth-system", name: "User Authentication", description: "Login, register, password reset, user profiles", price: 149, priceGBP: 119, category: ["website", "mobile-app"] },
+  { id: "blog-cms", name: "Blog / CMS", description: "Full blog with admin panel to manage posts", price: 199, priceGBP: 159, category: ["website"] },
+  { id: "ecommerce", name: "E-commerce", description: "Product listings, cart, checkout with Stripe", price: 399, priceGBP: 319, category: ["website"] },
+  { id: "booking-system", name: "Booking System", description: "Calendar-based appointment booking", price: 249, priceGBP: 199, category: ["website", "mobile-app"] },
+  { id: "search", name: "Search Functionality", description: "Full-text search across content", price: 99, priceGBP: 79, category: ["website"] },
+  { id: "multilingual", name: "Multi-language Support", description: "Site available in multiple languages", price: 149, priceGBP: 119, category: ["website"] },
+  { id: "seo-advanced", name: "Advanced SEO", description: "Sitemap, meta tags, structured data, analytics", price: 99, priceGBP: 79, category: ["website"] },
+  { id: "payment-gateway", name: "Payment Integration", description: "Accept payments via Stripe, PayPal, or other", price: 199, priceGBP: 159, category: ["website", "mobile-app"] },
+  { id: "live-chat", name: "Live Chat", description: "Real-time chat support for your visitors", price: 99, priceGBP: 79, category: ["website"] },
+  { id: "dashboard-analytics", name: "Admin Dashboard & Analytics", description: "Track users, orders, and site performance", price: 249, priceGBP: 199, category: ["website", "mobile-app"] },
+  { id: "api-integration", name: "Third-party API Integration", description: "Connect to external services (CRM, maps, etc.)", price: 149, priceGBP: 119, category: ["website", "mobile-app"] },
+  { id: "notifications", name: "Push Notifications", description: "Email and/or push notifications for users", price: 99, priceGBP: 79, category: ["website", "mobile-app"] },
+  { id: "social-login", name: "Social Login", description: "Login with Google, Facebook, Discord", price: 79, priceGBP: 63, category: ["website", "mobile-app"] },
+  { id: "file-uploads", name: "File Uploads", description: "Allow users to upload images, documents, etc.", price: 79, priceGBP: 63, category: ["website", "mobile-app"] },
+  // Discord modules
+  { id: "discord-bot", name: "Custom Discord Bot", description: "Fully custom bot with commands for your server", price: 149, priceGBP: 119, category: ["discord-server"] },
+  { id: "discord-ticket", name: "Ticket System", description: "Support ticket system for your community", price: 79, priceGBP: 63, category: ["discord-server"] },
+  { id: "discord-levels", name: "Leveling System", description: "XP and levels to engage your community", price: 49, priceGBP: 39, category: ["discord-server"] },
+  { id: "discord-verification", name: "Verification System", description: "Member verification with captcha or reaction roles", price: 49, priceGBP: 39, category: ["discord-server"] },
+  { id: "discord-economy", name: "Economy System", description: "Virtual currency, shop, and rewards", price: 99, priceGBP: 79, category: ["discord-server"] },
+  // Streaming modules
+  { id: "stream-alerts", name: "Animated Alerts Pack", description: "Follow, sub, donation, raid animated alerts", price: 79, priceGBP: 63, category: ["streaming-overlay"] },
+  { id: "stream-panels", name: "Stream Panels", description: "Matching info panels for your channel page", price: 49, priceGBP: 39, category: ["streaming-overlay"] },
+  { id: "stream-screens", name: "Starting/Ending Screens", description: "Animated starting soon and ending stream screens", price: 59, priceGBP: 47, category: ["streaming-overlay", "streaming-icons"] },
+  { id: "stream-schedule", name: "Schedule Graphic", description: "Weekly schedule graphic for your channel", price: 39, priceGBP: 31, category: ["streaming-overlay", "streaming-icons"] },
+  // App modules
+  { id: "app-offline", name: "Offline Mode", description: "App works without internet connection", price: 199, priceGBP: 159, category: ["mobile-app"] },
+  { id: "app-maps", name: "Maps & Location", description: "Google Maps integration with location features", price: 149, priceGBP: 119, category: ["mobile-app"] },
+  { id: "app-camera", name: "Camera & Media", description: "Camera access, photo/video capture and upload", price: 99, priceGBP: 79, category: ["mobile-app"] },
+  { id: "app-payments", name: "In-app Purchases", description: "App Store and Google Play payment integration", price: 249, priceGBP: 199, category: ["mobile-app"] },
+];
+
 export const RECOMMENDATIONS: Record<string, { frontend: string; backend: string; database: string; hosting: string; reason: string }> = {
   portfolio: {
     frontend: "Next.js",

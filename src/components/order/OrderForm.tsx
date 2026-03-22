@@ -11,8 +11,9 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { TECH_STACKS, RECOMMENDATIONS } from "@/lib/services-data";
+import { TECH_STACKS, RECOMMENDATIONS, MODULES } from "@/lib/services-data";
 import { useCurrency } from "@/lib/currency-context";
+import ModuleSelector from "@/components/order/ModuleSelector";
 
 interface Package {
   name: string;
@@ -40,6 +41,7 @@ export default function OrderForm({ service }: Props) {
   const [loading, setLoading] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [details, setDetails] = useState("");
+  const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const [siteType, setSiteType] = useState("");
   const [techStack, setTechStack] = useState({
     frontend: "",
@@ -54,6 +56,21 @@ export default function OrderForm({ service }: Props) {
     hosting: string;
     reason: string;
   } | null>(null);
+
+  function toggleModule(moduleId: string) {
+    setSelectedModules((prev) =>
+      prev.includes(moduleId) ? prev.filter((id) => id !== moduleId) : [...prev, moduleId]
+    );
+  }
+
+  const modulesTotal = selectedModules.reduce(
+    (sum, id) => sum + (MODULES.find((m) => m.id === id)?.price || 0),
+    0
+  );
+  const modulesTotalGBP = selectedModules.reduce(
+    (sum, id) => sum + (MODULES.find((m) => m.id === id)?.priceGBP || 0),
+    0
+  );
 
   function getRecommendation() {
     const rec = RECOMMENDATIONS[siteType] || RECOMMENDATIONS["webapp"];
@@ -76,6 +93,8 @@ export default function OrderForm({ service }: Props) {
       return;
     }
 
+    const totalUSD = selectedPackage.price + modulesTotal;
+
     setLoading(true);
     try {
       const res = await fetch("/api/orders", {
@@ -84,8 +103,9 @@ export default function OrderForm({ service }: Props) {
         body: JSON.stringify({
           serviceSlug: service.slug,
           packageName: selectedPackage.name,
-          price: selectedPackage.price,
+          price: totalUSD,
           details,
+          modules: selectedModules,
           techStack: service.hasTechStack ? techStack : null,
         }),
       });
@@ -108,27 +128,27 @@ export default function OrderForm({ service }: Props) {
     }
   }
 
+  // Build the step list for the progress indicator
+  // Steps: 1 (package) → 2 (describe) → 3 (modules) → 4 (tech stack, if applicable)
+  const stepList = service.hasTechStack ? [1, 2, 3, 4] : [1, 2, 3];
+
   return (
     <Card className="border-white/10 bg-white/5 text-white">
       <CardHeader>
         <h2 className="text-2xl font-bold">Place an order</h2>
         <div className="flex gap-2">
-          {[1, 2, service.hasTechStack ? 3 : null, service.hasTechStack ? 4 : 3]
-            .filter(Boolean)
-            .map((s, i, arr) => (
-              <div key={i} className="flex items-center gap-2">
-                <div
-                  className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
-                    step >= (s as number)
-                      ? "bg-purple-600 text-white"
-                      : "bg-white/10 text-gray-500"
-                  }`}
-                >
-                  {s}
-                </div>
-                {i < arr.length - 1 && <div className="h-px w-6 bg-white/20" />}
+          {stepList.map((s, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <div
+                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
+                  step >= s ? "bg-purple-600 text-white" : "bg-white/10 text-gray-500"
+                }`}
+              >
+                {s}
               </div>
-            ))}
+              {i < stepList.length - 1 && <div className="h-px w-6 bg-white/20" />}
+            </div>
+          ))}
         </div>
       </CardHeader>
 
@@ -192,8 +212,35 @@ export default function OrderForm({ service }: Props) {
                 Back
               </Button>
               <Button
-                onClick={() => service.hasTechStack ? setStep(3) : handleSubmit()}
-                disabled={!details.trim() || loading}
+                onClick={() => setStep(3)}
+                disabled={!details.trim()}
+                className="flex-1 bg-purple-600 text-white hover:bg-purple-700"
+              >
+                Continue
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Module selection */}
+        {step === 3 && (
+          <div>
+            <ModuleSelector
+              serviceSlug={service.slug}
+              selectedModules={selectedModules}
+              onToggle={toggleModule}
+            />
+            <div className="mt-6 flex gap-3">
+              <Button
+                onClick={() => setStep(2)}
+                variant="outline"
+                className="border-white/20 bg-transparent text-white hover:bg-white/10"
+              >
+                Back
+              </Button>
+              <Button
+                onClick={() => (service.hasTechStack ? setStep(4) : handleSubmit())}
+                disabled={loading}
                 className="flex-1 bg-purple-600 text-white hover:bg-purple-700"
               >
                 {loading ? (
@@ -208,8 +255,8 @@ export default function OrderForm({ service }: Props) {
           </div>
         )}
 
-        {/* Step 3: Tech stack (website/app only) */}
-        {step === 3 && service.hasTechStack && (
+        {/* Step 4: Tech stack (website/app only) */}
+        {step === 4 && service.hasTechStack && (
           <div>
             <h3 className="mb-2 font-semibold text-gray-200">Tech stack & hosting</h3>
             <p className="mb-4 text-sm text-gray-400">
@@ -285,7 +332,7 @@ export default function OrderForm({ service }: Props) {
 
             <div className="mt-6 flex gap-3">
               <Button
-                onClick={() => setStep(2)}
+                onClick={() => setStep(3)}
                 variant="outline"
                 className="border-white/20 bg-transparent text-white hover:bg-white/10"
               >
@@ -304,13 +351,29 @@ export default function OrderForm({ service }: Props) {
 
         {/* Price summary */}
         {selectedPackage && (
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-400">Selected package</p>
-                <p className="font-semibold">{service.name} — {selectedPackage.name}</p>
-              </div>
-              <p className="text-2xl font-bold text-purple-400">{format(selectedPackage.price, selectedPackage.priceGBP)}</p>
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-400">Base package ({selectedPackage.name})</span>
+              <span>{format(selectedPackage.price, selectedPackage.priceGBP)}</span>
+            </div>
+            {selectedModules.map((id) => {
+              const mod = MODULES.find((m) => m.id === id);
+              if (!mod) return null;
+              return (
+                <div key={id} className="flex justify-between text-sm">
+                  <span className="text-gray-400">+ {mod.name}</span>
+                  <span>{format(mod.price, mod.priceGBP)}</span>
+                </div>
+              );
+            })}
+            <div className="flex justify-between border-t border-white/10 pt-2">
+              <span className="font-semibold">Total</span>
+              <span className="text-xl font-bold text-purple-400">
+                {format(
+                  selectedPackage.price + modulesTotal,
+                  selectedPackage.priceGBP + modulesTotalGBP
+                )}
+              </span>
             </div>
           </div>
         )}
