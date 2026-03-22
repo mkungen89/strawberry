@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Better Auth models
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions          Session[]
+  accounts          Account[]
+  orders            Order[]
+  reviews           Review[]
+  referralsGiven    Referral[] @relation("referrer")
+  referralsReceived Referral[] @relation("referred")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// Vexcraft models
+model Service {
+  id          String          @id @default(cuid())
+  slug        String          @unique
+  name        String
+  description String
+  category    ServiceCategory
+  basePrice   Float
+  features    String[]
+  popular     Boolean         @default(false)
+  active      Boolean         @default(true)
+  imageUrl    String?
+  createdAt   DateTime        @default(now())
+
+  orders      Order[]
+  packages    ServicePackage[]
+}
+
+model ServicePackage {
+  id          String   @id @default(cuid())
+  serviceId   String
+  name        String
+  description String
+  price       Float
+  features    String[]
+  createdAt   DateTime @default(now())
+
+  service     Service  @relation(fields: [serviceId], references: [id])
+  orders      Order[]
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String
+  serviceId       String
+  packageId       String?
+  status          OrderStatus @default(PENDING)
+  totalPrice      Float
+  currency        String      @default("SEK")
+  details         Json
+  techStack       Json?
+  hostingProvider String?
+  revisions       Int         @default(0)
+  maxRevisions    Int         @default(2)
+  stripePaymentId String?
+  invoiceUrl      String?
+  deliveredAt     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user            User            @relation(fields: [userId], references: [id])
+  service         Service         @relation(fields: [serviceId], references: [id])
+  package         ServicePackage? @relation(fields: [packageId], references: [id])
+  messages        OrderMessage[]
+  review          Review?
+}
+
+model OrderMessage {
+  id        String   @id @default(cuid())
+  orderId   String
+  senderId  String
+  content   String
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  order     Order    @relation(fields: [orderId], references: [id])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  orderId   String   @unique
+  rating    Int
+  comment   String
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  order     Order    @relation(fields: [orderId], references: [id])
+}
+
+model Referral {
+  id          String   @id @default(cuid())
+  referrerId  String
+  referredId  String
+  discount    Float    @default(10)
+  used        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  referrer    User     @relation("referrer", fields: [referrerId], references: [id])
+  referred    User     @relation("referred", fields: [referredId], references: [id])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ServiceCategory {
+  DISCORD
+  YOUTUBE
+  STREAMING
+  WEBSITE
+  APP
+  GRAPHICS
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  IN_PROGRESS
+  REVIEW
+  REVISION
+  COMPLETED
+  CANCELLED
+}
