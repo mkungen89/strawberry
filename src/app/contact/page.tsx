@@ -39,7 +39,7 @@ const CONTACT_METHODS = [
     title: "Discord",
     description: "Join our Discord server for community support and fast responses.",
     value: "discord.gg/vexcraft",
-    href: "https://discord.gg/PQuybkQa",
+    href: "https://discord.gg/GsgGFt7Rgu",
   },
   {
     icon: Zap,

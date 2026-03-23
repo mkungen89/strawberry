@@ -23,7 +23,7 @@ export default function Footer() {
             {/* Social links */}
             <div className="mt-6 flex gap-3">
               <a
-                href="https://discord.gg/PQuybkQa"
+                href="https://discord.gg/GsgGFt7Rgu"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-gray-500 hover:text-purple-400 hover:border-purple-500/30 transition-all duration-300"
