@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { headers } from "next/headers";
+import { sendEmail, statusUpdateEmail } from "@/lib/email";
 
 export async function GET(
   _req: NextRequest,
@@ -46,7 +47,19 @@ export async function PATCH(
   const order = await db.order.update({
     where: { id },
     data: data as never,
+    include: { user: { select: { name: true, email: true } }, service: { select: { name: true } } },
   });
+
+  // Send email notification on status change
+  if (body.status && order.user?.email) {
+    const emailData = statusUpdateEmail(
+      order.user.name || "Customer",
+      order.service?.name || "Your order",
+      id,
+      body.status
+    );
+    sendEmail({ to: order.user.email, ...emailData }).catch(() => {});
+  }
 
   return NextResponse.json(order);
 }

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, User, Lock, Shield, Save } from "lucide-react";
+import { Loader2, User, Lock, Shield, Save, Smartphone, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
@@ -21,11 +21,74 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
+  const [totpUri, setTotpUri] = useState<string | null>(null);
+  const [totpCode, setTotpCode] = useState("");
+  const [enabling2FA, setEnabling2FA] = useState(false);
+  const [verifying2FA, setVerifying2FA] = useState(false);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [disabling2FA, setDisabling2FA] = useState(false);
+  const [disableCode, setDisableCode] = useState("");
 
   useEffect(() => {
     if (!isPending && !session) router.push("/login");
-    if (session) setName(session.user.name || "");
+    if (session) {
+      setName(session.user.name || "");
+      setTwoFactorEnabled(!!(session.user as { twoFactorEnabled?: boolean }).twoFactorEnabled);
+    }
   }, [session, isPending, router]);
+
+  async function enable2FA() {
+    setEnabling2FA(true);
+    try {
+      const res = await authClient.twoFactor.enable({ password: "" });
+      if (res?.data?.totpURI) {
+        setTotpUri(res.data.totpURI);
+      } else {
+        toast.error("Could not enable 2FA. Try again.");
+      }
+    } catch {
+      toast.error("Could not enable 2FA.");
+    } finally {
+      setEnabling2FA(false);
+    }
+  }
+
+  async function verify2FA() {
+    if (!totpCode || totpCode.length !== 6) {
+      toast.error("Enter the 6-digit code from your authenticator app.");
+      return;
+    }
+    setVerifying2FA(true);
+    try {
+      await authClient.twoFactor.verifyTotp({ code: totpCode });
+      setTwoFactorEnabled(true);
+      setTotpUri(null);
+      setTotpCode("");
+      toast.success("2FA enabled successfully! 🔒");
+    } catch {
+      toast.error("Invalid code. Please try again.");
+    } finally {
+      setVerifying2FA(false);
+    }
+  }
+
+  async function disable2FA() {
+    if (!disableCode) {
+      toast.error("Enter your password to disable 2FA.");
+      return;
+    }
+    setDisabling2FA(true);
+    try {
+      await authClient.twoFactor.disable({ password: disableCode });
+      setTwoFactorEnabled(false);
+      setDisableCode("");
+      toast.success("2FA disabled.");
+    } catch {
+      toast.error("Invalid password.");
+    } finally {
+      setDisabling2FA(false);
+    }
+  }
 
   async function handleUpdateName(e: React.FormEvent) {
     e.preventDefault();
@@ -178,6 +241,101 @@ export default function SettingsPage() {
               Change password
             </Button>
           </form>
+        </div>
+
+        {/* Two-Factor Authentication */}
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 mb-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10">
+              <Smartphone className="h-5 w-5 text-green-400" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h2 className="font-semibold">Two-Factor Authentication</h2>
+                {twoFactorEnabled && (
+                  <Badge className="bg-green-500/20 text-green-300 border-green-500/20 text-xs">
+                    <CheckCircle className="mr-1 h-3 w-3" /> Enabled
+                  </Badge>
+                )}
+              </div>
+              <p className="text-xs text-gray-500">Add an extra layer of security with an authenticator app</p>
+            </div>
+          </div>
+
+          {twoFactorEnabled ? (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-400">
+                2FA is enabled. You&apos;ll need your authenticator code when logging in.
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  type="password"
+                  value={disableCode}
+                  onChange={(e) => setDisableCode(e.target.value)}
+                  placeholder="Enter your password"
+                  className="border-white/10 bg-white/[0.03] text-white w-48"
+                />
+                <Button
+                  onClick={disable2FA}
+                  disabled={disabling2FA}
+                  variant="ghost"
+                  size="sm"
+                  className="border border-red-500/20 text-red-400 hover:bg-red-500/10"
+                >
+                  {disabling2FA ? <Loader2 className="h-4 w-4 animate-spin" /> : "Disable 2FA"}
+                </Button>
+              </div>
+            </div>
+          ) : totpUri ? (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-400">
+                Scan the QR code below with your authenticator app (Google Authenticator, Authy, etc.),
+                then enter the 6-digit code to verify.
+              </p>
+              <div className="rounded-xl bg-white p-4 w-fit">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(totpUri)}`}
+                  alt="2FA QR Code"
+                  width={200}
+                  height={200}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  value={totpCode}
+                  onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="6-digit code"
+                  className="border-white/10 bg-white/[0.03] text-white w-48"
+                  maxLength={6}
+                />
+                <Button
+                  onClick={verify2FA}
+                  disabled={verifying2FA || totpCode.length !== 6}
+                  className="bg-purple-600 text-white hover:bg-purple-700"
+                  size="sm"
+                >
+                  {verifying2FA ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
+                  Verify & Enable
+                </Button>
+              </div>
+              <p className="text-xs text-gray-600">
+                Can&apos;t scan? Copy this URI into your app manually:
+                <br />
+                <code className="text-xs text-purple-400 break-all">{totpUri}</code>
+              </p>
+            </div>
+          ) : (
+            <Button
+              onClick={enable2FA}
+              disabled={enabling2FA}
+              className="bg-purple-600 text-white hover:bg-purple-700"
+              size="sm"
+            >
+              {enabling2FA ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Smartphone className="mr-2 h-4 w-4" />}
+              Set up 2FA
+            </Button>
+          )}
         </div>
 
         {/* Account info */}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { headers } from "next/headers";
+import { sendEmail, newMessageEmail } from "@/lib/email";
 
 export async function POST(
   req: NextRequest,
@@ -20,7 +21,10 @@ export async function POST(
   }
 
   // Verify order exists
-  const order = await db.order.findUnique({ where: { id } });
+  const order = await db.order.findUnique({
+    where: { id },
+    include: { user: { select: { name: true, email: true } } },
+  });
   if (!order) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
@@ -33,6 +37,12 @@ export async function POST(
       isAdmin: true,
     },
   });
+
+  // Notify customer via email
+  if (order.user?.email) {
+    const emailData = newMessageEmail(order.user.name || "Customer", id);
+    sendEmail({ to: order.user.email, ...emailData }).catch(() => {});
+  }
 
   return NextResponse.json(message);
 }

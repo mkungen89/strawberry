@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { twoFactor } from "better-auth/plugins";
 import { db } from "./db";
 import { sendEmail } from "./email";
 
@@ -62,6 +63,15 @@ export const auth = betterAuth({
       },
     },
   },
+  plugins: [
+    twoFactor({
+      issuer: "Vexcraft",
+      totpOptions: {
+        period: 30,
+        digits: 6,
+      },
+    }),
+  ],
 });
 
 export type Session = typeof auth.$Infer.Session;
