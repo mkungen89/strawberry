@@ -28,8 +28,17 @@ export const auth = betterAuth({
     "https://vexcraft.io",
   ],
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // update session every 24 hours
+    expiresIn: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
+  },
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        defaultValue: "USER",
+        input: false,
+      },
+    },
   },
 });
 
