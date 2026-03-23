@@ -56,6 +56,7 @@ export default function Navbar() {
           <div className="hidden items-center gap-3 md:flex">
             <div className="flex items-center rounded-lg border border-white/20 text-xs">
               <button onClick={() => setCurrency("USD")} className={`px-2 py-1 rounded-l-lg ${currency === "USD" ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"}`}>$</button>
+              <button onClick={() => setCurrency("EUR")} className={`px-2 py-1 ${currency === "EUR" ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"}`}>€</button>
               <button onClick={() => setCurrency("GBP")} className={`px-2 py-1 rounded-r-lg ${currency === "GBP" ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"}`}>£</button>
             </div>
             {session ? (
@@ -125,6 +126,7 @@ export default function Navbar() {
             <div className="mt-3 flex flex-col gap-2">
               <div className="flex items-center rounded-lg border border-white/20 text-xs w-fit">
                 <button onClick={() => setCurrency("USD")} className={`px-2 py-1 rounded-l-lg ${currency === "USD" ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"}`}>$</button>
+                <button onClick={() => setCurrency("EUR")} className={`px-2 py-1 ${currency === "EUR" ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"}`}>€</button>
                 <button onClick={() => setCurrency("GBP")} className={`px-2 py-1 rounded-r-lg ${currency === "GBP" ? "bg-purple-600 text-white" : "text-gray-400 hover:text-white"}`}>£</button>
               </div>
               {session ? (

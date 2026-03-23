@@ -1,12 +1,12 @@
 "use client";
 import { createContext, useContext, useState } from "react";
 
-type Currency = "USD" | "GBP";
+type Currency = "USD" | "GBP" | "EUR";
 const CurrencyContext = createContext<{
   currency: Currency;
   setCurrency: (c: Currency) => void;
   symbol: string;
-  format: (usd: number, gbp: number) => string;
+  format: (usd: number, gbp: number, eur: number) => string;
 }>({
   currency: "USD",
   setCurrency: () => {},
@@ -16,11 +16,12 @@ const CurrencyContext = createContext<{
 
 export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   const [currency, setCurrency] = useState<Currency>("USD");
-  const symbol = currency === "USD" ? "$" : "£";
-  const format = (usd: number, gbp: number) =>
-    currency === "USD"
-      ? `$${usd.toLocaleString()}`
-      : `£${gbp.toLocaleString()}`;
+  const symbol = currency === "USD" ? "$" : currency === "EUR" ? "€" : "£";
+  const format = (usd: number, gbp: number, eur: number) => {
+    if (currency === "EUR") return `€${eur.toLocaleString()}`;
+    if (currency === "GBP") return `£${gbp.toLocaleString()}`;
+    return `$${usd.toLocaleString()}`;
+  };
   return (
     <CurrencyContext.Provider value={{ currency, setCurrency, symbol, format }}>
       {children}

@@ -24,7 +24,7 @@ const FAQ_ITEMS = [
   {
     question: "What payment methods do you accept?",
     answer:
-      "We accept most major credit/debit cards via Stripe. Payment is collected before work begins. For larger projects we can arrange milestone-based billing.",
+      "We accept all major credit and debit cards via Stripe, including Visa, Mastercard, and American Express. Payment is collected before work begins. For larger projects we can arrange milestone-based billing.",
   },
   {
     question: "Can I upgrade my package after ordering?",
@@ -120,12 +120,14 @@ export default function PricingPage() {
                           </p>
                           <div className="mt-1 flex items-end gap-1">
                             <span className="text-4xl font-bold">
-                              {currency === "USD"
-                                ? pkg.price.toLocaleString()
-                                : pkg.priceGBP.toLocaleString()}
+                              {currency === "EUR"
+                                ? pkg.priceEUR.toLocaleString()
+                                : currency === "GBP"
+                                ? pkg.priceGBP.toLocaleString()
+                                : pkg.price.toLocaleString()}
                             </span>
                             <span className="mb-1 text-sm text-gray-400">
-                              {currency === "USD" ? "USD" : "GBP"}
+                              {currency}
                             </span>
                           </div>
                           <p className="text-xs text-gray-500">One-time, ex. VAT</p>

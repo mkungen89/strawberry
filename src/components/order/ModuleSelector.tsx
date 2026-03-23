@@ -42,7 +42,7 @@ export default function ModuleSelector({ serviceSlug, selectedModules, onToggle 
               <div className="flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm font-medium text-white">{mod.name}</span>
-                  <span className="text-sm font-bold text-purple-400 whitespace-nowrap">+{format(mod.price, mod.priceGBP)}</span>
+                  <span className="text-sm font-bold text-purple-400 whitespace-nowrap">+{format(mod.price, mod.priceGBP, mod.priceEUR)}</span>
                 </div>
                 <p className="mt-0.5 text-xs text-gray-500">{mod.description}</p>
               </div>

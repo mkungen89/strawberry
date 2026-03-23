@@ -50,12 +50,12 @@ const FAQ_DATA: FaqCategory[] = [
       {
         question: "What payment methods do you accept?",
         answer:
-          "We accept Swish, bank transfer (banköverföring), and major credit/debit cards via Stripe. Payment is required before work begins. For large projects, milestone billing can be arranged.",
+          "We accept all major credit and debit cards via Stripe, including Visa, Mastercard, and American Express. Payment is required before work begins. For large projects, milestone billing can be arranged.",
       },
       {
         question: "Are prices inclusive of VAT?",
         answer:
-          "All listed prices are excluding VAT (ex. moms). Swedish VAT (25%) is added for Swedish orders. Companies with a valid VAT number registered within the EU may be exempt from VAT depending on their jurisdiction.",
+          "All listed prices are excluding VAT. VAT may be applicable depending on your jurisdiction. Companies with a valid VAT number registered within the EU may be exempt from VAT depending on their location.",
       },
       {
         question: "Do you offer refunds?",

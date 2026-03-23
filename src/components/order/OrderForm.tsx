@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -19,6 +18,7 @@ interface Package {
   name: string;
   price: number;
   priceGBP: number;
+  priceEUR: number;
   features: string[];
 }
 
@@ -69,6 +69,10 @@ export default function OrderForm({ service }: Props) {
   );
   const modulesTotalGBP = selectedModules.reduce(
     (sum, id) => sum + (MODULES.find((m) => m.id === id)?.priceGBP || 0),
+    0
+  );
+  const modulesTotalEUR = selectedModules.reduce(
+    (sum, id) => sum + (MODULES.find((m) => m.id === id)?.priceEUR || 0),
     0
   );
 
@@ -128,8 +132,6 @@ export default function OrderForm({ service }: Props) {
     }
   }
 
-  // Build the step list for the progress indicator
-  // Steps: 1 (package) → 2 (describe) → 3 (modules) → 4 (tech stack, if applicable)
   const stepList = service.hasTechStack ? [1, 2, 3, 4] : [1, 2, 3];
 
   return (
@@ -170,7 +172,7 @@ export default function OrderForm({ service }: Props) {
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-semibold">{pkg.name}</span>
-                    <span className="text-lg font-bold text-purple-400">{format(pkg.price, pkg.priceGBP)}</span>
+                    <span className="text-lg font-bold text-purple-400">{format(pkg.price, pkg.priceGBP, pkg.priceEUR)}</span>
                   </div>
                   <ul className="mt-2 space-y-1">
                     {pkg.features.map((f) => (
@@ -354,7 +356,7 @@ export default function OrderForm({ service }: Props) {
           <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">Base package ({selectedPackage.name})</span>
-              <span>{format(selectedPackage.price, selectedPackage.priceGBP)}</span>
+              <span>{format(selectedPackage.price, selectedPackage.priceGBP, selectedPackage.priceEUR)}</span>
             </div>
             {selectedModules.map((id) => {
               const mod = MODULES.find((m) => m.id === id);
@@ -362,7 +364,7 @@ export default function OrderForm({ service }: Props) {
               return (
                 <div key={id} className="flex justify-between text-sm">
                   <span className="text-gray-400">+ {mod.name}</span>
-                  <span>{format(mod.price, mod.priceGBP)}</span>
+                  <span>{format(mod.price, mod.priceGBP, mod.priceEUR)}</span>
                 </div>
               );
             })}
@@ -371,7 +373,8 @@ export default function OrderForm({ service }: Props) {
               <span className="text-xl font-bold text-purple-400">
                 {format(
                   selectedPackage.price + modulesTotal,
-                  selectedPackage.priceGBP + modulesTotalGBP
+                  selectedPackage.priceGBP + modulesTotalGBP,
+                  selectedPackage.priceEUR + modulesTotalEUR
                 )}
               </span>
             </div>
