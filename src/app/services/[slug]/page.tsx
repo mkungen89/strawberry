@@ -7,9 +7,11 @@ import Footer from "@/components/layout/Footer";
 import OrderForm from "@/components/order/OrderForm";
 import { SERVICES } from "@/lib/services-data";
 import { SERVICE_DETAILS } from "@/lib/services-details";
+import { UPSELLS } from "@/lib/subscription-data";
 import { Badge } from "@/components/ui/badge";
 import { useCurrency } from "@/lib/currency-context";
-import { ChevronDown, Clock, RefreshCw, CheckCircle2 } from "lucide-react";
+import { ChevronDown, Clock, RefreshCw, CheckCircle2, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -209,6 +211,37 @@ export default function ServicePage({ params }: Props) {
             </div>
           </div>
         </section>
+
+        {/* Upsells */}
+        {UPSELLS[slug] && UPSELLS[slug].length > 0 && (
+          <section className="px-4 py-12 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-7xl">
+              <h2 className="mb-6 text-xl font-bold">Complete your order</h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {UPSELLS[slug].map((upsell) => (
+                  <Link
+                    key={upsell.slug}
+                    href={`/services/${upsell.slug}`}
+                    className="group flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 transition-all duration-300 hover:border-purple-500/20 hover:bg-white/[0.04]"
+                  >
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-white group-hover:text-purple-300 transition-colors text-sm">{upsell.title}</h3>
+                      <p className="text-xs text-gray-500 mt-1">{upsell.description}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="text-lg font-bold text-purple-400">
+                        {format(upsell.price, upsell.priceGBP, upsell.priceEUR)}
+                      </span>
+                      <p className="flex items-center gap-1 text-xs text-gray-500 group-hover:text-purple-400 transition-colors">
+                        Add <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* FAQ */}
         {details?.faq && (
