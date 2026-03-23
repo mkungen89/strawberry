@@ -329,6 +329,70 @@ enum OrderStatus {
   CANCELLED
 }
 
+// ─── Admin Project Management ─────────────────────────────────────────────────
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    String   @default("GENERAL") // NEW_SERVICES, BUGS, FEATURES, WEBSITE
+  status      String   @default("ACTIVE")
+  color       String   @default("#9333ea")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tasks       Task[]
+
+  @@index([category])
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  avatar    String?
+  status    String   @default("ACTIVE")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tasks     Task[]
+}
+
+model Task {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  status       String   @default("BACKLOG") // BACKLOG, IN_PROGRESS, REVIEW, DONE
+  priority     String   @default("NORMAL")  // LOW, NORMAL, HIGH, URGENT
+  progress     Int      @default(0)         // 0–100
+  dueDate      DateTime?
+  projectId    String?
+  assigneeId   String?
+  assigneeName String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  project      Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  assignee     TeamMember?  @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
+  updates      TaskUpdate[]
+
+  @@index([status])
+  @@index([projectId])
+  @@index([assigneeId])
+}
+
+model TaskUpdate {
+  id         String   @id @default(cuid())
+  taskId     String
+  authorName String
+  content    String
+  createdAt  DateTime @default(now())
+
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
 // Live Chat
 model ChatConversation {
   id          String        @id @default(cuid())

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import Navbar from "@/components/layout/Navbar";
+
 import { useSession } from "@/lib/auth-client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -176,8 +176,8 @@ export default function AdminOrderDetailPage() {
   const statusConfig = STATUS_CONFIG[order.status] || STATUS_CONFIG["PENDING"];
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <Navbar />
+    <div className="min-h-screen text-white">
+      
       <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">

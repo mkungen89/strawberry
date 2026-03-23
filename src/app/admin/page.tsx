@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import { useSession } from "@/lib/auth-client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -104,9 +102,8 @@ export default function AdminPage() {
   const filteredOrders = filter === "ALL" ? orders : orders.filter((o) => o.status === filter);
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <Navbar />
-      <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen text-white">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -119,6 +116,11 @@ export default function AdminPage() {
             <p className="text-gray-400">Manage orders, customers, and team operations.</p>
           </div>
           <div className="flex gap-2">
+            <Link href="/admin/kanban">
+              <Button variant="ghost" className="border border-purple-500/30 bg-purple-500/10 text-purple-300 hover:bg-purple-500/20">
+                <Shield className="mr-2 h-4 w-4" /> Kanban Board
+              </Button>
+            </Link>
             <Link href="/admin/chat">
               <Button variant="ghost" className="border border-white/20 bg-transparent text-white hover:bg-white/10">
                 <MessageCircle className="mr-2 h-4 w-4" /> Live Chats
@@ -263,7 +265,6 @@ export default function AdminPage() {
           </div>
         )}
       </main>
-      <Footer />
     </div>
   );
 }
