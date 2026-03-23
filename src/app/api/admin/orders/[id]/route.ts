@@ -40,8 +40,15 @@ export async function PATCH(
   const { id } = await params;
   const body = await req.json();
 
-  const data: { status?: string; invoiceUrl?: string } = {};
-  if (body.status !== undefined) data.status = body.status;
+  const data: Record<string, unknown> = {};
+  if (body.status !== undefined) {
+    data.status = body.status;
+    // Auto-lock brief when work starts
+    if (body.status === "IN_PROGRESS") {
+      data.briefLocked = true;
+      data.briefLockedAt = new Date();
+    }
+  }
   if (body.invoiceUrl !== undefined) data.invoiceUrl = body.invoiceUrl;
 
   const order = await db.order.update({

@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Loader2, Send, CheckCircle, Clock, Star, Zap,
   FileText, CreditCard, ArrowLeft, MessageCircle,
-  Download, Activity,
+  Download, Activity, Palette, Pencil, Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -68,6 +68,18 @@ interface ActivityItem {
   createdAt: string;
 }
 
+interface Concept {
+  id: string;
+  title: string;
+  description: string | null;
+  imageUrl: string | null;
+  fileUrl: string | null;
+  status: string;
+  isSelected: boolean;
+  feedback: string | null;
+  sortOrder: number;
+}
+
 interface Order {
   id: string;
   status: string;
@@ -111,6 +123,12 @@ export default function OrderDetailPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [files, setFiles] = useState<OrderFileItem[]>([]);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [concepts, setConcepts] = useState<Concept[]>([]);
+  const [editingBrief, setEditingBrief] = useState(false);
+  const [briefText, setBriefText] = useState("");
+  const [savingBrief, setSavingBrief] = useState(false);
+  const [selectingConcept, setSelectingConcept] = useState<string | null>(null);
+  const [conceptFeedback, setConceptFeedback] = useState("");
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
@@ -118,7 +136,7 @@ export default function OrderDetailPage() {
   const [reviewHover, setReviewHover] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
-  const [activeTab, setActiveTab] = useState<"chat" | "milestones" | "invoices" | "files" | "activity">("chat");
+  const [activeTab, setActiveTab] = useState<"chat" | "concepts" | "milestones" | "invoices" | "files" | "activity">("chat");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -128,12 +146,15 @@ export default function OrderDetailPage() {
       fetch(`/api/orders/${id}/invoices`).then((r) => r.json()).catch(() => []),
       fetch(`/api/orders/${id}/files`).then((r) => r.json()).catch(() => []),
       fetch(`/api/orders/${id}/activity`).then((r) => r.json()).catch(() => []),
-    ]).then(([orderData, msData, invData, filesData, actData]) => {
+      fetch(`/api/orders/${id}/concepts`).then((r) => r.json()).catch(() => []),
+    ]).then(([orderData, msData, invData, filesData, actData, conceptsData]) => {
       setOrder(orderData.error ? null : orderData);
       setMilestones(Array.isArray(msData) ? msData : []);
       setInvoices(Array.isArray(invData) ? invData : []);
       setFiles(Array.isArray(filesData) ? filesData : []);
       setActivities(Array.isArray(actData) ? actData : []);
+      setConcepts(Array.isArray(conceptsData) ? conceptsData : []);
+      if (orderData?.details?.description) setBriefText(orderData.details.description);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [id]);
@@ -293,11 +314,72 @@ export default function OrderDetailPage() {
           )}
         </div>
 
-        {/* Description */}
+        {/* Description / Editable brief */}
         {order.details?.description && (
           <div className="mb-8 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6">
-            <h2 className="mb-3 font-semibold">Project brief</h2>
-            <p className="text-sm text-gray-400 leading-relaxed whitespace-pre-wrap">{order.details.description}</p>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-semibold">Project brief</h2>
+              {!(order as unknown as { briefLocked: boolean }).briefLocked ? (
+                <button
+                  onClick={() => setEditingBrief(!editingBrief)}
+                  className="flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300 transition-colors"
+                >
+                  <Pencil className="h-3 w-3" />
+                  {editingBrief ? "Cancel" : "Edit brief"}
+                </button>
+              ) : (
+                <span className="flex items-center gap-1.5 text-xs text-gray-600">
+                  <Lock className="h-3 w-3" /> Brief locked — work started
+                </span>
+              )}
+            </div>
+            {editingBrief ? (
+              <div className="space-y-3">
+                <Textarea
+                  value={briefText}
+                  onChange={(e) => setBriefText(e.target.value)}
+                  className="min-h-32 border-white/10 bg-white/[0.03] text-white text-sm"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    onClick={async () => {
+                      setSavingBrief(true);
+                      try {
+                        const res = await fetch(`/api/orders/${id}/brief`, {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ description: briefText }),
+                        });
+                        if (!res.ok) throw new Error((await res.json()).error);
+                        setOrder((prev) => prev ? { ...prev, details: { ...prev.details, description: briefText } } : prev);
+                        setEditingBrief(false);
+                        toast.success("Brief updated!");
+                      } catch (e) {
+                        toast.error(e instanceof Error ? e.message : "Could not update brief.");
+                      } finally {
+                        setSavingBrief(false);
+                      }
+                    }}
+                    disabled={savingBrief}
+                    className="bg-purple-600 text-white hover:bg-purple-700"
+                    size="sm"
+                  >
+                    {savingBrief ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save changes"}
+                  </Button>
+                  <Button
+                    onClick={() => { setEditingBrief(false); setBriefText(order.details?.description || ""); }}
+                    variant="ghost"
+                    size="sm"
+                    className="border border-white/10 bg-transparent text-gray-400 hover:text-white"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-600">💡 You can edit your brief until work begins on your order.</p>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 leading-relaxed whitespace-pre-wrap">{order.details.description}</p>
+            )}
             {order.techStack && (
               <div className="mt-4 flex flex-wrap gap-2">
                 {Object.entries(order.techStack).map(([k, v]) => (
@@ -314,6 +396,7 @@ export default function OrderDetailPage() {
         <div className="mb-6 flex gap-2">
           {[
             { key: "chat" as const, label: "Chat", icon: <MessageCircle className="h-4 w-4" />, count: order.messages.length },
+            { key: "concepts" as const, label: "Concepts", icon: <Palette className="h-4 w-4" />, count: concepts.length },
             { key: "milestones" as const, label: "Milestones", icon: <Zap className="h-4 w-4" />, count: milestones.length },
             { key: "files" as const, label: "Files", icon: <Download className="h-4 w-4" />, count: files.length },
             { key: "invoices" as const, label: "Invoices", icon: <FileText className="h-4 w-4" />, count: invoices.length },
@@ -401,6 +484,130 @@ export default function OrderDetailPage() {
                 </Button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Concepts tab */}
+        {activeTab === "concepts" && (
+          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6">
+            {concepts.length === 0 ? (
+              <div className="text-center py-12">
+                <Palette className="mx-auto h-10 w-10 text-gray-700 mb-3" />
+                <p className="text-gray-500 text-sm">No concepts yet</p>
+                <p className="text-gray-600 text-xs mt-1">Our team will upload design concepts for you to choose from once they&apos;re ready.</p>
+              </div>
+            ) : (
+              <div>
+                <p className="text-sm text-gray-400 mb-6">
+                  {concepts.some(c => c.isSelected)
+                    ? "✅ You've selected a concept. We'll refine it based on your feedback."
+                    : "Review the concepts below and select the one you like best. You can add feedback to help us refine it."}
+                </p>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {concepts.map((concept) => (
+                    <div
+                      key={concept.id}
+                      className={`rounded-xl border p-4 transition-all duration-300 ${
+                        concept.isSelected
+                          ? "border-green-500/30 bg-green-500/5 ring-2 ring-green-500/20"
+                          : "border-white/[0.06] bg-white/[0.02] hover:border-purple-500/20"
+                      }`}
+                    >
+                      {concept.imageUrl && (
+                        <div className="mb-3 rounded-lg overflow-hidden bg-white/[0.03]">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={concept.imageUrl} alt={concept.title} className="w-full h-40 object-cover" />
+                        </div>
+                      )}
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <h3 className="font-semibold text-white text-sm">{concept.title}</h3>
+                        {concept.isSelected && (
+                          <Badge className="bg-green-500/20 text-green-300 border-green-500/20 text-xs shrink-0">
+                            <CheckCircle className="mr-1 h-3 w-3" /> Selected
+                          </Badge>
+                        )}
+                      </div>
+                      {concept.description && (
+                        <p className="text-xs text-gray-400 mb-3">{concept.description}</p>
+                      )}
+                      {concept.fileUrl && (
+                        <a
+                          href={concept.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300 mb-3"
+                        >
+                          <Download className="h-3 w-3" /> Download file
+                        </a>
+                      )}
+                      {!concept.isSelected && !concepts.some(c => c.isSelected) && (
+                        <div className="space-y-2 mt-3">
+                          {selectingConcept === concept.id ? (
+                            <>
+                              <Textarea
+                                value={conceptFeedback}
+                                onChange={(e) => setConceptFeedback(e.target.value)}
+                                placeholder="Any feedback or tweaks you'd like? (optional)"
+                                className="min-h-16 text-xs border-white/10 bg-white/[0.03] text-white"
+                                rows={2}
+                              />
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={async () => {
+                                    try {
+                                      const res = await fetch(`/api/orders/${id}/concepts`, {
+                                        method: "PATCH",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ conceptId: concept.id, feedback: conceptFeedback }),
+                                      });
+                                      if (res.ok) {
+                                        const updated = await res.json();
+                                        setConcepts(updated);
+                                        setSelectingConcept(null);
+                                        setConceptFeedback("");
+                                        toast.success("Concept selected! We'll start refining it.");
+                                      }
+                                    } catch {
+                                      toast.error("Could not select concept.");
+                                    }
+                                  }}
+                                  className="bg-purple-600 text-white hover:bg-purple-700 flex-1"
+                                  size="sm"
+                                >
+                                  <CheckCircle className="mr-1 h-3 w-3" /> Confirm
+                                </Button>
+                                <Button
+                                  onClick={() => { setSelectingConcept(null); setConceptFeedback(""); }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="border border-white/10 bg-transparent text-gray-400"
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </>
+                          ) : (
+                            <Button
+                              onClick={() => setSelectingConcept(concept.id)}
+                              variant="ghost"
+                              size="sm"
+                              className="w-full border border-purple-500/20 text-purple-400 hover:bg-purple-500/10"
+                            >
+                              Select this concept
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                      {concept.isSelected && concept.feedback && (
+                        <div className="mt-3 rounded-lg bg-green-500/5 border border-green-500/10 p-3">
+                          <p className="text-xs text-gray-400"><span className="text-green-400">Your feedback:</span> {concept.feedback}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

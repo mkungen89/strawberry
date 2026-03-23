@@ -132,6 +132,28 @@ model Order {
   deadline        DateTime?
   estimatedHours  Float?
   assignedTeam    String?
+  briefLocked     Boolean     @default(false)
+  briefLockedAt   DateTime?
+  concepts        OrderConcept[]
+}
+
+model OrderConcept {
+  id          String   @id @default(cuid())
+  orderId     String
+  title       String
+  description String?
+  imageUrl    String?
+  fileUrl     String?
+  status      String   @default("PENDING")
+  isSelected  Boolean  @default(false)
+  feedback    String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
 }
 
 model OrderAssignment {
