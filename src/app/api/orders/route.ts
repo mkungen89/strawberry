@@ -4,8 +4,22 @@ import { db } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { SERVICES } from "@/lib/services-data";
 import { headers } from "next/headers";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  // Rate limit: 10 order attempts per 15 minutes per IP
+  const ip = getClientIp(req.headers);
+  const limit = rateLimit(`orders:${ip}`, { maxRequests: 10, windowSeconds: 900 });
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil((limit.resetAt - Date.now()) / 1000)) },
+      }
+    );
+  }
+
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) {
     return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });

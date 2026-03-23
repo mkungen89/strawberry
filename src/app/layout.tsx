@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { CurrencyProvider } from "@/lib/currency-context";
+import CookieConsent from "@/components/layout/CookieConsent";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,6 +29,7 @@ export default function RootLayout({
       <body className={`${inter.className} min-h-full flex flex-col`}>
         <CurrencyProvider>
           {children}
+          <CookieConsent />
           <Toaster richColors position="top-right" />
         </CurrencyProvider>
       </body>

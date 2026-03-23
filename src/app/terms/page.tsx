@@ -81,6 +81,42 @@ export default function TermsPage() {
             </p>
           </section>
 
+          {/* Right of Withdrawal */}
+          <section>
+            <h2 className="mb-3 text-xl font-semibold text-white">3b. Right of Withdrawal (EU/EEA Customers)</h2>
+            <p>
+              If you are a consumer located in the EU or EEA, you have the right to withdraw from a
+              distance contract within 14 days of purchase without giving any reason, in accordance
+              with the EU Consumer Rights Directive (2011/83/EU).
+            </p>
+            <p className="mt-3">
+              To exercise your right of withdrawal, you must inform us of your decision by a clear
+              statement (e.g. an email to{" "}
+              <a href="mailto:support@vexcraft.io" className="text-purple-400 hover:text-purple-300">
+                support@vexcraft.io
+              </a>
+              ) before the 14-day period expires.
+            </p>
+            <p className="mt-3 font-medium text-white">Important exceptions:</p>
+            <ul className="mt-2 space-y-2 list-none">
+              {[
+                "If you have given explicit prior consent for work to begin within the withdrawal period, and you acknowledge that you will lose your right of withdrawal once the service has been fully performed, the right of withdrawal ceases upon full performance.",
+                "For digital content delivered without a physical medium, the right of withdrawal ceases once delivery has begun, provided you gave prior express consent and acknowledged the loss of your right of withdrawal.",
+                "Custom-made or clearly personalised goods and services are exempt from the right of withdrawal.",
+              ].map((item) => (
+                <li key={item} className="flex gap-3">
+                  <span className="mt-0.5 text-purple-400 shrink-0">&#8226;</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3">
+              If you withdraw before work has started, you will receive a full refund within 14
+              days. If work has partially commenced with your consent, we may deduct a proportionate
+              amount for the services already provided.
+            </p>
+          </section>
+
           {/* Intellectual Property */}
           <section>
             <h2 className="mb-3 text-xl font-semibold text-white">4. Intellectual Property</h2>
