@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { CurrencyProvider } from "@/lib/currency-context";
 import CookieConsent from "@/components/layout/CookieConsent";
+import LiveChat from "@/components/chat/LiveChat";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body className={`${inter.className} min-h-full flex flex-col`}>
         <CurrencyProvider>
           {children}
+          <LiveChat />
           <CookieConsent />
           <Toaster richColors position="top-right" />
         </CurrencyProvider>
