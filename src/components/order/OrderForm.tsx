@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -39,6 +40,7 @@ export default function OrderForm({ service }: Props) {
   const { format } = useCurrency();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [details, setDetails] = useState("");
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
@@ -232,6 +234,27 @@ export default function OrderForm({ service }: Props) {
               selectedModules={selectedModules}
               onToggle={toggleModule}
             />
+            {!service.hasTechStack && (
+              <label className="mt-4 flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-purple-500 shrink-0"
+                />
+                <span className="text-xs text-gray-400">
+                  I have read and agree to the{" "}
+                  <Link href="/terms" target="_blank" className="text-purple-400 hover:text-purple-300 underline">
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/privacy" target="_blank" className="text-purple-400 hover:text-purple-300 underline">
+                    Privacy Policy
+                  </Link>
+                  .
+                </span>
+              </label>
+            )}
             <div className="mt-6 flex gap-3">
               <Button
                 onClick={() => setStep(2)}
@@ -242,7 +265,7 @@ export default function OrderForm({ service }: Props) {
               </Button>
               <Button
                 onClick={() => (service.hasTechStack ? setStep(4) : handleSubmit())}
-                disabled={loading}
+                disabled={loading || (!service.hasTechStack && !acceptedTerms)}
                 className="flex-1 bg-purple-600 text-white hover:bg-purple-700"
               >
                 {loading ? (
@@ -332,6 +355,25 @@ export default function OrderForm({ service }: Props) {
               ))}
             </div>
 
+            <label className="mt-4 flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-0.5 h-4 w-4 accent-purple-500 shrink-0"
+              />
+              <span className="text-xs text-gray-400">
+                I have read and agree to the{" "}
+                <Link href="/terms" target="_blank" className="text-purple-400 hover:text-purple-300 underline">
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link href="/privacy" target="_blank" className="text-purple-400 hover:text-purple-300 underline">
+                  Privacy Policy
+                </Link>
+                .
+              </span>
+            </label>
             <div className="mt-6 flex gap-3">
               <Button
                 onClick={() => setStep(3)}
@@ -342,7 +384,7 @@ export default function OrderForm({ service }: Props) {
               </Button>
               <Button
                 onClick={handleSubmit}
-                disabled={loading}
+                disabled={loading || !acceptedTerms}
                 className="flex-1 bg-purple-600 text-white hover:bg-purple-700"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Proceed to payment"}

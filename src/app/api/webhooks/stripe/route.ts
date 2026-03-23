@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { db } from "@/lib/db";
 import Stripe from "stripe";
+import { sendEmail, orderConfirmationEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -25,13 +26,27 @@ export async function POST(req: NextRequest) {
     const orderId = session.metadata?.orderId;
 
     if (orderId) {
-      await db.order.update({
+      const order = await db.order.update({
         where: { id: orderId },
         data: {
           status: "PAID",
           invoiceUrl: typeof session.invoice === "string" ? session.invoice : undefined,
         },
+        include: {
+          user: { select: { name: true, email: true } },
+          service: { select: { name: true } },
+        },
       });
+
+      // Send order confirmation email to customer
+      if (order.user?.email) {
+        const emailData = orderConfirmationEmail(
+          order.user.name || "Customer",
+          order.service?.name || "Service",
+          orderId
+        );
+        sendEmail({ to: order.user.email, ...emailData }).catch(() => {});
+      }
     }
   }
 
