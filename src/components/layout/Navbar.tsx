@@ -88,7 +88,7 @@ export default function Navbar() {
             ) : (
               <>
                 <Link href="/login">
-                  <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                  <Button variant="ghost" size="sm" className="text-gray-400 hover:text-purple-300 hover:bg-transparent">
                     Log in
                   </Button>
                 </Link>
