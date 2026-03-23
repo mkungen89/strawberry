@@ -51,14 +51,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Log the submission (email sending can be added later)
-    console.log("[Contact Form Submission]", {
-      name: name.trim(),
-      email: email.trim(),
-      subject,
-      message: message.trim(),
-      timestamp: new Date().toISOString(),
-    });
+    // TODO: Send email notification to support@vexcraft.io
+    // For now, submissions are stored only in server logs (production: use a proper email service)
 
     return NextResponse.json({ success: true });
   } catch (err) {
