@@ -123,6 +123,85 @@ model Order {
   review          Review?
   invoices        Invoice[]
   milestones      Milestone[]
+  assignments     OrderAssignment[]
+  notes           OrderNote[]
+  tasks           OrderTask[]
+  files           OrderFile[]
+  activities      OrderActivity[]
+  priority        String      @default("NORMAL")
+  deadline        DateTime?
+  estimatedHours  Float?
+  assignedTeam    String?
+}
+
+model OrderAssignment {
+  id          String   @id @default(cuid())
+  orderId     String
+  memberName  String
+  memberRole  String
+  assignedAt  DateTime @default(now())
+
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+model OrderNote {
+  id          String   @id @default(cuid())
+  orderId     String
+  authorName  String
+  content     String
+  pinned      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+model OrderTask {
+  id          String    @id @default(cuid())
+  orderId     String
+  title       String
+  completed   Boolean   @default(false)
+  assignedTo  String?
+  sortOrder   Int       @default(0)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+model OrderFile {
+  id                String   @id @default(cuid())
+  orderId           String
+  fileName          String
+  fileUrl           String
+  fileSize          Int?
+  fileType          String?
+  uploadedBy        String   @default("admin")
+  visibleToCustomer Boolean  @default(true)
+  createdAt         DateTime @default(now())
+
+  order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+model OrderActivity {
+  id          String   @id @default(cuid())
+  orderId     String
+  action      String
+  description String
+  actorName   String   @default("System")
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
 }
 
 model Invoice {

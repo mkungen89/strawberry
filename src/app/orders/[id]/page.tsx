@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Loader2, Send, CheckCircle, Clock, Star, Zap,
   FileText, CreditCard, ArrowLeft, MessageCircle,
+  Download, Activity,
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -47,6 +48,24 @@ interface Invoice {
   status: string;
   dueDate: string | null;
   paidAt: string | null;
+}
+
+interface OrderFileItem {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileSize: number | null;
+  fileType: string | null;
+  uploadedBy: string;
+  createdAt: string;
+}
+
+interface ActivityItem {
+  id: string;
+  action: string;
+  description: string;
+  actorName: string;
+  createdAt: string;
 }
 
 interface Order {
@@ -90,6 +109,8 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [files, setFiles] = useState<OrderFileItem[]>([]);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
@@ -97,7 +118,7 @@ export default function OrderDetailPage() {
   const [reviewHover, setReviewHover] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
-  const [activeTab, setActiveTab] = useState<"chat" | "milestones" | "invoices">("chat");
+  const [activeTab, setActiveTab] = useState<"chat" | "milestones" | "invoices" | "files" | "activity">("chat");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -105,10 +126,14 @@ export default function OrderDetailPage() {
       fetch(`/api/orders/${id}`).then((r) => r.json()),
       fetch(`/api/orders/${id}/milestones`).then((r) => r.json()).catch(() => []),
       fetch(`/api/orders/${id}/invoices`).then((r) => r.json()).catch(() => []),
-    ]).then(([orderData, msData, invData]) => {
+      fetch(`/api/orders/${id}/files`).then((r) => r.json()).catch(() => []),
+      fetch(`/api/orders/${id}/activity`).then((r) => r.json()).catch(() => []),
+    ]).then(([orderData, msData, invData, filesData, actData]) => {
       setOrder(orderData.error ? null : orderData);
       setMilestones(Array.isArray(msData) ? msData : []);
       setInvoices(Array.isArray(invData) ? invData : []);
+      setFiles(Array.isArray(filesData) ? filesData : []);
+      setActivities(Array.isArray(actData) ? actData : []);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [id]);
@@ -290,7 +315,9 @@ export default function OrderDetailPage() {
           {[
             { key: "chat" as const, label: "Chat", icon: <MessageCircle className="h-4 w-4" />, count: order.messages.length },
             { key: "milestones" as const, label: "Milestones", icon: <Zap className="h-4 w-4" />, count: milestones.length },
+            { key: "files" as const, label: "Files", icon: <Download className="h-4 w-4" />, count: files.length },
             { key: "invoices" as const, label: "Invoices", icon: <FileText className="h-4 w-4" />, count: invoices.length },
+            { key: "activity" as const, label: "Activity", icon: <Activity className="h-4 w-4" />, count: activities.length },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -478,6 +505,81 @@ export default function OrderDetailPage() {
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Files tab */}
+        {activeTab === "files" && (
+          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6">
+            {files.length === 0 ? (
+              <div className="text-center py-12">
+                <Download className="mx-auto h-10 w-10 text-gray-700 mb-3" />
+                <p className="text-gray-500 text-sm">No files delivered yet</p>
+                <p className="text-gray-600 text-xs mt-1">Files will appear here as we deliver your project.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {files.map((file) => (
+                  <div key={file.id} className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10">
+                        <FileText className="h-5 w-5 text-purple-400" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-white text-sm">{file.fileName}</p>
+                        <p className="text-xs text-gray-500">
+                          {file.fileSize ? `${(file.fileSize / 1024 / 1024).toFixed(1)} MB` : ""}{file.fileSize && file.fileType ? " · " : ""}{file.fileType || ""}
+                          {" · "}Uploaded by {file.uploadedBy} · {new Date(file.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                        </p>
+                      </div>
+                    </div>
+                    <a
+                      href={file.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 rounded-lg bg-purple-600 px-3 py-1.5 text-sm text-white hover:bg-purple-700 transition-colors"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      Download
+                    </a>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Activity tab */}
+        {activeTab === "activity" && (
+          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6">
+            {activities.length === 0 ? (
+              <div className="text-center py-12">
+                <Activity className="mx-auto h-10 w-10 text-gray-700 mb-3" />
+                <p className="text-gray-500 text-sm">No activity yet</p>
+                <p className="text-gray-600 text-xs mt-1">Activity will be logged as your project progresses.</p>
+              </div>
+            ) : (
+              <div className="space-y-0">
+                {activities.map((act, i) => (
+                  <div key={act.id} className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/[0.05] border border-white/[0.08]">
+                        <Activity className="h-3.5 w-3.5 text-purple-400" />
+                      </div>
+                      {i < activities.length - 1 && (
+                        <div className="w-px flex-1 bg-white/[0.06] my-1" />
+                      )}
+                    </div>
+                    <div className="pb-5 flex-1">
+                      <p className="text-sm text-white">{act.description}</p>
+                      <p className="text-xs text-gray-600 mt-1">
+                        {act.actorName} · {new Date(act.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
