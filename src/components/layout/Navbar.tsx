@@ -76,6 +76,9 @@ export default function Navbar() {
                   <DropdownMenuItem onClick={() => window.location.href = "/orders"}>
                     My orders
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => window.location.href = "/settings"}>
+                    Settings
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-white/10" />
                   <DropdownMenuItem
                     onClick={() => signOut()}

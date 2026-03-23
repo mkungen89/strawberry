@@ -105,6 +105,7 @@ export default function Footer() {
                 { href: "/privacy", label: "Privacy Policy" },
                 { href: "/terms", label: "Terms of Service" },
                 { href: "/gdpr", label: "GDPR" },
+                { href: "/ccpa", label: "CCPA" },
               ].map((item) => (
                 <li key={item.href}>
                   <Link href={item.href} className="text-sm text-gray-500 hover:text-purple-400 transition-colors">
