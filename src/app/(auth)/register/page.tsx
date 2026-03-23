@@ -71,18 +71,18 @@ export default function RegisterPage() {
               </svg>
               Continue with Google
             </Button>
+
+            <div className="relative py-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-transparent px-2 text-gray-500">or continue with email</span>
+              </div>
+            </div>
           </CardHeader>
 
-          <div className="relative px-6 pb-2">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10" />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-transparent px-2 text-gray-500">or continue with email</span>
-            </div>
-          </div>
-
-          <CardContent className="pt-4">
+          <CardContent className="pt-0">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="name" className="text-gray-300">Name</Label>
