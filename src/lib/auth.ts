@@ -12,6 +12,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 }
 
 export const auth = betterAuth({
+  secret: process.env.BETTER_AUTH_SECRET || process.env.AUTH_SECRET || "vexcraft-default-secret-change-me-in-production",
+  baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   database: prismaAdapter(db, {
     provider: "postgresql",
   }),
