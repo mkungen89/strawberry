@@ -220,7 +220,7 @@ export default function AboutPage() {
                       {service.name}
                     </p>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      From {format(service.basePrice, service.basePriceGBP)}
+                      From {format(service.basePrice, service.basePriceGBP, service.basePriceEUR)}
                     </p>
                   </div>
                   <ArrowRight className="h-4 w-4 text-gray-600 transition-all group-hover:translate-x-1 group-hover:text-purple-400" />

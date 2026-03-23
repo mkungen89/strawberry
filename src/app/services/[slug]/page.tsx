@@ -58,7 +58,7 @@ export default function ServicePage({ params }: Props) {
                   >
                     <div className="mb-2 flex items-center justify-between">
                       <span className="font-semibold">{pkg.name}</span>
-                      <span className="text-lg font-bold text-purple-400">{format(pkg.price, pkg.priceGBP)}</span>
+                      <span className="text-lg font-bold text-purple-400">{format(pkg.price, pkg.priceGBP, pkg.priceEUR)}</span>
                     </div>
                     <ul className="space-y-1">
                       {pkg.features.map((f) => (
