@@ -276,3 +276,142 @@ export const SERVICE_DETAILS: Record<string, ServiceDetails> = {
     ],
   },
 };
+
+// New services details
+SERVICE_DETAILS["logo-branding"] = {
+  longDescription: "Your logo is the face of your brand. We design unique, memorable logos and complete brand identities that work across every platform — from business cards to social media to merch. Every concept is crafted from scratch, never templates.",
+  highlights: [
+    { title: "Multiple Concepts", description: "We present several unique directions so you can choose the one that feels right.", icon: "🎨" },
+    { title: "Vector Files", description: "Every logo is delivered as scalable vector (SVG) — perfect at any size, from favicon to billboard.", icon: "📐" },
+    { title: "Brand Guidelines", description: "Full Identity package includes a complete style guide with colors, fonts, and usage rules.", icon: "📖" },
+    { title: "All Formats", description: "PNG, SVG, PDF — light and dark versions, with and without text.", icon: "📂" },
+  ],
+  process: [
+    { step: "Brief", description: "Tell us about your brand, audience, and style preferences." },
+    { step: "Concepts", description: "We create multiple logo concepts for you to review." },
+    { step: "Refine", description: "Pick your favorite and we refine it to perfection." },
+    { step: "Deliver", description: "Final files in all formats, ready to use everywhere." },
+  ],
+  deliveryTime: "2–4 business days",
+  revisions: "2–unlimited depending on package",
+  faq: [
+    { question: "Do I own the logo?", answer: "Yes! Full ownership transfers to you upon delivery. We don't retain any rights." },
+    { question: "Can I use it commercially?", answer: "Absolutely. You get full commercial rights to use your logo anywhere." },
+    { question: "What if I don't like any concept?", answer: "We'll create new concepts based on your feedback. We don't stop until you love it." },
+  ],
+};
+
+SERVICE_DETAILS["social-media-kit"] = {
+  longDescription: "Look professional and consistent across every platform. We design matching profile pictures, banners, and headers for YouTube, Twitch, X (Twitter), Instagram, Discord, TikTok, LinkedIn — wherever you are. One order, all platforms covered.",
+  highlights: [
+    { title: "All Platforms", description: "YouTube, Twitch, X, Instagram, Discord, TikTok, LinkedIn, Facebook — we cover them all.", icon: "🌐" },
+    { title: "Pixel Perfect", description: "Every asset is designed at the exact dimensions each platform requires. No cropping issues.", icon: "📐" },
+    { title: "Consistent Branding", description: "Same style, colors, and vibe across all platforms. Instantly recognizable.", icon: "🎨" },
+    { title: "Animated Options", description: "Pro package includes animated profile pictures and banners for platforms that support them.", icon: "✨" },
+  ],
+  process: [
+    { step: "Platforms", description: "Tell us which platforms you need assets for." },
+    { step: "Style", description: "Share your brand colors, references, or let us suggest a direction." },
+    { step: "Design", description: "We create all assets with a consistent look." },
+    { step: "Deliver", description: "Every file in the exact size each platform needs." },
+  ],
+  deliveryTime: "1–3 business days",
+  revisions: "2–unlimited depending on package",
+  faq: [
+    { question: "Which platforms are included?", answer: "Starter: pick 2. Creator: YouTube, Twitch, X, Discord, Instagram. Pro: all platforms you need." },
+    { question: "Can I add more platforms later?", answer: "Yes! Contact us and we'll create matching assets for any new platform." },
+    { question: "Do you do animated avatars?", answer: "Yes, our Pro package includes animated versions for Discord, Twitch, and other platforms that support them." },
+  ],
+};
+
+SERVICE_DETAILS["youtube-thumbnails"] = {
+  longDescription: "Thumbnails make or break your click-through rate. We design scroll-stopping thumbnails that match your channel's brand and make viewers click. Order in bulk to keep your whole channel looking consistent.",
+  highlights: [
+    { title: "Click-Optimized", description: "Designed with YouTube best practices — bold text, expressive faces, contrast, curiosity gaps.", icon: "🖱️" },
+    { title: "Bulk Packs", description: "Order 5, 10, or 20 thumbnails at once for a consistent channel look at a better price.", icon: "📦" },
+    { title: "Reusable Templates", description: "20-pack includes a Canva/Figma template so you can create future thumbnails yourself.", icon: "🔄" },
+    { title: "Fast Turnaround", description: "Most orders delivered within 1-2 business days.", icon: "⚡" },
+  ],
+  process: [
+    { step: "Videos", description: "Send us your video titles and any screenshots or images to include." },
+    { step: "Design", description: "We create eye-catching thumbnails optimized for clicks." },
+    { step: "Review", description: "Request tweaks to any thumbnail you want adjusted." },
+    { step: "Deliver", description: "High-res PNG files ready to upload." },
+  ],
+  deliveryTime: "1–2 business days",
+  revisions: "1–unlimited depending on package",
+  faq: [
+    { question: "What do I need to provide?", answer: "Video titles and any images/screenshots you want included. Reference thumbnails from channels you like help a lot!" },
+    { question: "Can I get more thumbnails later?", answer: "Yes! Re-order anytime. We'll match your established style." },
+    { question: "Do you do A/B test variants?", answer: "Yes, we can create 2 variants per thumbnail so you can test which performs better." },
+  ],
+};
+
+SERVICE_DETAILS["notion-templates"] = {
+  longDescription: "Beautiful, functional Notion templates that save hours of setup. Whether you need a content calendar, CRM, project tracker, or complete business workspace — we design it to look great and work seamlessly.",
+  highlights: [
+    { title: "Ready to Use", description: "Just duplicate to your Notion workspace and start. Everything is pre-configured.", icon: "🚀" },
+    { title: "Beautiful Design", description: "Not just functional — our templates look amazing with custom covers, icons, and layouts.", icon: "🎨" },
+    { title: "Mobile Friendly", description: "Every template is tested and works perfectly on Notion mobile.", icon: "📱" },
+    { title: "Video Guide", description: "Business Kit includes a walkthrough video showing how to use every feature.", icon: "🎥" },
+  ],
+  process: [
+    { step: "Needs", description: "Tell us what you want to track, manage, or organize." },
+    { step: "Design", description: "We build your template with custom properties, views, and automations." },
+    { step: "Review", description: "You test it and we adjust based on your feedback." },
+    { step: "Deliver", description: "Shareable link to duplicate into your workspace." },
+  ],
+  deliveryTime: "2–4 business days",
+  revisions: "Included",
+  faq: [
+    { question: "Do I need Notion Pro?", answer: "No! Our templates work on Notion's free plan." },
+    { question: "Can you customize an existing template?", answer: "Yes! Send us your current setup and we'll redesign and improve it." },
+    { question: "Can I resell the template?", answer: "Business Kit includes resale rights. Other packages are for personal/business use only." },
+  ],
+};
+
+SERVICE_DETAILS["gaming-profile"] = {
+  longDescription: "Level up your gaming presence with matching avatars, banners, and profile art for Steam, Xbox, PlayStation, Discord, and more. Stand out in lobbies, leaderboards, and friend lists.",
+  highlights: [
+    { title: "Multi-Platform", description: "Steam, Xbox, PlayStation, Discord, Epic Games — we cover every gaming platform.", icon: "🎮" },
+    { title: "Custom Art", description: "Not generic templates — every profile is custom-designed to your style.", icon: "🎨" },
+    { title: "Animated Options", description: "Ultimate package includes animated avatars for Discord and Steam.", icon: "✨" },
+    { title: "Fast Delivery", description: "Most orders completed within 1-2 business days.", icon: "⚡" },
+  ],
+  process: [
+    { step: "Platforms", description: "Tell us which gaming platforms you need profiles for." },
+    { step: "Style", description: "Share your gamertag, favorite games, colors, and vibe." },
+    { step: "Design", description: "We create matching art for all your platforms." },
+    { step: "Deliver", description: "All files in the correct sizes, ready to upload." },
+  ],
+  deliveryTime: "1–3 business days",
+  revisions: "2–unlimited depending on package",
+  faq: [
+    { question: "Can you include my gamertag in the design?", answer: "Yes! We can incorporate your name, gamertag, or clan tag into the artwork." },
+    { question: "Do you do team/clan profiles?", answer: "Absolutely. Contact us for a team pack with matching profiles for all members." },
+    { question: "What art style do you use?", answer: "We adapt to your preference — minimalist, anime, realistic, abstract, gaming-inspired, or anything else." },
+  ],
+};
+
+SERVICE_DETAILS["email-templates"] = {
+  longDescription: "Branded email templates that look professional on every device. Perfect for newsletters, product launches, welcome sequences, and transactional emails. Compatible with Mailchimp, ConvertKit, and most email platforms.",
+  highlights: [
+    { title: "Mobile Responsive", description: "Every template looks perfect on phone, tablet, and desktop.", icon: "📱" },
+    { title: "Platform Ready", description: "Works with Mailchimp, ConvertKit, Klaviyo, SendGrid, and most email services.", icon: "⚙️" },
+    { title: "Brand Matched", description: "Colors, fonts, and style matching your existing brand identity.", icon: "🎨" },
+    { title: "HTML Included", description: "Clean HTML code you can import anywhere, or use our drag-and-drop versions.", icon: "💻" },
+  ],
+  process: [
+    { step: "Brief", description: "Tell us your brand, email types needed, and any references." },
+    { step: "Design", description: "We create responsive email templates matching your brand." },
+    { step: "Test", description: "We test on 20+ email clients (Gmail, Outlook, Apple Mail, etc.)." },
+    { step: "Deliver", description: "HTML files + platform-specific import files." },
+  ],
+  deliveryTime: "2–4 business days",
+  revisions: "Included",
+  faq: [
+    { question: "Which email platforms do you support?", answer: "Mailchimp, ConvertKit, Klaviyo, SendGrid, HubSpot, and any platform that accepts HTML templates." },
+    { question: "Will they work in dark mode?", answer: "Yes! We test both light and dark mode on all major email clients." },
+    { question: "Can I edit them myself after?", answer: "Yes — we deliver both HTML and drag-and-drop versions so you can make changes easily." },
+  ],
+};

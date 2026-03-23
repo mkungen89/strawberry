@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import { SERVICES } from "@/lib/services-data";
+import { SERVICES, ENTERPRISE_SERVICES } from "@/lib/services-data";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://vexcraft.io";

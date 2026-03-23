@@ -5,7 +5,7 @@ import Footer from "@/components/layout/Footer";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, CheckCircle2, Clock } from "lucide-react";
-import { SERVICES } from "@/lib/services-data";
+import { SERVICES, ENTERPRISE_SERVICES } from "@/lib/services-data";
 import { SERVICE_DETAILS } from "@/lib/services-details";
 import { useCurrency } from "@/lib/currency-context";
 
@@ -135,6 +135,55 @@ export default function ServicesPage() {
                 </Link>
               );
             })}
+          </div>
+        </section>
+        {/* Enterprise Services */}
+        <section className="px-4 pb-28 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-10 text-center">
+              <Badge className="mb-4 border-orange-500/30 bg-orange-500/10 text-orange-300 px-3">
+                Enterprise
+              </Badge>
+              <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
+                Need something{" "}
+                <span className="bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
+                  bigger?
+                </span>
+              </h2>
+              <p className="mx-auto max-w-2xl text-lg text-gray-400">
+                Websites, apps, and SaaS platforms — custom-built for your business. Contact us for a free quote.
+              </p>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-3">
+              {ENTERPRISE_SERVICES.map((service) => (
+                <Link key={service.slug} href="/contact" className="group">
+                  <div className="relative h-full rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 transition-all duration-300 hover:border-orange-500/20 hover:bg-white/[0.04]">
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500/10 to-red-500/10 text-3xl border border-white/[0.06]">
+                      {service.icon}
+                    </div>
+                    <h3 className="text-lg font-bold text-white mb-2 group-hover:text-orange-300 transition-colors">{service.name}</h3>
+                    <p className="text-sm text-gray-400 mb-4 leading-relaxed">{service.description}</p>
+                    <ul className="space-y-2 mb-6">
+                      {service.features.slice(0, 4).map((f) => (
+                        <li key={f} className="flex items-center gap-2 text-sm text-gray-400">
+                          <CheckCircle2 className="h-3.5 w-3.5 text-orange-400 shrink-0" />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="flex items-center justify-between mt-auto">
+                      <span className="text-sm text-gray-500">
+                        From <span className="font-semibold text-orange-400">{format(service.startingAt, service.startingAtGBP, service.startingAtEUR)}</span>
+                      </span>
+                      <span className="flex items-center gap-1 text-sm font-medium text-orange-400 group-hover:text-orange-300">
+                        Get a quote <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </section>
       </main>
