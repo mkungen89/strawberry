@@ -3,8 +3,9 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { headers } from "next/headers";
 
-function isAdmin(session: { user: { role?: string } } | null) {
-  return session && (session.user as { role?: string }).role === "ADMIN";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isAdmin(session: any) {
+  return session && (session.user as { role?: string })?.role === "ADMIN";
 }
 
 // GET all enterprise data for an order (assignments, notes, tasks, files, activities)
