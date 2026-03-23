@@ -395,16 +395,16 @@ model TaskUpdate {
 
 // Live Chat
 model ChatConversation {
-  id          String        @id @default(cuid())
-  visitorName String        @default("Visitor")
+  id           String        @id @default(cuid())
+  visitorName  String        @default("Visitor")
   visitorEmail String?
-  status      String        @default("OPEN")
-  assignedTo  String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  closedAt    DateTime?
+  status       String        @default("OPEN")
+  assignedTo   String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  closedAt     DateTime?
 
-  messages    ChatMessage[]
+  messages     ChatMessage[]
 
   @@index([status])
 }

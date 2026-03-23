@@ -25,6 +25,7 @@ export default function Navbar() {
     { href: "/pricing", label: "Pricing" },
     { href: "/plans", label: "Plans" },
     { href: "/portfolio", label: "Portfolio" },
+    { href: "/team", label: "Team" },
     { href: "/faq", label: "FAQ" },
   ];
 

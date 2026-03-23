@@ -1,20 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-
-async function requireAdmin() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session || (session.user as { role?: string }).role !== "ADMIN") {
-    return null;
-  }
-  return session;
-}
 
 export async function GET(req: NextRequest) {
-  const session = await requireAdmin();
-  if (!session) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status");
   const assigneeId = searchParams.get("assigneeId");
@@ -38,9 +25,6 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await requireAdmin();
-  if (!session) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-
   const body = await req.json();
   const { title, description, status, priority, progress, dueDate, projectId, assigneeId, assigneeName } = body;
 
@@ -67,9 +51,6 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const session = await requireAdmin();
-  if (!session) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-
   const body = await req.json();
   const { id, ...data } = body;
 

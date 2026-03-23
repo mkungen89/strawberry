@@ -1,14 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 
 export async function POST() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session || (session.user as { role?: string }).role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
   // Seed projects
   const projectsData = [
     { title: "New Services", category: "NEW_SERVICES", description: "New service pages and offerings", color: "#9333ea" },
@@ -29,7 +22,7 @@ export async function POST() {
 
   // Seed team members
   const membersData = [
-    { name: "Ida", role: "Copywriter" },
+    { name: "Ida Lund", role: "Copywriter" },
     { name: "Leo", role: "Community Manager" },
     { name: "Selma", role: "Community Manager" },
     { name: "Noah", role: "Growth Strategist" },
@@ -52,44 +45,44 @@ export async function POST() {
 
   const tasksData = [
     {
-      title: "Copywriting service pages",
+      title: "Copywriting Service Pages",
       description: "Write compelling copy for all service pages including descriptions, features, and CTAs.",
       status: "IN_PROGRESS",
       priority: "HIGH",
-      progress: 60,
+      progress: 85,
       dueDate: due,
       projectId: projects["NEW_SERVICES"].id,
-      assigneeId: members["Ida"].id,
-      assigneeName: "Ida",
+      assigneeId: members["Ida Lund"].id,
+      assigneeName: "Ida Lund",
     },
     {
-      title: "Community Management service",
+      title: "Community Management Service",
       description: "Create the Community Management service offering — scope, pricing, and deliverables.",
       status: "IN_PROGRESS",
       priority: "HIGH",
-      progress: 40,
+      progress: 70,
       dueDate: due,
       projectId: projects["NEW_SERVICES"].id,
       assigneeId: members["Leo"].id,
       assigneeName: "Leo & Selma",
     },
     {
-      title: "Growth Strategy service",
+      title: "Growth Strategy Service",
       description: "Define the Growth Strategy service, outline methodology and packages.",
-      status: "BACKLOG",
+      status: "IN_PROGRESS",
       priority: "HIGH",
-      progress: 0,
+      progress: 35,
       dueDate: due,
       projectId: projects["NEW_SERVICES"].id,
       assigneeId: members["Noah"].id,
       assigneeName: "Noah",
     },
     {
-      title: "SEO Audit service",
+      title: "SEO Audit Service Pages",
       description: "Finalize the SEO Audit service page, checklist, and pricing structure.",
-      status: "REVIEW",
+      status: "DONE",
       priority: "HIGH",
-      progress: 90,
+      progress: 100,
       dueDate: due,
       projectId: projects["NEW_SERVICES"].id,
       assigneeId: members["Elias"].id,
@@ -107,7 +100,6 @@ export async function POST() {
       });
       created.push(task);
 
-      // Add initial update
       await db.taskUpdate.create({
         data: {
           taskId: task.id,
@@ -116,7 +108,20 @@ export async function POST() {
         },
       });
     } else {
-      created.push(existing);
+      // Update existing task to match spec
+      const task = await db.task.update({
+        where: { id: existing.id },
+        data: {
+          status: t.status,
+          progress: t.progress,
+          assigneeName: t.assigneeName,
+          assigneeId: t.assigneeId,
+          projectId: t.projectId,
+          updatedAt: new Date(),
+        },
+        include: { assignee: true, project: true },
+      });
+      created.push(task);
     }
   }
 

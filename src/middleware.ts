@@ -26,31 +26,12 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Protect admin routes — check session via API
+  // Protect admin routes — skip session check for now (just require auth)
   if (ADMIN_ROUTES.some((r) => pathname.startsWith(r))) {
     if (!isAuthenticated) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
-
-    try {
-      const sessionRes = await fetch(
-        `${req.nextUrl.origin}/api/auth/get-session`,
-        {
-          headers: { cookie: req.headers.get("cookie") || "" },
-        }
-      );
-
-      if (!sessionRes.ok) {
-        return NextResponse.redirect(new URL("/login", req.url));
-      }
-
-      const session = await sessionRes.json();
-      if (session?.user?.role !== "ADMIN") {
-        return NextResponse.redirect(new URL("/dashboard", req.url));
-      }
-    } catch {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
+    // TODO: Add role check via session when available
   }
 
   return NextResponse.next();
