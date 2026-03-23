@@ -114,7 +114,43 @@ const PROJECTS: Project[] = [
   },
 ];
 
-const CATEGORIES = ["All", "Discord", "YouTube", "Streaming", "Website", "App"];
+// Add new service categories
+PROJECTS.push(
+  {
+    id: 13,
+    name: "Indie Game Studio Brand",
+    service: "Logo & Branding",
+    category: "Branding",
+    gradient: "from-purple-600 via-pink-500 to-red-500",
+    description: "Complete brand identity for an indie studio — logo, color palette, fonts, and social media kit.",
+  },
+  {
+    id: 14,
+    name: "Music Producer Identity",
+    service: "Social Media Kit",
+    category: "Branding",
+    gradient: "from-amber-500 via-orange-500 to-red-500",
+    description: "Cohesive look across YouTube, Instagram, Spotify, and SoundCloud with matching assets.",
+  },
+  {
+    id: 15,
+    name: "Coding Tutorial Channel",
+    service: "YouTube Thumbnails",
+    category: "YouTube",
+    gradient: "from-green-600 via-emerald-500 to-teal-400",
+    description: "20 click-optimized thumbnails with consistent branding for a programming tutorial channel.",
+  },
+  {
+    id: 16,
+    name: "Competitive Gamer Pack",
+    service: "Gaming Profile Pack",
+    category: "Streaming",
+    gradient: "from-red-600 via-rose-500 to-pink-500",
+    description: "Matching avatars and banners for Steam, Discord, Xbox, and PlayStation profiles.",
+  },
+);
+
+const CATEGORIES = ["All", "Discord", "YouTube", "Streaming", "Website", "App", "Branding"];
 
 export default function PortfolioGrid() {
   const [active, setActive] = useState("All");
@@ -147,7 +183,7 @@ export default function PortfolioGrid() {
         {filtered.map((project) => (
           <div
             key={project.id}
-            className="group overflow-hidden rounded-xl border border-white/10 bg-white/5 transition-all hover:border-purple-500/50"
+            className="group overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] transition-all duration-300 hover:border-purple-500/20 hover:bg-white/[0.04]"
           >
             {/* Gradient placeholder */}
             <div
