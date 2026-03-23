@@ -1,26 +1,5 @@
-import nodemailer from "nodemailer";
-
-let _transporter: nodemailer.Transporter | null = null;
-
-function getTransporter(): nodemailer.Transporter | null {
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.warn("[Email] SMTP not configured — emails will be logged only.");
-    return null;
-  }
-
-  if (!_transporter) {
-    _transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT || 587),
-      secure: process.env.SMTP_SECURE === "true",
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-  }
-  return _transporter;
-}
+const FROM = process.env.SMTP_FROM || "Vexcraft <noreply@vexcraft.io>";
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
 interface EmailOptions {
   to: string;
@@ -30,22 +9,34 @@ interface EmailOptions {
 }
 
 export async function sendEmail(options: EmailOptions): Promise<boolean> {
-  const transporter = getTransporter();
-  const from = process.env.SMTP_FROM || "Vexcraft <noreply@vexcraft.io>";
-
-  if (!transporter) {
+  if (!RESEND_API_KEY) {
+    console.warn("[Email] RESEND_API_KEY not configured — email not sent.");
     console.log(`[Email][LOG] To: ${options.to} | Subject: ${options.subject}`);
     return false;
   }
 
   try {
-    await transporter.sendMail({
-      from,
-      to: options.to,
-      subject: options.subject,
-      html: options.html,
-      text: options.text,
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: FROM,
+        to: options.to,
+        subject: options.subject,
+        html: options.html,
+        text: options.text,
+      }),
     });
+
+    if (!res.ok) {
+      const err = await res.json();
+      console.error("[Email] Resend error:", err);
+      return false;
+    }
+
     return true;
   } catch (err) {
     console.error("[Email] Failed to send:", err);
@@ -53,7 +44,6 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
   }
 }
 
-// Pre-built email templates
 export function orderConfirmationEmail(customerName: string, serviceName: string, orderId: string) {
   return {
     subject: `Order confirmed — ${serviceName} | Vexcraft`,
@@ -69,7 +59,7 @@ export function orderConfirmationEmail(customerName: string, serviceName: string
           <p style="margin: 0 0 8px 0;"><strong style="color: #a855f6;">Service:</strong> ${serviceName}</p>
           <p style="margin: 0;"><strong style="color: #a855f6;">Order ID:</strong> #${orderId.slice(-8).toUpperCase()}</p>
         </div>
-        <p>We'll notify you as soon as work begins. In the meantime, you can track your order in your <a href="https://vexcraft.io/dashboard" style="color: #a855f6;">dashboard</a>.</p>
+        <p>We'll notify you as soon as work begins. Track your order at <a href="https://vexcraft.io/dashboard" style="color: #a855f6;">vexcraft.io/dashboard</a>.</p>
         <p style="color: #888; font-size: 12px; margin-top: 30px;">— The Vexcraft Team</p>
       </div>
     `,
@@ -79,9 +69,9 @@ export function orderConfirmationEmail(customerName: string, serviceName: string
 export function statusUpdateEmail(customerName: string, serviceName: string, orderId: string, newStatus: string) {
   const statusMessages: Record<string, string> = {
     IN_PROGRESS: "We've started working on your project! 🚀",
-    REVIEW: "Your project is ready for review. Please check your dashboard to approve or request changes.",
+    REVIEW: "Your project is ready for review. Check your dashboard to approve or request changes.",
     REVISION: "We're working on the revisions you requested.",
-    COMPLETED: "Your project is complete! 🎉 Head to your dashboard to download your files and leave a review.",
+    COMPLETED: "Your project is complete! 🎉 Download your files and leave a review in your dashboard.",
   };
 
   const message = statusMessages[newStatus] || `Your order status has been updated to: ${newStatus.replace("_", " ")}`;
