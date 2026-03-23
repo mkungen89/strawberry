@@ -1,3 +1,5 @@
+import { createMetadata } from "@/lib/metadata";
+export const metadata = createMetadata({ title: "Terms of Service", description: "Read our Terms of Service covering payments, refunds, intellectual property and user responsibilities.", path: "/terms" });
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 

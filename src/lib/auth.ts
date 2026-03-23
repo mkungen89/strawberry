@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { db } from "./db";
+import { sendEmail } from "./email";
 
 // Build social providers only if credentials exist
 const socialProviders: Record<string, { clientId: string; clientSecret: string }> = {};
@@ -21,6 +22,27 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: false,
     minPasswordLength: 8,
+    sendResetPassword: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Reset your password | Vexcraft",
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; color: #e5e5e5; padding: 40px 30px; border-radius: 12px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #a855f6; margin: 0;">⚡ Vexcraft</h1>
+            </div>
+            <h2 style="color: white;">Reset Your Password</h2>
+            <p>Hi ${user.name},</p>
+            <p>We received a request to reset your password. Click the button below to choose a new one.</p>
+            <p style="text-align: center; margin: 30px 0;">
+              <a href="${url}" style="display: inline-block; background: #a855f6; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold;">Reset Password</a>
+            </p>
+            <p style="color: #888; font-size: 12px;">If you didn't request this, you can safely ignore this email. The link expires in 1 hour.</p>
+            <p style="color: #888; font-size: 12px; margin-top: 20px;">— The Vexcraft Team</p>
+          </div>
+        `,
+      });
+    },
   },
   socialProviders,
   trustedOrigins: [

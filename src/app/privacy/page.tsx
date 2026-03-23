@@ -1,3 +1,5 @@
+import { createMetadata } from "@/lib/metadata";
+export const metadata = createMetadata({ title: "Privacy Policy", description: "Learn how Vexcraft collects, uses and protects your personal information.", path: "/privacy" });
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 

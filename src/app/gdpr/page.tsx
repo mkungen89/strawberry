@@ -1,3 +1,5 @@
+import { createMetadata } from "@/lib/metadata";
+export const metadata = createMetadata({ title: "GDPR Compliance", description: "Information about how Vexcraft handles personal data in accordance with GDPR requirements.", path: "/gdpr" });
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 

@@ -1,3 +1,5 @@
+import { createMetadata } from "@/lib/metadata";
+export const metadata = createMetadata({ title: "FAQ", description: "Find answers to common questions about our services, pricing, delivery and support.", path: "/faq" });
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
