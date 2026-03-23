@@ -51,7 +51,7 @@ export default function HeroSection() {
             </Button>
           </Link>
           <Link href="/portfolio">
-            <Button size="lg" variant="outline" className="border-white/20 px-10 py-6 text-lg text-white hover:bg-white/10 backdrop-blur-sm transition-all duration-300">
+            <Button size="lg" variant="ghost" className="border border-white/20 bg-transparent px-10 py-6 text-lg text-white hover:bg-white/10 backdrop-blur-sm transition-all duration-300">
               View our work
             </Button>
           </Link>
