@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 const faqs = [
   {
@@ -26,15 +28,7 @@ const faqs = [
   },
   {
     question: "Which payment methods do you accept?",
-    answer: "We accept all common credit and debit cards via Stripe (Visa, Mastercard, Amex). All payments are secure and encrypted.",
-  },
-  {
-    question: "What is included in the hosting assistance?",
-    answer: "We help you set up your website on the host you've chosen (or our recommendation), connect your domain and make sure everything works. No technical knowledge required.",
-  },
-  {
-    question: "Can I get a discount if I refer a friend?",
-    answer: "Yes! Our referral program gives you 10% off your next order when a friend you referred places their first order. Your friend also gets 10% off!",
+    answer: "We accept all major credit and debit cards via Stripe (Visa, Mastercard, Amex). All payments are secure and encrypted.",
   },
 ];
 
@@ -42,32 +36,54 @@ export default function FaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="bg-white/2 px-4 py-24 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-12 text-center">
-          <h2 className="mb-4 text-3xl font-bold sm:text-4xl">Frequently asked questions</h2>
-          <p className="text-gray-400">Can't find the answer? Contact us directly.</p>
+    <section className="relative px-4 py-28 sm:px-6 lg:px-8">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/[0.03] to-transparent" />
+
+      <div className="relative mx-auto max-w-3xl">
+        <div className="mb-16 text-center">
+          <Badge className="mb-4 border-purple-500/30 bg-purple-500/10 text-purple-300 px-3">
+            FAQ
+          </Badge>
+          <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
+            Frequently asked{" "}
+            <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              questions
+            </span>
+          </h2>
+          <p className="text-lg text-gray-400">
+            Can&apos;t find the answer?{" "}
+            <Link href="/contact" className="text-purple-400 hover:text-purple-300 underline underline-offset-4">
+              Contact us directly
+            </Link>.
+          </p>
         </div>
 
         <div className="space-y-3">
           {faqs.map((faq, index) => (
             <div
               key={index}
-              className="rounded-xl border border-white/10 bg-white/5 overflow-hidden"
+              className={`rounded-2xl border transition-all duration-300 ${
+                openIndex === index
+                  ? "border-purple-500/20 bg-white/[0.04]"
+                  : "border-white/[0.06] bg-white/[0.02] hover:border-white/10"
+              }`}
             >
               <button
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
                 className="flex w-full items-center justify-between p-5 text-left"
               >
-                <span className="font-medium text-white">{faq.question}</span>
-                <ChevronDown
-                  className={`h-5 w-5 flex-shrink-0 text-gray-400 transition-transform ${
-                    openIndex === index ? "rotate-180" : ""
-                  }`}
-                />
+                <span className="pr-4 font-medium text-white">{faq.question}</span>
+                <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all duration-300 ${
+                  openIndex === index
+                    ? "bg-purple-500/20 text-purple-400 rotate-180"
+                    : "bg-white/[0.05] text-gray-500"
+                }`}>
+                  <ChevronDown className="h-4 w-4" />
+                </div>
               </button>
               {openIndex === index && (
-                <div className="border-t border-white/10 px-5 pb-5 pt-4">
+                <div className="px-5 pb-5">
+                  <div className="h-px w-full bg-gradient-to-r from-purple-500/20 via-purple-500/10 to-transparent mb-4" />
                   <p className="text-sm text-gray-400 leading-relaxed">{faq.answer}</p>
                 </div>
               )}
