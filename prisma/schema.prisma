@@ -308,6 +308,7 @@ model Referral {
 enum Role {
   USER
   ADMIN
+  ANALYST // Code Analyst / QA role
 }
 
 enum ServiceCategory {
@@ -317,6 +318,11 @@ enum ServiceCategory {
   WEBSITE
   APP
   GRAPHICS
+  CONTENT
+  VIDEO
+  SEO
+  GROWTH
+  SOCIAL
 }
 
 enum OrderStatus {
@@ -359,18 +365,27 @@ model TeamMember {
 }
 
 model Task {
-  id           String   @id @default(cuid())
-  title        String
-  description  String?
-  status       String   @default("BACKLOG") // BACKLOG, IN_PROGRESS, REVIEW, DONE
-  priority     String   @default("NORMAL")  // LOW, NORMAL, HIGH, URGENT
-  progress     Int      @default(0)         // 0–100
-  dueDate      DateTime?
-  projectId    String?
-  assigneeId   String?
-  assigneeName String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String    @id @default(cuid())
+  title          String
+  description    String?
+  status         String    @default("BACKLOG") // BACKLOG, READY, IN_PROGRESS, REVIEW, DONE
+  priority       String    @default("NORMAL")  // LOW, NORMAL, HIGH, URGENT
+  progress       Int       @default(0)         // 0–100
+  dueDate        DateTime?
+  projectId      String?
+  assigneeId     String?
+  assigneeName   String?
+  // QA Workflow fields
+  reviewedBy     String?   // TeamMember name of Code Analyst who reviewed
+  reviewedById   String?   // TeamMember id
+  approvedAt     DateTime? // When task was approved by Code Analyst
+  rejectedAt     DateTime? // When task was sent back to IN_PROGRESS
+  submittedForReviewAt DateTime? // When dev moved task to REVIEW
+  qaStatus       String?   // null | "PENDING" | "APPROVED" | "REJECTED"
+  // Task category for role routing
+  category       String?   // "development" | "design" | "review" | "management"
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   project      Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
   assignee     TeamMember?  @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
@@ -386,12 +401,71 @@ model TaskUpdate {
   taskId     String
   authorName String
   content    String
+  // QA fields
+  updateType String   @default("COMMENT") // COMMENT | STATUS_CHANGE | QA_APPROVED | QA_REJECTED | QA_SUBMITTED
+  bugsFound  String[] // List of bugs found during QA review
   createdAt  DateTime @default(now())
 
   task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   @@index([taskId])
 }
+
+// ─── QA Workflow ──────────────────────────────────────────────────────────────
+
+// Extended Task fields for QA workflow (added via schema update)
+// reviewedBy, approvedAt, bugsFound are added to Task and TaskUpdate below
+
+// ─── Community Management ─────────────────────────────────────────────────────
+
+model CMMetrics {
+  id             String   @id @default(cuid())
+  customerId     String
+  platform       String   // "discord" | "twitter" | "instagram" | "reddit"
+  followers      Int      @default(0)
+  engagementRate Float    @default(0)
+  postsCount     Int      @default(0)
+  reach          Int      @default(0)
+  impressions    Int      @default(0)
+  recordedAt     DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  @@index([customerId])
+  @@index([platform])
+  @@index([recordedAt])
+}
+
+model CMContent {
+  id          String   @id @default(cuid())
+  customerId  String
+  platform    String   // "discord" | "twitter" | "instagram" | "reddit"
+  title       String
+  body        String?
+  mediaUrl    String?
+  status      String   @default("SCHEDULED") // SCHEDULED | POSTED | CANCELLED | DRAFT
+  scheduledAt DateTime
+  postedAt    DateTime?
+  createdBy   String   @default("manager") // manager name or "system"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([scheduledAt])
+  @@index([status])
+}
+
+model CMFeedback {
+  id         String   @id @default(cuid())
+  customerId String
+  rating     Int      // 1–5
+  comment    String?
+  category   String   @default("GENERAL") // GENERAL | CONTENT | RESPONSE_TIME | RESULTS | MANAGER
+  createdAt  DateTime @default(now())
+
+  @@index([customerId])
+}
+
+// ─── Live Chat ────────────────────────────────────────────────────────────────
 
 // Live Chat
 model ChatConversation {

@@ -170,8 +170,6 @@ export const SERVICES = [
       { name: "Suite", price: 299, priceGBP: 239, priceEUR: 269, features: ["6 templates", "Full email system", "A/B test variants", "Source files"] },
     ],
   },
-];
-
   // === TIER 2: New AI-powered services ===
   {
     slug: "copywriting",

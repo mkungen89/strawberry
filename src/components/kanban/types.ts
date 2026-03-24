@@ -20,6 +20,8 @@ export interface TaskUpdate {
   taskId: string;
   authorName: string;
   content: string;
+  updateType: string; // COMMENT | STATUS_CHANGE | QA_APPROVED | QA_REJECTED | QA_SUBMITTED
+  bugsFound: string[];
   createdAt: string;
 }
 
@@ -37,6 +39,13 @@ export interface Task {
   project?: TaskProject | null;
   assignee?: TaskAssignee | null;
   updates?: TaskUpdate[];
+  // QA Workflow fields
+  reviewedBy?: string | null;
+  approvedAt?: string | null;
+  rejectedAt?: string | null;
+  qaStatus?: string | null; // null | "PENDING" | "APPROVED" | "REJECTED"
+  submittedForReviewAt?: string | null;
+  category?: string | null; // "development" | "design" | "review" | "management"
   createdAt: string;
   updatedAt: string;
 }

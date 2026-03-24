@@ -26,10 +26,47 @@ interface TeamMember {
 
 const STATUS_META: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
   BACKLOG: { label: "Not Started", icon: <Circle className="h-3 w-3" />, color: "text-gray-400" },
+  READY: { label: "Ready", icon: <ArrowRight className="h-3 w-3" />, color: "text-blue-400" },
   IN_PROGRESS: { label: "In Progress", icon: <ArrowRight className="h-3 w-3" />, color: "text-yellow-400" },
-  REVIEW: { label: "Review", icon: <Clock className="h-3 w-3" />, color: "text-blue-400" },
+  REVIEW: { label: "QA Review", icon: <Clock className="h-3 w-3" />, color: "text-orange-400" },
   DONE: { label: "Done", icon: <CheckCircle2 className="h-3 w-3" />, color: "text-green-400" },
 };
+
+// Role definitions for task routing
+export const TEAM_ROLES = {
+  DEVELOPER: {
+    label: "Developer",
+    description: "Handles code tasks (development, IN_PROGRESS)",
+    color: "text-purple-400",
+    bg: "bg-purple-500/10 border-purple-500/20",
+    categories: ["development"],
+    taskStatuses: ["BACKLOG", "READY", "IN_PROGRESS"],
+  },
+  CODE_ANALYST: {
+    label: "Code Analyst / QA",
+    description: "Reviews code in REVIEW — approves or rejects",
+    color: "text-orange-400",
+    bg: "bg-orange-500/10 border-orange-500/20",
+    categories: ["review"],
+    taskStatuses: ["REVIEW"],
+  },
+  DESIGNER: {
+    label: "Designer",
+    description: "Handles design tasks — graphics, UI, branding",
+    color: "text-pink-400",
+    bg: "bg-pink-500/10 border-pink-500/20",
+    categories: ["design"],
+    taskStatuses: ["BACKLOG", "READY", "IN_PROGRESS"],
+  },
+  MANAGER: {
+    label: "Manager",
+    description: "Assigns tasks, manages team, customer comms",
+    color: "text-blue-400",
+    bg: "bg-blue-500/10 border-blue-500/20",
+    categories: ["management"],
+    taskStatuses: ["BACKLOG", "READY", "DONE"],
+  },
+} as const;
 
 const AVATAR_GRADIENTS = [
   "from-purple-600 to-pink-600",
@@ -260,6 +297,24 @@ export default function AdminTeamPage() {
           </div>
         </div>
       )}
+
+      {/* Role Definitions */}
+      <div className="mb-8">
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Team Roles</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {Object.entries(TEAM_ROLES).map(([key, role]) => (
+            <div key={key} className={`rounded-xl border p-4 ${role.bg}`}>
+              <p className={`text-sm font-semibold ${role.color}`}>{role.label}</p>
+              <p className="text-xs text-gray-500 mt-1">{role.description}</p>
+              <div className="flex flex-wrap gap-1 mt-2">
+                {role.taskStatuses.map(s => (
+                  <span key={s} className="text-[10px] px-1.5 py-0.5 rounded bg-white/[0.05] text-gray-500">{s}</span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Members grid */}
       {members.length === 0 ? (

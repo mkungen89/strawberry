@@ -12,6 +12,12 @@ import {
   CheckCircle2,
   Clock,
   BarChart3,
+  ShieldCheck,
+  ShieldX,
+  Bug,
+  Eye,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -49,11 +55,99 @@ function formatDateTime(date: string) {
   });
 }
 
+// QA Checklist items
+const QA_CHECKLIST = [
+  { id: "logic", label: "Logic errors" },
+  { id: "security", label: "Security issues (SQL injection, XSS, auth bypass)" },
+  { id: "performance", label: "Performance problems (N+1 queries, slow loops)" },
+  { id: "style", label: "Code style / standards compliance" },
+  { id: "tests", label: "Test coverage adequate" },
+  { id: "types", label: "TypeScript types correct (no `any`)" },
+  { id: "accessibility", label: "Accessibility (if UI)" },
+];
+
 export function TaskModal({ task, onClose, onUpdate }: TaskModalProps) {
   const [localTask, setLocalTask] = useState<Task>(task);
   const [comment, setComment] = useState("");
   const [saving, setSaving] = useState(false);
   const [postingComment, setPostingComment] = useState(false);
+
+  // QA State
+  const [qaChecked, setQaChecked] = useState<Record<string, boolean>>({});
+  const [bugList, setBugList] = useState<string[]>([]);
+  const [newBug, setNewBug] = useState("");
+  const [qaNote, setQaNote] = useState("");
+  const [qaSubmitting, setQaSubmitting] = useState(false);
+
+  const isInReview = localTask.status === "REVIEW";
+
+  async function submitForReview() {
+    setQaSubmitting(true);
+    try {
+      const res = await fetch(`/api/admin/tasks/${localTask.id}/submit-review`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ developerNote: comment }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      const updated = await res.json();
+      setLocalTask(updated);
+      onUpdate(updated);
+      setComment("");
+      toast.success("Task submitted for QA review 🔍");
+    } catch {
+      toast.error("Failed to submit for review");
+    } finally {
+      setQaSubmitting(false);
+    }
+  }
+
+  async function approveTask() {
+    setQaSubmitting(true);
+    try {
+      const res = await fetch(`/api/admin/tasks/${localTask.id}/approve`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ approverNote: qaNote }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      const updated = await res.json();
+      setLocalTask(updated);
+      onUpdate(updated);
+      toast.success("✅ Task approved and moved to Done!");
+      onClose();
+    } catch {
+      toast.error("Failed to approve task");
+    } finally {
+      setQaSubmitting(false);
+    }
+  }
+
+  async function rejectTask() {
+    if (bugList.length === 0) {
+      toast.error("Add at least one bug before rejecting");
+      return;
+    }
+    setQaSubmitting(true);
+    try {
+      const res = await fetch(`/api/admin/tasks/${localTask.id}/reject`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bugsFound: bugList, notes: qaNote }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      const { task: updated } = await res.json();
+      setLocalTask(updated);
+      onUpdate(updated);
+      toast.error(`🐛 Task rejected — ${bugList.length} bug(s) found`);
+      setBugList([]);
+      setQaNote("");
+    } catch {
+      toast.error("Failed to reject task");
+    } finally {
+      setQaSubmitting(false);
+    }
+  }
 
   const assigneeName = localTask.assigneeName || localTask.assignee?.name || "Unassigned";
   const gradientColor = getAvatarColor(assigneeName);
@@ -238,6 +332,148 @@ export function TaskModal({ task, onClose, onUpdate }: TaskModalProps) {
             </div>
           </div>
 
+          {/* ── QA Section (shown when in REVIEW) ── */}
+          {isInReview && (
+            <div className="rounded-xl border border-orange-500/20 bg-orange-500/[0.03] p-4 space-y-4">
+              <div className="flex items-center gap-2">
+                <Eye className="h-4 w-4 text-orange-400" />
+                <h3 className="text-sm font-semibold text-orange-300">QA Review Checklist</h3>
+                {localTask.qaStatus === "PENDING" && (
+                  <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/20">
+                    Awaiting Review
+                  </span>
+                )}
+              </div>
+
+              {/* Checklist */}
+              <div className="space-y-2">
+                {QA_CHECKLIST.map(item => (
+                  <label key={item.id} className="flex items-center gap-2.5 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={qaChecked[item.id] ?? false}
+                      onChange={e => setQaChecked(prev => ({ ...prev, [item.id]: e.target.checked }))}
+                      className="h-3.5 w-3.5 accent-purple-500"
+                    />
+                    <span className={`text-xs transition-colors ${qaChecked[item.id] ? "text-green-400 line-through" : "text-gray-400 group-hover:text-white"}`}>
+                      {item.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+
+              {/* Bug list */}
+              <div>
+                <p className="text-[11px] font-medium text-white/40 mb-2 flex items-center gap-1.5">
+                  <Bug className="h-3.5 w-3.5" />
+                  Bugs Found ({bugList.length})
+                </p>
+                <div className="space-y-1 mb-2">
+                  {bugList.map((bug, i) => (
+                    <div key={i} className="flex items-center gap-2 rounded-lg bg-red-500/[0.08] border border-red-500/20 px-2.5 py-1.5">
+                      <span className="flex-1 text-xs text-red-300">{i + 1}. {bug}</span>
+                      <button onClick={() => setBugList(prev => prev.filter((_, idx) => idx !== i))}>
+                        <Trash2 className="h-3 w-3 text-red-500/60 hover:text-red-400" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newBug}
+                    onChange={e => setNewBug(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === "Enter" && newBug.trim()) {
+                        setBugList(prev => [...prev, newBug.trim()]);
+                        setNewBug("");
+                      }
+                    }}
+                    placeholder="Describe a bug and press Enter..."
+                    className="flex-1 rounded-lg bg-white/[0.04] border border-white/[0.08] px-2.5 py-1.5 text-xs text-white placeholder:text-gray-600 outline-none focus:border-red-500/30"
+                  />
+                  <button
+                    onClick={() => {
+                      if (newBug.trim()) {
+                        setBugList(prev => [...prev, newBug.trim()]);
+                        setNewBug("");
+                      }
+                    }}
+                    className="p-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* QA Note */}
+              <textarea
+                value={qaNote}
+                onChange={e => setQaNote(e.target.value)}
+                placeholder="Additional notes for the developer... (optional)"
+                rows={2}
+                className="w-full rounded-lg bg-white/[0.04] border border-white/[0.06] px-2.5 py-1.5 text-xs text-white placeholder:text-gray-600 outline-none resize-none"
+              />
+
+              {/* Approve / Reject buttons */}
+              <div className="flex gap-2">
+                <button
+                  onClick={rejectTask}
+                  disabled={qaSubmitting || bugList.length === 0}
+                  className="flex items-center gap-1.5 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-medium text-red-400 hover:bg-red-500/20 disabled:opacity-40 transition-all"
+                >
+                  {qaSubmitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldX className="h-3.5 w-3.5" />}
+                  Reject ({bugList.length} bug{bugList.length !== 1 ? "s" : ""})
+                </button>
+                <button
+                  onClick={approveTask}
+                  disabled={qaSubmitting}
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-green-500/30 bg-green-500/10 px-3 py-2 text-xs font-medium text-green-400 hover:bg-green-500/20 disabled:opacity-40 transition-all"
+                >
+                  {qaSubmitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
+                  Approve & Move to Done
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Submit for review button (when IN_PROGRESS) */}
+          {localTask.status === "IN_PROGRESS" && (
+            <button
+              onClick={submitForReview}
+              disabled={qaSubmitting}
+              className="w-full flex items-center justify-center gap-2 rounded-xl border border-orange-500/20 bg-orange-500/[0.05] px-4 py-2.5 text-sm font-medium text-orange-300 hover:bg-orange-500/10 disabled:opacity-40 transition-all"
+            >
+              {qaSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
+              Submit for QA Review
+            </button>
+          )}
+
+          {/* QA Result indicator */}
+          {localTask.qaStatus === "APPROVED" && localTask.approvedAt && (
+            <div className="rounded-xl border border-green-500/20 bg-green-500/[0.05] px-4 py-3 flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-green-400" />
+              <div>
+                <p className="text-xs font-medium text-green-300">Approved by QA</p>
+                <p className="text-[10px] text-green-500/70">
+                  {localTask.reviewedBy} · {formatDateTime(localTask.approvedAt)}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {localTask.qaStatus === "REJECTED" && localTask.rejectedAt && (
+            <div className="rounded-xl border border-red-500/20 bg-red-500/[0.03] px-4 py-3 flex items-center gap-2">
+              <ShieldX className="h-4 w-4 text-red-400" />
+              <div>
+                <p className="text-xs font-medium text-red-300">Rejected by QA — fix and resubmit</p>
+                <p className="text-[10px] text-red-500/70">
+                  {localTask.reviewedBy} · {formatDateTime(localTask.rejectedAt)}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Comments/Updates */}
           <div>
             <div className="flex items-center gap-1.5 mb-3">
@@ -251,20 +487,40 @@ export function TaskModal({ task, onClose, onUpdate }: TaskModalProps) {
               {(localTask.updates || []).length === 0 && (
                 <p className="text-[12px] text-white/20 text-center py-3">No activity yet</p>
               )}
-              {(localTask.updates || []).map((u) => (
-                <div key={u.id} className="flex gap-2.5">
-                  <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${getAvatarColor(u.authorName)} flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0 mt-0.5`}>
-                    {getInitials(u.authorName)}
-                  </div>
-                  <div className="flex-1 rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-2">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[11px] font-medium text-white/60">{u.authorName}</span>
-                      <span className="text-[10px] text-white/20">{formatDateTime(u.createdAt)}</span>
+              {(localTask.updates || []).map((u) => {
+                const isQaApproved = u.updateType === "QA_APPROVED";
+                const isQaRejected = u.updateType === "QA_REJECTED";
+                const isQaSubmit = u.updateType === "QA_SUBMITTED";
+                const borderClass = isQaApproved
+                  ? "border-green-500/20 bg-green-500/[0.03]"
+                  : isQaRejected
+                  ? "border-red-500/20 bg-red-500/[0.03]"
+                  : isQaSubmit
+                  ? "border-orange-500/20 bg-orange-500/[0.03]"
+                  : "border-white/[0.05] bg-white/[0.02]";
+
+                return (
+                  <div key={u.id} className="flex gap-2.5">
+                    <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${getAvatarColor(u.authorName)} flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0 mt-0.5`}>
+                      {getInitials(u.authorName)}
                     </div>
-                    <p className="text-[12px] text-white/70 leading-relaxed">{u.content}</p>
+                    <div className={`flex-1 rounded-xl border px-3 py-2 ${borderClass}`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[11px] font-medium text-white/60">{u.authorName}</span>
+                        <span className="text-[10px] text-white/20">{formatDateTime(u.createdAt)}</span>
+                      </div>
+                      <p className="text-[12px] text-white/70 leading-relaxed whitespace-pre-wrap">{u.content}</p>
+                      {u.bugsFound && u.bugsFound.length > 0 && (
+                        <div className="mt-2 space-y-1">
+                          {u.bugsFound.map((bug, i) => (
+                            <p key={i} className="text-[11px] text-red-400">🐛 {bug}</p>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Comment input */}
