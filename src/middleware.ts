@@ -26,12 +26,12 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Protect admin routes — skip session check for now (just require auth)
+  // Protect admin routes — require authentication (role check handled server-side in each route)
   if (ADMIN_ROUTES.some((r) => pathname.startsWith(r))) {
     if (!isAuthenticated) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
-    // TODO: Add role check via session when available
+    // Note: Role=ADMIN is enforced in each /api/admin/* route handler via session.user.role check
   }
 
   return NextResponse.next();
