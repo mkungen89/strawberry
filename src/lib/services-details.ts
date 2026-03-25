@@ -415,3 +415,145 @@ SERVICE_DETAILS["email-templates"] = {
     { question: "Can I edit them myself after?", answer: "Yes — we deliver both HTML and drag-and-drop versions so you can make changes easily." },
   ],
 };
+
+SERVICE_DETAILS["copywriting"] = {
+  longDescription: "Stop losing customers to weak copy. We write conversion-focused messaging for landing pages, websites, email campaigns, and ads — all infused with SEO best practices and tailored to your brand voice. Whether you need a punchy homepage or a complete website rewrite, we deliver words that sell.",
+  highlights: [
+    { title: "Conversion-Focused", description: "Every word is written to move readers toward action — signups, sales, clicks.", icon: "🎯" },
+    { title: "SEO Integrated", description: "Keyword research and SEO optimization baked in, so you rank AND convert.", icon: "🔍" },
+    { title: "Brand Voice Matching", description: "We study your existing content and match your tone — or help you define a new one.", icon: "🎤" },
+    { title: "Unlimited Revisions (Pro)", description: "Pro package includes unlimited rounds until you're 100% happy.", icon: "🔄" },
+  ],
+  process: [
+    { step: "Research", description: "We study your audience, competitors, and brand voice." },
+    { step: "Outline", description: "We create a content structure and messaging strategy for your approval." },
+    { step: "Write", description: "First draft delivered — optimized for conversions and SEO." },
+    { step: "Refine", description: "You review and we revise based on your feedback." },
+    { step: "Deliver", description: "Final copy ready to publish, with SEO keywords and meta tags included." },
+  ],
+  deliveryTime: "2–5 business days",
+  revisions: "2–unlimited depending on package",
+  faq: [
+    { question: "Do you do keyword research?", answer: "Yes! All packages include basic keyword research. Growth and Pro include deeper competitive analysis." },
+    { question: "Can you write in my brand voice?", answer: "Absolutely. Send us existing copy or tell us your vibe (professional, casual, edgy, etc.) and we'll match it." },
+    { question: "What if I need edits later?", answer: "Pro package includes unlimited revisions. For other packages, minor tweaks are free within 7 days." },
+  ],
+};
+
+SERVICE_DETAILS["ai-video-shorts"] = {
+  longDescription: "Scroll-stopping short-form videos designed for TikTok, YouTube Shorts, and Instagram Reels. We handle everything — scriptwriting, AI-generated visuals, professional voiceover, captions, and editing. You get ready-to-upload videos that drive views, engagement, and followers.",
+  highlights: [
+    { title: "Full Production", description: "Script, visuals, voiceover, music, captions — everything included. No extra costs.", icon: "🎬" },
+    { title: "AI-Generated Visuals", description: "Custom AI imagery and motion graphics that look professional and on-brand.", icon: "🤖" },
+    { title: "Pro Voiceover", description: "Natural-sounding AI voiceover or human voiceover (Monthly Plan).", icon: "🎙️" },
+    { title: "Platform-Optimized", description: "Delivered in vertical format (9:16) with captions for maximum engagement.", icon: "📱" },
+  ],
+  process: [
+    { step: "Brief", description: "Tell us your topic, target audience, and platform (TikTok, YouTube, Insta)." },
+    { step: "Script", description: "We write a hook-driven script optimized for short-form attention spans." },
+    { step: "Produce", description: "We create AI visuals, record voiceover, add music and captions." },
+    { step: "Review", description: "You watch the draft and request changes." },
+    { step: "Deliver", description: "Final video ready to upload, with posting tips included." },
+  ],
+  deliveryTime: "2–4 business days per video",
+  revisions: "2–unlimited depending on package",
+  faq: [
+    { question: "Can I provide my own script?", answer: "Yes! If you have a script ready, we'll use it. Otherwise, we write it based on your brief." },
+    { question: "What video length do you recommend?", answer: "30–60 seconds for TikTok/Reels, up to 90 seconds for YouTube Shorts. We'll optimize for your platform." },
+    { question: "Do you do human voiceover?", answer: "Monthly Plan includes human voiceover. Other packages use premium AI voices (very natural)." },
+  ],
+};
+
+SERVICE_DETAILS["ai-images"] = {
+  longDescription: "Custom AI-generated images for your website, social media, ads, or content. We use advanced AI models to create unique, high-resolution visuals that match your brand — no stock photos, no generic templates. Commercial rights included.",
+  highlights: [
+    { title: "Advanced AI Models", description: "We use state-of-the-art models (Midjourney, DALL·E, Stable Diffusion) for photorealistic or stylized results.", icon: "🤖" },
+    { title: "4K Resolution", description: "Every image delivered in high resolution, perfect for web and print.", icon: "📐" },
+    { title: "Commercial Rights", description: "Full commercial license — use them anywhere, no attribution needed.", icon: "📜" },
+    { title: "Fast Delivery", description: "Image Pack delivered within 24 hours. Larger orders in 2–3 days.", icon: "⚡" },
+  ],
+  process: [
+    { step: "Brief", description: "Tell us the style, subject, and mood you want (or send reference images)." },
+    { step: "Generate", description: "We create multiple AI-generated variations using advanced prompts." },
+    { step: "Refine", description: "We select the best outputs and upscale to 4K resolution." },
+    { step: "Deliver", description: "Final images delivered as high-res PNG or JPG files." },
+  ],
+  deliveryTime: "24h–3 days depending on package",
+  revisions: "Included (we regenerate until you're happy)",
+  faq: [
+    { question: "Can I request a specific style?", answer: "Yes! Photorealistic, cartoon, oil painting, minimalist, cyberpunk — just tell us what you want." },
+    { question: "Do I own the images?", answer: "Yes, you get full commercial rights. Use them however you like." },
+    { question: "Can you match my existing brand aesthetic?", answer: "Absolutely. Send us examples of your current visuals and we'll match the style." },
+  ],
+};
+
+SERVICE_DETAILS["seo-audit"] = {
+  longDescription: "Your website might be bleeding traffic due to technical issues, slow load times, or missing keywords — and you'd never know. We run a comprehensive SEO audit, identify what's hurting your rankings, and deliver a clear action plan with prioritized fixes. No jargon, just actionable insights.",
+  highlights: [
+    { title: "50+ Technical Checks", description: "We scan for broken links, duplicate content, indexing issues, schema markup, and more.", icon: "🔍" },
+    { title: "Core Web Vitals", description: "Speed, performance, and mobile-friendliness — the metrics Google actually cares about.", icon: "⚡" },
+    { title: "Keyword Gap Analysis", description: "We find high-value keywords your competitors rank for that you're missing.", icon: "🎯" },
+    { title: "Priority Fix List", description: "We don't dump a 100-page report on you — just a clear list of what to fix first.", icon: "📋" },
+  ],
+  process: [
+    { step: "Crawl", description: "We scan your site for technical SEO issues using industry-leading tools." },
+    { step: "Analyze", description: "We compare your site to top competitors and identify gaps." },
+    { step: "Report", description: "You get a clear, actionable report with prioritized fixes." },
+    { step: "Call (Full Audit)", description: "30-minute walkthrough where we explain findings and answer questions." },
+    { step: "Fix (Audit + Fix)", description: "We implement the most critical fixes for you." },
+  ],
+  deliveryTime: "1–2 days (Quick Scan), 3–5 days (Full Audit)",
+  revisions: "N/A (one-time audit)",
+  faq: [
+    { question: "What tools do you use?", answer: "We use Screaming Frog, Google Search Console, PageSpeed Insights, Ahrefs/Semrush, and custom scripts." },
+    { question: "Will you fix the issues for me?", answer: "Quick Scan and Full Audit are reports only. Audit + Fix includes implementation of critical fixes." },
+    { question: "How often should I get an audit?", answer: "Every 6–12 months, or after major site changes (redesign, migration, etc.)." },
+  ],
+};
+
+SERVICE_DETAILS["growth-strategy"] = {
+  longDescription: "Stop guessing what content to make. We audit your channel, analyze what's working (and what's not), and build a data-driven growth strategy tailored to your niche. Weekly content ideas, thumbnail feedback, and SEO optimization — everything you need to hit your next milestone.",
+  highlights: [
+    { title: "Channel Audit", description: "We analyze your top and bottom performers to find patterns and opportunities.", icon: "📊" },
+    { title: "Competitor Research", description: "We study what's working in your niche and find gaps you can exploit.", icon: "🔍" },
+    { title: "Content Strategy", description: "Weekly content ideas, titles, and hooks based on trending topics and search demand.", icon: "💡" },
+    { title: "Thumbnail Feedback", description: "We review your thumbnails and suggest A/B test ideas to boost CTR.", icon: "🖼️" },
+  ],
+  process: [
+    { step: "Audit", description: "We review your channel analytics, top videos, and audience demographics." },
+    { step: "Research", description: "We analyze competitors and trending topics in your niche." },
+    { step: "Strategy", description: "We create a custom growth plan with content ideas and SEO tactics." },
+    { step: "Call", description: "30–60 minute strategy call to walk through the plan." },
+    { step: "Support (Sprint/Partner)", description: "Ongoing weekly support with content ideas, analytics, and feedback." },
+  ],
+  deliveryTime: "3–5 business days (initial audit)",
+  revisions: "Ongoing support for Sprint/Partner packages",
+  faq: [
+    { question: "Is this just for YouTube?", answer: "Primarily YouTube, but we also support Twitch growth strategy (streaming schedules, community engagement, etc.)." },
+    { question: "Do you guarantee subscriber growth?", answer: "We can't guarantee numbers (no one can), but we provide proven strategies that work when executed consistently." },
+    { question: "What if I'm a small channel?", answer: "Perfect! Growth strategy is most effective early. We help you avoid common mistakes and accelerate growth." },
+  ],
+};
+
+SERVICE_DETAILS["community-management"] = {
+  longDescription: "Your community is your brand — but managing Discord, Twitter/X, and Reddit daily is a full-time job. We handle moderation, engagement, content posting, and growth so you can focus on creating. Your voice, professionally managed.",
+  highlights: [
+    { title: "Daily Engagement", description: "We respond to comments, DMs, and community posts in your brand voice.", icon: "💬" },
+    { title: "24/7 Moderation", description: "We keep your Discord, subreddit, or Twitter clean and safe around the clock.", icon: "🛡️" },
+    { title: "Content Calendar", description: "We plan and post regular updates, announcements, and engagement threads.", icon: "📅" },
+    { title: "Monthly Reports", description: "Analytics on engagement, growth, sentiment, and top-performing content.", icon: "📊" },
+  ],
+  process: [
+    { step: "Onboarding", description: "We learn your brand voice, community rules, and moderation guidelines." },
+    { step: "Setup", description: "We get access to your platforms and set up moderation tools." },
+    { step: "Management", description: "Daily posting, engagement, and moderation begins." },
+    { step: "Reports", description: "Monthly analytics and strategy calls to optimize growth." },
+  ],
+  deliveryTime: "Ongoing monthly service",
+  revisions: "N/A (ongoing service)",
+  faq: [
+    { question: "Which platforms do you manage?", answer: "Starter: 1 platform. Growth: 2 platforms (Discord + Twitter/X recommended). Pro: 3+ platforms." },
+    { question: "Can you match my brand voice?", answer: "Yes! We study your existing posts and comments to match your tone perfectly." },
+    { question: "What if I want to post something myself?", answer: "No problem! You can post anytime — we coordinate with you to keep messaging consistent." },
+  ],
+};
