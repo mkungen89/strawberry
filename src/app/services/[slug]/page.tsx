@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useCurrency } from "@/lib/currency-context";
 import { ChevronDown, Clock, RefreshCw, CheckCircle2, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import ServiceReviews from "@/components/reviews/ServiceReviews";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -254,6 +255,9 @@ export default function ServicePage({ params }: Props) {
             </div>
           </section>
         )}
+
+        {/* Reviews */}
+        <ServiceReviews serviceSlug={slug} />
       </main>
       <Footer />
     </div>
