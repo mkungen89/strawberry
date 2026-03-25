@@ -9,6 +9,7 @@ import {
   ShoppingBag,
   Zap,
   ChevronRight,
+  Mail,
 } from "lucide-react";
 
 const NAV = [
@@ -16,6 +17,7 @@ const NAV = [
   { href: "/admin/projects", icon: FolderKanban, label: "Projects" },
   { href: "/admin/team", icon: Users, label: "Team" },
   { href: "/admin", icon: ShoppingBag, label: "Orders", exact: true },
+  { href: "/admin/emails", icon: Mail, label: "Emails" },
   // { href: "/admin/chat", icon: MessageCircle, label: "Live Chat" },
 ];
 
