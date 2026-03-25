@@ -52,7 +52,7 @@ export async function getElinResponse(
 ): Promise<string> {
   try {
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
+      model: "claude-haiku-4-5-20241001",
       max_tokens: 300,
       system: ELIN_SYSTEM_PROMPT,
       messages: conversationHistory.map((msg) => ({
