@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && next build && npm run build:services",
+    "build:services": "tsc -p tsconfig.services.json",
     "db:migrate": "prisma migrate deploy",
     "start": "next start",
+    "start:email": "node dist/services/email-orchestrator.js",
     "lint": "eslint"
   },
   "dependencies": {
@@ -22,7 +24,9 @@
     "better-auth": "^1.5.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "imap": "^0.8.19",
     "lucide-react": "^0.577.0",
+    "mailparser": "^3.9.6",
     "next": "16.2.1",
     "next-intl": "^4.8.3",
     "next-themes": "^0.4.6",
@@ -39,6 +43,8 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/imap": "^0.8.43",
+    "@types/mailparser": "^3.4.6",
     "@types/node": "^20",
     "@types/nodemailer": "^7.0.11",
     "@types/react": "^19",
