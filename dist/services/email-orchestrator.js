@@ -11,6 +11,7 @@ const email_ai_processor_1 = require("./email-ai-processor");
 class EmailOrchestrator {
     constructor(intervalMs = 5 * 60 * 1000) {
         this.running = false;
+        this.cycling = false;
         // Default: 5 minutes
         this.listener = new email_listener_1.EmailListener();
         this.processor = new email_ai_processor_1.EmailAIProcessor();
@@ -48,10 +49,16 @@ class EmailOrchestrator {
         console.log(`[Orchestrator] Starting email orchestrator (interval: ${this.intervalMs / 1000}s)`);
         // Run first cycle immediately
         await this.runCycle();
-        // Then run on interval
+        // Then run on interval — skip if previous cycle is still running
         setInterval(async () => {
-            if (this.running) {
-                await this.runCycle();
+            if (this.running && !this.cycling) {
+                this.cycling = true;
+                try {
+                    await this.runCycle();
+                }
+                finally {
+                    this.cycling = false;
+                }
             }
         }, this.intervalMs);
         console.log('[Orchestrator] Running. Press Ctrl+C to stop.');

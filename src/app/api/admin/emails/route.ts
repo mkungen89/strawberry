@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { headers } from 'next/headers';
 
 /**
  * GET /api/admin/emails
  * List all email threads with their drafts
  */
 export async function GET(request: NextRequest) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session || (session.user as { role?: string }).role !== 'ADMIN') {
+    return NextResponse.json({ error: 'FORBIDDEN' }, { status: 403 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || undefined;
@@ -17,17 +24,17 @@ export async function GET(request: NextRequest) {
       take: limit,
     });
 
-    // Fetch drafts separately
     const drafts = await db.emailDraft.findMany({
       where: {
         emailThreadId: { in: threads.map((t) => t.id) },
       },
     });
 
-    // Combine threads with their drafts
+    // O(1) lookup with Map instead of O(n) find
+    const draftsMap = new Map(drafts.map((d) => [d.emailThreadId, d]));
     const threadsWithDrafts = threads.map((thread) => ({
       ...thread,
-      draft: drafts.find((d) => d.emailThreadId === thread.id) || null,
+      draft: draftsMap.get(thread.id) || null,
     }));
 
     return NextResponse.json({ threads: threadsWithDrafts, count: threads.length });

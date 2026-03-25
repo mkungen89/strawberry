@@ -47,18 +47,29 @@ class EmailSender {
         console.log(`[EmailSender] Sent email to ${to}`);
     }
     /**
+     * Escape HTML entities to prevent XSS in email clients
+     */
+    escapeHtml(text) {
+        return text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+    /**
      * Format email body with Vexcraft signature
      */
     formatEmailBody(body) {
         return `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-        ${body.replace(/\n/g, '<br>')}
+        ${this.escapeHtml(body).replace(/\n/g, '<br>')}
         
         <br><br>
         <div style="border-top: 2px solid #9333ea; padding-top: 16px; margin-top: 24px;">
           <p style="margin: 0; font-size: 14px;">
             <strong>Best regards,</strong><br>
-            Elin (AI Assistant)<br>
+            Elin<br>
             <span style="color: #9333ea; font-weight: 600;">Vexcraft Support Team</span>
           </p>
           <p style="margin: 8px 0 0 0; font-size: 12px; color: #666;">

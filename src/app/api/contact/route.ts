@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import nodemailer from "nodemailer";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 const VALID_SUBJECTS = ["general", "order", "technical", "partnership", "other"];
@@ -51,8 +52,29 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // TODO: Send email notification to support@vexcraft.io
-    // For now, submissions are stored only in server logs (production: use a proper email service)
+    // Send notification to support@vexcraft.io
+    try {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'mail.spacemail.com',
+        port: parseInt(process.env.SMTP_PORT || '465'),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: {
+          user: process.env.EMAIL_ACCOUNT || '',
+          pass: process.env.EMAIL_PASSWORD || '',
+        },
+      });
+
+      await transporter.sendMail({
+        from: `Vexcraft Website <${process.env.EMAIL_ACCOUNT}>`,
+        to: 'support@vexcraft.io',
+        replyTo: email.trim(),
+        subject: `[Contact Form] ${subject} — ${name}`,
+        text: `Name: ${name}\nEmail: ${email}\nSubject: ${subject}\n\n${message}`,
+      });
+    } catch (emailErr) {
+      console.error('[Contact API] Failed to send notification email:', emailErr);
+      // Don't fail the response — submission was still received
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {

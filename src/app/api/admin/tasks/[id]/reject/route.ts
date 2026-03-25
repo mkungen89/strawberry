@@ -79,20 +79,8 @@ export async function PATCH(
     },
   });
 
-  // Auto-email developer notification
-  // TODO: Integrate with sendEmail when developer email is available
-  // const developerEmail = task.assignee?.email;
-  // if (developerEmail) {
-  //   await sendEmail({
-  //     to: developerEmail,
-  //     subject: `🐛 Task "${task.title}" returned — bugs found`,
-  //     html: emailBody,
-  //   });
-  // }
-
   return NextResponse.json({
     task: updated,
     bugsFound,
-    notifiedDeveloper: false, // Update when email is wired
   });
 }

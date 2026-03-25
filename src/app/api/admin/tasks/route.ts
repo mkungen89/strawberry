@@ -78,11 +78,19 @@ export async function PATCH(req: NextRequest) {
 
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
+  const ALLOWED_FIELDS = new Set([
+    "title", "description", "status", "priority", "progress",
+    "dueDate", "projectId", "assigneeId", "assigneeName", "category",
+  ]);
+  const safeData = Object.fromEntries(
+    Object.entries(data).filter(([key]) => ALLOWED_FIELDS.has(key))
+  );
+
   const task = await db.task.update({
     where: { id },
     data: {
-      ...data,
-      dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+      ...safeData,
+      dueDate: safeData.dueDate ? new Date(safeData.dueDate as string) : undefined,
       updatedAt: new Date(),
     },
     include: {

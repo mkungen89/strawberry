@@ -63,8 +63,5 @@ export async function PATCH(
     },
   });
 
-  // TODO: Notify customer if applicable (send email via sendEmail)
-  // if (task.orderId) { await sendCustomerNotification(task.orderId); }
-
   return NextResponse.json(updated);
 }

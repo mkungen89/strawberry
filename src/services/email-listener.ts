@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import Imap from 'imap';
 import { simpleParser } from 'mailparser';
 import { db } from '../lib/db';
@@ -75,25 +76,31 @@ export class EmailListener {
             console.log(`[EmailListener] Found ${results.length} unread emails`);
 
             const fetch = imap.fetch(results, { bodies: '' });
+            const parsePromises: Promise<void>[] = [];
 
             fetch.on('message', (msg) => {
-              msg.on('body', (stream: any) => {
-                simpleParser(stream, async (err, parsed) => {
-                  if (err) {
-                    console.error('[EmailListener] Parse error:', err);
-                    return;
-                  }
+              const parsePromise = new Promise<void>((resolveParse) => {
+                msg.on('body', (stream: any) => {
+                  simpleParser(stream, (err, parsed) => {
+                    if (err) {
+                      console.error('[EmailListener] Parse error:', err);
+                      resolveParse();
+                      return;
+                    }
 
-                  const from = parsed.from?.text || 'unknown@example.com';
-                  const subject = parsed.subject || '(No Subject)';
-                  const body = parsed.text || parsed.html || '';
-                  const date = parsed.date || new Date();
-                  const messageId = parsed.messageId || `${Date.now()}@vexcraft.io`;
-                  const inReplyTo = parsed.inReplyTo || undefined;
+                    const from = parsed.from?.text || 'unknown@example.com';
+                    const subject = parsed.subject || '(No Subject)';
+                    const body = parsed.text || parsed.html || '';
+                    const date = parsed.date || new Date();
+                    const messageId = parsed.messageId || `${Date.now()}@vexcraft.io`;
+                    const inReplyTo = parsed.inReplyTo || undefined;
 
-                  emails.push({ from, subject, body, date, messageId, inReplyTo });
+                    emails.push({ from, subject, body, date, messageId, inReplyTo });
+                    resolveParse();
+                  });
                 });
               });
+              parsePromises.push(parsePromise);
 
               msg.once('attributes', (attrs) => {
                 const { uid } = attrs;
@@ -104,9 +111,29 @@ export class EmailListener {
               });
             });
 
-            fetch.once('end', () => {
-              console.log('[EmailListener] Fetch complete');
-              imap.end();
+            fetch.once('end', async () => {
+              console.log('[EmailListener] Fetch complete — awaiting parsers...');
+              // Wait for all emails to finish parsing (30s timeout safety)
+              await Promise.race([
+                Promise.all(parsePromises),
+                new Promise<void>((_, reject) =>
+                  setTimeout(() => reject(new Error('Parser timeout after 30s')), 30000)
+                ),
+              ]).catch((err) => {
+                console.error('[EmailListener] Parser error:', err);
+              });
+              console.log(`[EmailListener] Parsed ${emails.length} emails, closing connection`);
+              resolve(emails);
+              // Close the raw socket directly — calling imap.end()/destroy() while the
+              // server is mid-response causes a parser crash (_curReq becomes undefined).
+              // Removing socket listeners first ensures no more data reaches the parser.
+              try {
+                const sock = (imap as any)._sock;
+                if (sock) {
+                  sock.removeAllListeners();
+                  sock.destroy();
+                }
+              } catch (_) {}
             });
           });
         });
@@ -118,8 +145,7 @@ export class EmailListener {
       });
 
       imap.once('end', () => {
-        console.log('[EmailListener] Connection ended');
-        resolve(emails);
+        console.log('[EmailListener] Connection closed');
       });
 
       imap.connect();

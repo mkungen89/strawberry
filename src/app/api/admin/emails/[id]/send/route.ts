@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
 import { EmailSender } from '@/services/email-sender';
 
 /**
@@ -9,6 +11,11 @@ export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session || (session.user as { role?: string }).role !== 'ADMIN') {
+    return NextResponse.json({ error: 'FORBIDDEN' }, { status: 403 });
+  }
+
   try {
     const { id: draftId } = await context.params;
     const { approvedBy } = await request.json();

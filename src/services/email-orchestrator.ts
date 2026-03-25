@@ -11,6 +11,7 @@ class EmailOrchestrator {
   private processor: EmailAIProcessor;
   private intervalMs: number;
   private running = false;
+  private cycling = false;
 
   constructor(intervalMs = 5 * 60 * 1000) {
     // Default: 5 minutes
@@ -58,10 +59,15 @@ class EmailOrchestrator {
     // Run first cycle immediately
     await this.runCycle();
 
-    // Then run on interval
+    // Then run on interval — skip if previous cycle is still running
     setInterval(async () => {
-      if (this.running) {
-        await this.runCycle();
+      if (this.running && !this.cycling) {
+        this.cycling = true;
+        try {
+          await this.runCycle();
+        } finally {
+          this.cycling = false;
+        }
       }
     }, this.intervalMs);
 

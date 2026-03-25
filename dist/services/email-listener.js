@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmailListener = void 0;
+require("dotenv/config");
 const imap_1 = __importDefault(require("imap"));
 const mailparser_1 = require("mailparser");
 const db_1 = require("../lib/db");
@@ -53,22 +54,28 @@ class EmailListener {
                         }
                         console.log(`[EmailListener] Found ${results.length} unread emails`);
                         const fetch = imap.fetch(results, { bodies: '' });
+                        const parsePromises = [];
                         fetch.on('message', (msg) => {
-                            msg.on('body', (stream) => {
-                                (0, mailparser_1.simpleParser)(stream, async (err, parsed) => {
-                                    if (err) {
-                                        console.error('[EmailListener] Parse error:', err);
-                                        return;
-                                    }
-                                    const from = parsed.from?.text || 'unknown@example.com';
-                                    const subject = parsed.subject || '(No Subject)';
-                                    const body = parsed.text || parsed.html || '';
-                                    const date = parsed.date || new Date();
-                                    const messageId = parsed.messageId || `${Date.now()}@vexcraft.io`;
-                                    const inReplyTo = parsed.inReplyTo || undefined;
-                                    emails.push({ from, subject, body, date, messageId, inReplyTo });
+                            const parsePromise = new Promise((resolveParse) => {
+                                msg.on('body', (stream) => {
+                                    (0, mailparser_1.simpleParser)(stream, (err, parsed) => {
+                                        if (err) {
+                                            console.error('[EmailListener] Parse error:', err);
+                                            resolveParse();
+                                            return;
+                                        }
+                                        const from = parsed.from?.text || 'unknown@example.com';
+                                        const subject = parsed.subject || '(No Subject)';
+                                        const body = parsed.text || parsed.html || '';
+                                        const date = parsed.date || new Date();
+                                        const messageId = parsed.messageId || `${Date.now()}@vexcraft.io`;
+                                        const inReplyTo = parsed.inReplyTo || undefined;
+                                        emails.push({ from, subject, body, date, messageId, inReplyTo });
+                                        resolveParse();
+                                    });
                                 });
                             });
+                            parsePromises.push(parsePromise);
                             msg.once('attributes', (attrs) => {
                                 const { uid } = attrs;
                                 // Mark as READ after processing
@@ -78,9 +85,28 @@ class EmailListener {
                                 });
                             });
                         });
-                        fetch.once('end', () => {
-                            console.log('[EmailListener] Fetch complete');
-                            imap.end();
+                        fetch.once('end', async () => {
+                            console.log('[EmailListener] Fetch complete — awaiting parsers...');
+                            // Wait for all emails to finish parsing (30s timeout safety)
+                            await Promise.race([
+                                Promise.all(parsePromises),
+                                new Promise((_, reject) => setTimeout(() => reject(new Error('Parser timeout after 30s')), 30000)),
+                            ]).catch((err) => {
+                                console.error('[EmailListener] Parser error:', err);
+                            });
+                            console.log(`[EmailListener] Parsed ${emails.length} emails, closing connection`);
+                            resolve(emails);
+                            // Close the raw socket directly — calling imap.end()/destroy() while the
+                            // server is mid-response causes a parser crash (_curReq becomes undefined).
+                            // Removing socket listeners first ensures no more data reaches the parser.
+                            try {
+                                const sock = imap._sock;
+                                if (sock) {
+                                    sock.removeAllListeners();
+                                    sock.destroy();
+                                }
+                            }
+                            catch (_) { }
                         });
                     });
                 });
@@ -90,8 +116,7 @@ class EmailListener {
                 reject(err);
             });
             imap.once('end', () => {
-                console.log('[EmailListener] Connection ended');
-                resolve(emails);
+                console.log('[EmailListener] Connection closed');
             });
             imap.connect();
         });

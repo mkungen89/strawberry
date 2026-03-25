@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { headers } from 'next/headers';
 
 /**
  * DELETE /api/admin/emails/[id]/delete
@@ -9,6 +11,11 @@ export async function DELETE(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session || (session.user as { role?: string }).role !== 'ADMIN') {
+    return NextResponse.json({ error: 'FORBIDDEN' }, { status: 403 });
+  }
+
   try {
     const { id: threadId } = await context.params;
 
