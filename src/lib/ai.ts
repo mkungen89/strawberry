@@ -3,6 +3,7 @@
  */
 
 import Anthropic from "@anthropic-ai/sdk";
+import { db } from "@/lib/db";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -65,6 +66,16 @@ export async function getElinResponse(
         content: msg.content,
       })),
     });
+
+    db.aiUsageLog.create({
+      data: {
+        source: "chat",
+        inputTokens: response.usage.input_tokens,
+        outputTokens: response.usage.output_tokens,
+        model: response.model,
+        costUsd: (response.usage.input_tokens * 0.00000025) + (response.usage.output_tokens * 0.00000125),
+      },
+    }).catch(() => {});
 
     const firstContent = response.content[0];
     if (firstContent.type === "text") {

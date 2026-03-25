@@ -119,6 +119,17 @@ Generate 3 clearly differentiated concepts that directly address what the custom
     messages: [{ role: "user", content: userMessage }],
   });
 
+  db.aiUsageLog.create({
+    data: {
+      source: "concepts",
+      inputTokens: message.usage.input_tokens,
+      outputTokens: message.usage.output_tokens,
+      model: message.model,
+      costUsd: (message.usage.input_tokens * 0.00000025) + (message.usage.output_tokens * 0.00000125),
+      orderId: order.id,
+    },
+  }).catch(() => {});
+
   const text = message.content[0].type === "text" ? message.content[0].text : "{}";
 
   let parsed: { concepts: Array<{ title: string; description: string; midjourneyPrompt: string | null }> };

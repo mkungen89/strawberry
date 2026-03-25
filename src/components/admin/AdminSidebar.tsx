@@ -14,6 +14,7 @@ import {
   MessageCircle,
   BarChart3,
   Share2,
+  TrendingUp,
 } from "lucide-react";
 
 const NAV = [
@@ -26,6 +27,7 @@ const NAV = [
   { href: "/admin/chat", icon: MessageCircle, label: "Live Chat" },
   { href: "/admin/social", icon: Share2, label: "Social" },
   { href: "/admin/analytics", icon: BarChart3, label: "Analytics" },
+  { href: "/admin/economics", icon: TrendingUp, label: "Economics" },
 ];
 
 export default function AdminSidebar() {

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Send, Plus, ExternalLink, Loader2, CheckCircle2,
-  AlertCircle, Twitter, RefreshCw, MessageSquare, X, Image
+  AlertCircle, RefreshCw, MessageSquare, X, Image, Copy, Check, Hash
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -16,7 +16,7 @@ interface SocialReply { id: string; content: string; status: string; authorName:
 interface SocialPost {
   id: string; platform: string; content: string; title: string | null;
   link: string | null; boardName: string | null; imageUrl: string | null;
-  status: string; authorName: string; externalUrl: string | null;
+  subreddit: string | null; status: string; authorName: string; externalUrl: string | null;
   errorMsg: string | null; publishedAt: string | null; createdAt: string;
   replies: SocialReply[];
 }
@@ -25,6 +25,7 @@ interface Board { id: string; name: string; }
 const PLATFORM_META: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   X: { label: "X (Twitter)", color: "bg-black border-white/20 text-white", icon: <X className="h-3.5 w-3.5" /> },
   PINTEREST: { label: "Pinterest", color: "bg-red-600/20 border-red-500/30 text-red-300", icon: <Image className="h-3.5 w-3.5" /> },
+  REDDIT: { label: "Reddit", color: "bg-orange-600/20 border-orange-500/30 text-orange-300", icon: <Hash className="h-3.5 w-3.5" /> },
 };
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
@@ -51,8 +52,10 @@ export default function SocialPage() {
   const [imageUrl, setImageUrl] = useState("");
   const [authorId, setAuthorId] = useState("");
   const [saving, setSaving] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
 
   // Reply form
+  const [subreddit, setSubreddit] = useState("");
   const [replyContent, setReplyContent] = useState("");
   const [replyAuthorId, setReplyAuthorId] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
@@ -97,7 +100,9 @@ export default function SocialPage() {
         platform, content, title: title || null, link: link || null,
         boardId: boardId || null,
         boardName: boards.find(b => b.id === boardId)?.name || null,
-        imageUrl: imageUrl || null, authorId,
+        imageUrl: imageUrl || null,
+        subreddit: subreddit || null,
+        authorId,
       }),
     });
     if (res.ok) {
@@ -122,6 +127,26 @@ export default function SocialPage() {
       const err = await res.json();
       toast.error(err.error || "Failed to publish.");
       setPosts((p) => p.map((x) => x.id === postId ? { ...x, status: "FAILED", errorMsg: err.error } : x));
+    }
+    setPublishing(null);
+  }
+
+  function handleCopy(postId: string, text: string) {
+    navigator.clipboard.writeText(text);
+    setCopied(postId);
+    setTimeout(() => setCopied(null), 2000);
+    toast.success("Copied to clipboard!");
+  }
+
+  async function handleMarkPosted(postId: string) {
+    setPublishing(postId);
+    const res = await fetch(`/api/admin/social/posts/${postId}/mark-posted`, { method: "POST" });
+    if (res.ok) {
+      const updated = await res.json();
+      setPosts((p) => p.map((x) => x.id === postId ? updated : x));
+      toast.success("Marked as posted!");
+    } else {
+      toast.error("Failed to update.");
     }
     setPublishing(null);
   }
@@ -223,8 +248,8 @@ export default function SocialPage() {
                 {/* Platform */}
                 <div>
                   <Label className="text-xs text-gray-500 mb-2 block">Platform</Label>
-                  <div className="flex gap-2">
-                    {["X", "PINTEREST"].map((p) => (
+                  <div className="flex flex-wrap gap-2">
+                    {["X", "PINTEREST", "REDDIT"].map((p) => (
                       <button
                         key={p}
                         onClick={() => setPlatform(p)}
@@ -254,6 +279,33 @@ export default function SocialPage() {
                     }
                   </select>
                 </div>
+
+                {/* X manual posting note */}
+                {platform === "X" && (
+                  <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 px-3 py-2 text-xs text-blue-300">
+                    X-inlägg postas manuellt — spara utkastet, kopiera texten och posta på X.
+                  </div>
+                )}
+
+                {/* Reddit fields + note */}
+                {platform === "REDDIT" && (
+                  <>
+                    <div className="rounded-lg bg-orange-500/10 border border-orange-500/20 px-3 py-2 text-xs text-orange-300">
+                      Reddit-inlägg postas manuellt — spara utkastet, kopiera texten och posta i subredditen.
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500 mb-1.5 block">Subreddit</Label>
+                      <div className="flex items-center gap-1">
+                        <span className="text-gray-500 text-sm">r/</span>
+                        <Input value={subreddit} onChange={(e) => setSubreddit(e.target.value)} placeholder="webdesign" className="border-white/10 bg-white/[0.03] text-white text-sm" />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-gray-500 mb-1.5 block">Title</Label>
+                      <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Post title..." className="border-white/10 bg-white/[0.03] text-white text-sm" />
+                    </div>
+                  </>
+                )}
 
                 {/* Pinterest fields */}
                 {platform === "PINTEREST" && (
@@ -338,20 +390,47 @@ export default function SocialPage() {
                               </Button>
                             </a>
                           )}
-                          {post.status !== "PUBLISHED" && (
-                            <Button
-                              size="sm"
-                              onClick={() => handlePublish(post.id)}
-                              disabled={publishing === post.id}
-                              className="h-7 bg-purple-600 text-white hover:bg-purple-700 text-xs px-3"
-                            >
-                              {publishing === post.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3 mr-1" />}
-                              {publishing === post.id ? "Publishing..." : "Publish"}
-                            </Button>
+                          {(post.platform === "X" || post.platform === "REDDIT") ? (
+                            <>
+                              <Button
+                                size="sm"
+                                onClick={() => handleCopy(post.id, post.content)}
+                                className="h-7 bg-white/[0.06] text-white hover:bg-white/10 border border-white/10 text-xs px-3"
+                              >
+                                {copied === post.id ? <Check className="h-3 w-3 mr-1 text-green-400" /> : <Copy className="h-3 w-3 mr-1" />}
+                                {copied === post.id ? "Copied!" : "Copy"}
+                              </Button>
+                              {post.status !== "PUBLISHED" && (
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleMarkPosted(post.id)}
+                                  disabled={publishing === post.id}
+                                  className="h-7 bg-green-600/20 text-green-400 hover:bg-green-600/30 border border-green-500/20 text-xs px-3"
+                                >
+                                  {publishing === post.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3 mr-1" />}
+                                  Mark posted
+                                </Button>
+                              )}
+                            </>
+                          ) : (
+                            post.status !== "PUBLISHED" && (
+                              <Button
+                                size="sm"
+                                onClick={() => handlePublish(post.id)}
+                                disabled={publishing === post.id}
+                                className="h-7 bg-purple-600 text-white hover:bg-purple-700 text-xs px-3"
+                              >
+                                {publishing === post.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3 mr-1" />}
+                                {publishing === post.id ? "Publishing..." : "Publish"}
+                              </Button>
+                            )
                           )}
                         </div>
                       </div>
 
+                      {post.platform === "REDDIT" && post.subreddit && (
+                        <p className="text-[11px] text-orange-400">r/{post.subreddit}</p>
+                      )}
                       {post.title && <p className="text-sm font-medium text-white">{post.title}</p>}
                       <p className="text-sm text-gray-300 whitespace-pre-wrap">{post.content}</p>
 
