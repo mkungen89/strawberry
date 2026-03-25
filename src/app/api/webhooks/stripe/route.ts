@@ -5,6 +5,7 @@ import { stripe } from "@/lib/stripe";
 import { db } from "@/lib/db";
 import Stripe from "stripe";
 import { sendEmail, orderConfirmationEmail } from "@/lib/email";
+import { orderInQueueEmail } from "@/lib/email-templates";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -38,14 +39,23 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Send order confirmation email to customer
+      // Send order confirmation + queue notification email to customer
       if (order.user?.email) {
-        const emailData = orderConfirmationEmail(
+        // Send confirmation
+        const confirmData = orderConfirmationEmail(
           order.user.name || "Customer",
           order.service?.name || "Service",
           orderId
         );
-        sendEmail({ to: order.user.email, ...emailData }).catch(() => {});
+        sendEmail({ to: order.user.email, ...confirmData }).catch(() => {});
+
+        // Send "in queue" notification
+        const queueData = orderInQueueEmail(
+          order.user.name || "Customer",
+          order.service?.name || "Service",
+          orderId
+        );
+        sendEmail({ to: order.user.email, ...queueData }).catch(() => {});
       }
     }
   }
