@@ -29,6 +29,7 @@ interface Service {
   icon: string;
   packages: Package[];
   hasTechStack?: boolean;
+  briefPlaceholder?: string;
 }
 
 interface Props {
@@ -204,7 +205,7 @@ export default function OrderForm({ service }: Props) {
             <Textarea
               value={details}
               onChange={(e) => setDetails(e.target.value)}
-              placeholder={`Example: I want a Discord server for my gaming community. The theme should be dark blue and neon green. I need channels for announcements, general chat, gaming sessions, and a rules channel. I'd like a welcome bot that greets new members.`}
+              placeholder={service.briefPlaceholder ?? "Example: Describe your project — style, colors, vibe, what you need. The more detail you give, the better the result."}
               className="min-h-48 border-white/20 bg-white/5 text-white placeholder:text-gray-600"
             />
             <div className="mt-6 flex gap-3">

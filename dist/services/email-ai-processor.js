@@ -50,6 +50,15 @@ class EmailAIProcessor {
                 },
             ],
         });
+        db_1.db.aiUsageLog.create({
+            data: {
+                source: "email",
+                inputTokens: message.usage.input_tokens,
+                outputTokens: message.usage.output_tokens,
+                model: message.model,
+                costUsd: (message.usage.input_tokens * 0.00000025) + (message.usage.output_tokens * 0.00000125),
+            },
+        }).catch(() => { });
         const response = message.content[0];
         if (response.type !== 'text') {
             throw new Error('Unexpected response type from Claude');

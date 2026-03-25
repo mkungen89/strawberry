@@ -443,16 +443,19 @@ export default function EconomicsPage() {
             </p>
             <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
               {[
-                { plan: "Creator ($49)", n: Math.ceil(breakEven.gap > 0 ? breakEven.gap / 49 : 0) },
-                { plan: "Streamer ($79)", n: Math.ceil(breakEven.gap > 0 ? breakEven.gap / 79 : 0) },
-                { plan: "Business ($149)", n: Math.ceil(breakEven.gap > 0 ? breakEven.gap / 149 : 0) },
-                { plan: "Growth ($399)", n: Math.ceil(breakEven.gap > 0 ? breakEven.gap / 399 : 0) },
-              ].map(row => (
+                { plan: "Creator ($49)", price: 49 },
+                { plan: "Streamer ($79)", price: 79 },
+                { plan: "Business ($149)", price: 149 },
+                { plan: "Growth ($399)", price: 399 },
+              ].map(({ plan, price }) => {
+                const row = { plan, n: Math.ceil(breakEven.gap > 0 ? breakEven.gap / price : 0) };
+                return (
                 <div key={row.plan} className="rounded-lg border border-white/[0.04] bg-white/[0.02] px-2 py-1.5">
                   <p className="text-gray-500">{row.plan}</p>
                   <p className="text-white font-medium">{breakEven.gap > 0 ? `${row.n} needed` : "✓ Covered"}</p>
                 </div>
-              ))}
+              );
+              })}
             </div>
           </div>
         </div>

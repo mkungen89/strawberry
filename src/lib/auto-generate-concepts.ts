@@ -6,6 +6,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { db } from "@/lib/db";
+import { isMidjourneyEnabled, submitMidjourneyImagine } from "@/lib/image-generation";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
@@ -119,7 +120,7 @@ Generate 3 clearly differentiated concepts that directly address what the custom
     messages: [{ role: "user", content: userMessage }],
   });
 
-  db.aiUsageLog.create({
+  await db.aiUsageLog.create({
     data: {
       source: "concepts",
       inputTokens: message.usage.input_tokens,
@@ -141,9 +142,8 @@ Generate 3 clearly differentiated concepts that directly address what the custom
 
   if (!parsed.concepts?.length) throw new Error("No concepts in AI response");
 
-  // Save concepts to DB — imageUrl is left null (no actual image yet).
-  // Midjourney prompts are for admin use only; not stored here.
-  await Promise.all(
+  // Save concepts to DB
+  const savedConcepts = await Promise.all(
     parsed.concepts.map((c, i) =>
       db.orderConcept.create({
         data: {
@@ -157,6 +157,19 @@ Generate 3 clearly differentiated concepts that directly address what the custom
       })
     )
   );
+
+  // Trigger Midjourney image generation in background if configured
+  if (isMidjourneyEnabled()) {
+    for (let i = 0; i < savedConcepts.length; i++) {
+      const concept = savedConcepts[i];
+      const midjourneyPrompt = parsed.concepts[i].midjourneyPrompt;
+      if (midjourneyPrompt) {
+        submitMidjourneyImagine(midjourneyPrompt, concept.id).catch((err) =>
+          console.error(`[AutoConcepts] Midjourney failed for concept ${concept.id}:`, err)
+        );
+      }
+    }
+  }
 
   // Log activity
   await db.orderActivity.create({

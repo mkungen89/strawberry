@@ -1,168 +1,62 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 type Project = {
-  id: number;
-  name: string;
+  id: string;
+  title: string;
   service: string;
   category: string;
   gradient: string;
   description: string;
+  imageUrl: string | null;
 };
-
-const PROJECTS: Project[] = [
-  {
-    id: 1,
-    name: "Gaming Community Hub",
-    service: "Discord Server",
-    category: "Discord",
-    gradient: "from-indigo-600 via-purple-600 to-pink-500",
-    description: "A thriving gaming server with 2 000+ members, custom bots and automated moderation.",
-  },
-  {
-    id: 2,
-    name: "Esports Organisation",
-    service: "Discord Server",
-    category: "Discord",
-    gradient: "from-blue-700 via-indigo-600 to-purple-700",
-    description: "Fully structured esports community with team channels, ticket support and role automation.",
-  },
-  {
-    id: 3,
-    name: "Tech Creator Branding",
-    service: "YouTube Banner & Avatar",
-    category: "YouTube",
-    gradient: "from-red-600 via-orange-500 to-yellow-400",
-    description: "Clean, professional channel art for a tech review channel with 50k+ subscribers.",
-  },
-  {
-    id: 4,
-    name: "Lifestyle Vlog Identity",
-    service: "YouTube Banner & Avatar",
-    category: "YouTube",
-    gradient: "from-pink-500 via-rose-500 to-orange-400",
-    description: "Vibrant and eye-catching branding package with banner, avatar and thumbnail template.",
-  },
-  {
-    id: 5,
-    name: "FPS Streamer Overlay",
-    service: "Streaming Overlay",
-    category: "Streaming",
-    gradient: "from-cyan-600 via-teal-500 to-green-500",
-    description: "Fully animated overlay pack with custom alerts, scenes and panels for a Twitch FPS streamer.",
-  },
-  {
-    id: 6,
-    name: "IRL Stream Pack",
-    service: "Streaming Overlay",
-    category: "Streaming",
-    gradient: "from-violet-600 via-purple-500 to-fuchsia-500",
-    description: "Minimalist IRL streaming pack featuring clean overlays and subscriber notification alerts.",
-  },
-  {
-    id: 7,
-    name: "SaaS Landing Page",
-    service: "Website",
-    category: "Website",
-    gradient: "from-emerald-600 via-teal-600 to-cyan-500",
-    description: "High-converting landing page for a B2B SaaS product built with Next.js and Tailwind.",
-  },
-  {
-    id: 8,
-    name: "Tech Blog Platform",
-    service: "Website",
-    category: "Website",
-    gradient: "from-slate-600 via-gray-700 to-zinc-600",
-    description: "Full-featured blog platform with CMS, author dashboard and Stripe subscription payments.",
-  },
-  {
-    id: 9,
-    name: "Fitness Tracker App",
-    service: "Mobile App",
-    category: "App",
-    gradient: "from-orange-600 via-amber-500 to-yellow-400",
-    description: "Cross-platform fitness app for iOS & Android with workout plans, progress tracking and push notifications.",
-  },
-  {
-    id: 10,
-    name: "Event Booking App",
-    service: "Mobile App",
-    category: "App",
-    gradient: "from-purple-700 via-violet-600 to-indigo-500",
-    description: "Native event discovery and booking app with in-app payments and real-time seat availability.",
-  },
-  {
-    id: 11,
-    name: "Twitch Emote Pack",
-    service: "Streaming Icons & Emotes",
-    category: "Streaming",
-    gradient: "from-fuchsia-600 via-purple-600 to-blue-600",
-    description: "30-emote full pack for a Twitch partner, including sub-badges and channel point icons.",
-  },
-  {
-    id: 12,
-    name: "Discord Emote Bundle",
-    service: "Streaming Icons & Emotes",
-    category: "Streaming",
-    gradient: "from-sky-600 via-blue-600 to-indigo-600",
-    description: "Custom Discord server emotes and reaction pack designed to match the server's brand identity.",
-  },
-];
-
-// Add new service categories
-PROJECTS.push(
-  {
-    id: 13,
-    name: "Indie Game Studio Brand",
-    service: "Logo & Branding",
-    category: "Branding",
-    gradient: "from-purple-600 via-pink-500 to-red-500",
-    description: "Complete brand identity for an indie studio — logo, color palette, fonts, and social media kit.",
-  },
-  {
-    id: 14,
-    name: "Music Producer Identity",
-    service: "Social Media Kit",
-    category: "Branding",
-    gradient: "from-amber-500 via-orange-500 to-red-500",
-    description: "Cohesive look across YouTube, Instagram, Spotify, and SoundCloud with matching assets.",
-  },
-  {
-    id: 15,
-    name: "Coding Tutorial Channel",
-    service: "YouTube Thumbnails",
-    category: "YouTube",
-    gradient: "from-green-600 via-emerald-500 to-teal-400",
-    description: "20 click-optimized thumbnails with consistent branding for a programming tutorial channel.",
-  },
-  {
-    id: 16,
-    name: "Competitive Gamer Pack",
-    service: "Gaming Profile Pack",
-    category: "Streaming",
-    gradient: "from-red-600 via-rose-500 to-pink-500",
-    description: "Matching avatars and banners for Steam, Discord, Xbox, and PlayStation profiles.",
-  },
-);
 
 const CATEGORIES = ["All", "Discord", "YouTube", "Streaming", "Website", "App", "Branding"];
 
 export default function PortfolioGrid() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
   const [active, setActive] = useState("All");
 
-  const filtered =
-    active === "All" ? PROJECTS : PROJECTS.filter((p) => p.category === active);
+  useEffect(() => {
+    fetch("/api/portfolio")
+      .then((r) => r.json())
+      .then((data) => setProjects(Array.isArray(data) ? data : []))
+      .catch(() => setProjects([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filtered = active === "All" ? projects : projects.filter((p) => p.category === active);
+
+  // Only show category tabs that have at least one project
+  const activeCats = CATEGORIES.filter(
+    (cat) => cat === "All" || projects.some((p) => p.category === cat)
+  );
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-purple-400" />
+      </div>
+    );
+  }
+
+  if (projects.length === 0) {
+    return (
+      <div className="py-20 text-center text-gray-500 text-sm">
+        No portfolio projects yet.
+      </div>
+    );
+  }
 
   return (
     <div>
       {/* Filter tabs */}
       <div className="mb-10 flex flex-wrap justify-center gap-2">
-        {CATEGORIES.map((cat) => (
+        {activeCats.map((cat) => (
           <button
             key={cat}
             onClick={() => setActive(cat)}
@@ -185,40 +79,35 @@ export default function PortfolioGrid() {
             key={project.id}
             className="group overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] transition-all duration-300 hover:border-purple-500/20 hover:bg-white/[0.04]"
           >
-            {/* Gradient placeholder */}
-            <div
-              className={`relative h-48 w-full bg-gradient-to-br ${project.gradient} flex items-center justify-center`}
-            >
-              <span className="text-4xl font-black text-white/20 select-none">
-                {project.name.charAt(0)}
-              </span>
+            {/* Image or gradient placeholder */}
+            <div className={`relative h-48 w-full bg-gradient-to-br ${project.gradient} overflow-hidden`}>
+              {project.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={project.imageUrl}
+                  alt={project.title}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <span className="text-4xl font-black text-white/20 select-none">
+                    {project.title.charAt(0)}
+                  </span>
+                </div>
+              )}
               <div className="absolute inset-0 bg-black/10" />
             </div>
 
             {/* Card body */}
             <div className="p-5">
               <div className="mb-3 flex items-start justify-between gap-2">
-                <h3 className="font-semibold text-white leading-snug">
-                  {project.name}
-                </h3>
+                <h3 className="font-semibold text-white leading-snug">{project.title}</h3>
                 <Badge className="shrink-0 bg-purple-600/20 text-purple-400 border border-purple-500/30 text-xs">
                   {project.category}
                 </Badge>
               </div>
-              <p className="mb-1 text-xs font-medium text-purple-400">
-                {project.service}
-              </p>
-              <p className="mb-4 text-sm text-gray-400 leading-relaxed">
-                {project.description}
-              </p>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full border border-white/10 bg-white/5 text-gray-300 hover:border-purple-500/50 hover:text-white"
-              >
-                View details
-                <ArrowRight className="ml-1.5 h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-              </Button>
+              <p className="mb-1 text-xs font-medium text-purple-400">{project.service}</p>
+              <p className="text-sm text-gray-400 leading-relaxed">{project.description}</p>
             </div>
           </div>
         ))}

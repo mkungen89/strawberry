@@ -97,27 +97,27 @@ function ConversationRow({ conv, selected, onClick }: ConversationRowProps) {
     >
       <div className="flex items-start gap-3">
         <div className="relative shrink-0 mt-0.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.06] text-xs font-bold text-zinc-300">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.06] text-xs font-bold text-gray-300">
             {initials(conv.visitorName)}
           </div>
           <span
-            className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0a0a0a] ${
-              isOpen ? 'bg-green-400' : 'bg-zinc-600'
+            className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-black ${
+              isOpen ? 'bg-green-400' : 'bg-gray-600'
             }`}
           />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 mb-0.5">
             <span className="text-sm font-medium text-white truncate">{conv.visitorName}</span>
-            <span className="text-[10px] text-zinc-600 shrink-0">
+            <span className="text-[10px] text-gray-600 shrink-0">
               {formatRelative(conv.updatedAt)}
             </span>
           </div>
           {conv.visitorEmail && (
-            <p className="text-[10px] text-zinc-600 mb-0.5 truncate">{conv.visitorEmail}</p>
+            <p className="text-[10px] text-gray-600 mb-0.5 truncate">{conv.visitorEmail}</p>
           )}
           {lastMsg && (
-            <p className="text-xs text-zinc-500 truncate leading-relaxed">
+            <p className="text-xs text-gray-500 truncate leading-relaxed">
               {lastMsg.senderType === 'AGENT' && (
                 <span className="text-purple-500">You: </span>
               )}
@@ -131,12 +131,12 @@ function ConversationRow({ conv, selected, onClick }: ConversationRowProps) {
           className={`text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded border ${
             isOpen
               ? 'text-green-400 border-green-500/20 bg-green-500/10'
-              : 'text-zinc-600 border-zinc-700 bg-zinc-800/50'
+              : 'text-gray-600 border-white/[0.08] bg-white/[0.04]'
           }`}
         >
           {conv.status}
         </span>
-        <span className="text-[10px] text-zinc-700">
+        <span className="text-[10px] text-gray-700">
           {conv._count.messages} msg{conv._count.messages !== 1 ? 's' : ''}
         </span>
       </div>
@@ -154,7 +154,7 @@ function MessageBubble({ msg }: MessageBubbleProps) {
     <div className={`flex gap-2.5 ${isAgent ? 'flex-row-reverse' : 'flex-row'}`}>
       <div
         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-bold mt-auto mb-0.5 ${
-          isAgent ? 'bg-purple-600/30 text-purple-300' : 'bg-white/[0.08] text-zinc-400'
+          isAgent ? 'bg-purple-600/30 text-purple-300' : 'bg-white/[0.08] text-gray-400'
         }`}
       >
         {initials(msg.senderName)}
@@ -166,12 +166,12 @@ function MessageBubble({ msg }: MessageBubbleProps) {
           className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
             isAgent
               ? 'rounded-tr-sm bg-purple-600/20 border border-purple-500/20 text-purple-100'
-              : 'rounded-tl-sm bg-white/[0.06] border border-white/[0.06] text-zinc-200'
+              : 'rounded-tl-sm bg-white/[0.06] border border-white/[0.06] text-gray-200'
           }`}
         >
           {msg.content}
         </div>
-        <span className="text-[10px] text-zinc-700 px-1">{formatTime(msg.createdAt)}</span>
+        <span className="text-[10px] text-gray-700 px-1">{formatTime(msg.createdAt)}</span>
       </div>
     </div>
   )
@@ -279,7 +279,7 @@ function MessageView({ convId, onConvUpdated }: MessageViewProps) {
   if (!conv) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <p className="text-zinc-600 text-sm">Failed to load conversation.</p>
+        <p className="text-gray-600 text-sm">Failed to load conversation.</p>
       </div>
     )
   }
@@ -292,7 +292,7 @@ function MessageView({ convId, onConvUpdated }: MessageViewProps) {
       {/* Conversation header */}
       <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-white/[0.06] shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-xs font-bold text-zinc-300">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-xs font-bold text-gray-300">
             {initials(conv.visitorName)}
           </div>
           <div className="min-w-0">
@@ -301,7 +301,7 @@ function MessageView({ convId, onConvUpdated }: MessageViewProps) {
               <span
                 className={`text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded border shrink-0 ${
                   isClosed
-                    ? 'text-zinc-600 border-zinc-700 bg-zinc-800/50'
+                    ? 'text-gray-600 border-white/[0.08] bg-white/[0.04]'
                     : 'text-green-400 border-green-500/20 bg-green-500/10'
                 }`}
               >
@@ -310,18 +310,18 @@ function MessageView({ convId, onConvUpdated }: MessageViewProps) {
             </div>
             <div className="flex items-center gap-3 flex-wrap">
               {conv.visitorEmail && (
-                <span className="flex items-center gap-1 text-xs text-zinc-600">
+                <span className="flex items-center gap-1 text-xs text-gray-600">
                   <Mail className="w-3 h-3" />
                   {conv.visitorEmail}
                 </span>
               )}
               {conv.assignedTo && (
-                <span className="flex items-center gap-1 text-xs text-zinc-600">
+                <span className="flex items-center gap-1 text-xs text-gray-600">
                   <User className="w-3 h-3" />
                   {conv.assignedTo}
                 </span>
               )}
-              <span className="flex items-center gap-1 text-xs text-zinc-700">
+              <span className="flex items-center gap-1 text-xs text-gray-700">
                 <Clock className="w-3 h-3" />
                 {formatDateTime(conv.createdAt)}
               </span>
@@ -346,9 +346,9 @@ function MessageView({ convId, onConvUpdated }: MessageViewProps) {
 
       {/* Closed banner */}
       {isClosed && conv.closedAt && (
-        <div className="mx-6 mt-3 flex items-center gap-2 rounded-xl border border-zinc-700/50 bg-zinc-800/30 px-3 py-2.5 shrink-0">
-          <CheckCircle className="w-4 h-4 text-zinc-600 shrink-0" />
-          <p className="text-xs text-zinc-500">
+        <div className="mx-6 mt-3 flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 shrink-0">
+          <CheckCircle className="w-4 h-4 text-gray-600 shrink-0" />
+          <p className="text-xs text-gray-500">
             Conversation closed on {formatDateTime(conv.closedAt)}
           </p>
         </div>
@@ -358,7 +358,7 @@ function MessageView({ convId, onConvUpdated }: MessageViewProps) {
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 min-h-0">
         {messages.length === 0 ? (
           <div className="flex h-full items-center justify-center">
-            <p className="text-zinc-600 text-sm">No messages yet.</p>
+            <p className="text-gray-600 text-sm">No messages yet.</p>
           </div>
         ) : (
           messages.map((msg) => <MessageBubble key={msg.id} msg={msg} />)
@@ -369,7 +369,7 @@ function MessageView({ convId, onConvUpdated }: MessageViewProps) {
       {/* Reply area */}
       {isClosed ? (
         <div className="shrink-0 border-t border-white/[0.06] px-6 py-4">
-          <div className="flex items-center gap-2 text-xs text-zinc-600 justify-center">
+          <div className="flex items-center gap-2 text-xs text-gray-600 justify-center">
             <CheckCircle className="w-3.5 h-3.5" />
             This conversation is closed and cannot receive new messages.
           </div>
@@ -384,7 +384,7 @@ function MessageView({ convId, onConvUpdated }: MessageViewProps) {
               onKeyDown={handleKeyDown}
               placeholder="Type a message… (Enter to send, Shift+Enter for newline)"
               rows={2}
-              className="flex-1 rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm text-white placeholder:text-zinc-600 resize-none focus:outline-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/20 transition-all"
+              className="flex-1 rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm text-white placeholder:text-gray-600 resize-none focus:outline-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/20 transition-all"
             />
             <button
               onClick={handleSend}
@@ -455,7 +455,7 @@ export default function ChatAdminPage() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-[#0a0a0a] text-white">
+    <div className="flex h-screen flex-col bg-black text-white">
       {/* Top header */}
       <div className="shrink-0 border-b border-white/[0.06] px-6 py-4 flex items-center justify-between gap-4">
         <div>
@@ -468,7 +468,7 @@ export default function ChatAdminPage() {
               </span>
             )}
           </div>
-          <p className="text-xs text-zinc-600">
+          <p className="text-xs text-gray-600">
             Visitor conversations · updated{' '}
             {lastRefresh.toLocaleTimeString('sv-SE', {
               hour: '2-digit',
@@ -480,7 +480,7 @@ export default function ChatAdminPage() {
         <button
           onClick={() => fetchConversations(true)}
           disabled={manualRefreshing || loading}
-          className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-all disabled:opacity-50"
+          className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/[0.05] transition-all disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${manualRefreshing ? 'animate-spin' : ''}`} />
         </button>
@@ -500,13 +500,13 @@ export default function ChatAdminPage() {
                   className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium transition-all capitalize ${
                     filter === tab
                       ? 'bg-purple-600/25 text-purple-300 border border-purple-500/30'
-                      : 'text-zinc-500 hover:text-zinc-300'
+                      : 'text-gray-500 hover:text-gray-300'
                   }`}
                 >
                   {tab}
                   <span
                     className={`text-[9px] font-bold ${
-                      filter === tab ? 'text-purple-400' : 'text-zinc-700'
+                      filter === tab ? 'text-purple-400' : 'text-gray-700'
                     }`}
                   >
                     {tabCount(tab)}
@@ -524,9 +524,9 @@ export default function ChatAdminPage() {
               </div>
             ) : filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-                <MessageCircle className="w-8 h-8 text-zinc-700 mb-3" />
-                <p className="text-sm font-medium text-zinc-500">No conversations</p>
-                <p className="text-xs text-zinc-700 mt-1">
+                <MessageCircle className="w-8 h-8 text-gray-700 mb-3" />
+                <p className="text-sm font-medium text-gray-500">No conversations</p>
+                <p className="text-xs text-gray-700 mt-1">
                   {filter !== 'all'
                     ? `No ${filter} conversations`
                     : 'Visitor chats will appear here'}
@@ -556,11 +556,11 @@ export default function ChatAdminPage() {
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center gap-3">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.04] border border-white/[0.06]">
-                <Users className="w-7 h-7 text-zinc-600" />
+                <Users className="w-7 h-7 text-gray-600" />
               </div>
               <div className="text-center">
-                <p className="font-medium text-zinc-400">Select a conversation</p>
-                <p className="text-sm text-zinc-600 mt-0.5">
+                <p className="font-medium text-gray-400">Select a conversation</p>
+                <p className="text-sm text-gray-600 mt-0.5">
                   Choose a conversation from the sidebar to start
                 </p>
               </div>

@@ -30,18 +30,14 @@ import {
   ChevronUp,
   Copy,
   Check,
+  FileText,
+  Milestone,
+  DollarSign,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ORDER_STATUS_CONFIG } from "@/lib/order-status";
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  PENDING:     { label: "Pending",      color: "bg-yellow-500/20 text-yellow-300", icon: <Clock className="h-3 w-3" /> },
-  PAID:        { label: "Paid",         color: "bg-blue-500/20 text-blue-300",     icon: <Clock className="h-3 w-3" /> },
-  IN_PROGRESS: { label: "In Progress",  color: "bg-purple-500/20 text-purple-300", icon: <Loader2 className="h-3 w-3 animate-spin" /> },
-  REVIEW:      { label: "Under Review", color: "bg-orange-500/20 text-orange-300", icon: <Clock className="h-3 w-3" /> },
-  REVISION:    { label: "Revision",     color: "bg-pink-500/20 text-pink-300",     icon: <Clock className="h-3 w-3" /> },
-  COMPLETED:   { label: "Completed",    color: "bg-green-500/20 text-green-300",   icon: <CheckCircle className="h-3 w-3" /> },
-  CANCELLED:   { label: "Cancelled",    color: "bg-red-500/20 text-red-300",       icon: <XCircle className="h-3 w-3" /> },
-};
+const STATUS_CONFIG = ORDER_STATUS_CONFIG;
 
 const STATUSES = ["PENDING", "PAID", "IN_PROGRESS", "REVIEW", "REVISION", "COMPLETED", "CANCELLED"];
 
@@ -83,7 +79,320 @@ interface ActivityItem {
   metadata?: Record<string, unknown> | null;
 }
 
-type Tab = "overview" | "activity";
+type Tab = "overview" | "activity" | "invoices" | "milestones";
+
+// ─── Invoices Panel ───────────────────────────────────────────────────────────
+
+interface Invoice {
+  id: string; invoiceNumber: string; amount: number; currency: string;
+  status: string; dueDate: string | null; paidAt: string | null; pdfUrl: string | null; notes: string | null; createdAt: string;
+}
+
+const INVOICE_STATUS_COLORS: Record<string, string> = {
+  DRAFT: "bg-gray-500/20 text-gray-400 border-gray-500/20",
+  SENT: "bg-blue-500/20 text-blue-300 border-blue-500/20",
+  PAID: "bg-green-500/20 text-green-300 border-green-500/20",
+  OVERDUE: "bg-red-500/20 text-red-300 border-red-500/20",
+  CANCELLED: "bg-gray-500/20 text-gray-400 border-gray-500/20",
+};
+
+function InvoicesPanel({ orderId, orderTotal, orderCurrency }: { orderId: string; orderTotal: number; orderCurrency: string }) {
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [amount, setAmount] = useState(String(orderTotal));
+  const [currency] = useState(orderCurrency || "USD");
+  const [dueDate, setDueDate] = useState("");
+  const [notes, setNotes] = useState("");
+
+  useEffect(() => {
+    fetch(`/api/admin/orders/${orderId}/invoices`)
+      .then((r) => r.ok ? r.json() : [])
+      .then(setInvoices)
+      .finally(() => setLoading(false));
+  }, [orderId]);
+
+  async function createInvoice() {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}/invoices`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: parseFloat(amount), currency, dueDate: dueDate || undefined, notes: notes || undefined }),
+      });
+      if (!res.ok) throw new Error();
+      const inv = await res.json();
+      setInvoices((prev) => [inv, ...prev]);
+      setShowForm(false);
+      setNotes("");
+      toast.success(`Invoice ${inv.invoiceNumber} created`);
+    } catch { toast.error("Failed to create invoice"); }
+    finally { setSaving(false); }
+  }
+
+  async function markPaid(invoiceId: string) {
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}/invoices`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invoiceId, status: "PAID" }),
+      });
+      if (!res.ok) throw new Error();
+      setInvoices((prev) => prev.map((inv) => inv.id === invoiceId ? { ...inv, status: "PAID", paidAt: new Date().toISOString() } : inv));
+      toast.success("Marked as paid");
+    } catch { toast.error("Update failed"); }
+  }
+
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-purple-400" /></div>;
+
+  return (
+    <Card className="border-white/10 bg-white/5 text-white">
+      <CardContent className="p-6">
+        <div className="mb-4 flex items-center gap-2">
+          <FileText className="h-4 w-4 text-purple-400" />
+          <h2 className="font-semibold">Invoices</h2>
+          <button onClick={() => setShowForm((v) => !v)}
+            className="ml-auto flex items-center gap-1 rounded-lg bg-purple-600/20 border border-purple-500/30 px-3 py-1 text-xs text-purple-300 hover:bg-purple-600/30 transition-all">
+            <Plus className="h-3 w-3" /> Create invoice
+          </button>
+        </div>
+
+        {showForm && (
+          <div className="mb-4 rounded-xl border border-purple-500/20 bg-white/[0.03] p-4 space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Amount</p>
+                <Input value={amount} onChange={(e) => setAmount(e.target.value)}
+                  className="border-white/20 bg-white/5 text-white" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Due date</p>
+                <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)}
+                  className="border-white/20 bg-white/5 text-white" />
+              </div>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 mb-1">Notes (optional)</p>
+              <Input value={notes} onChange={(e) => setNotes(e.target.value)}
+                placeholder="Payment terms, etc." className="border-white/20 bg-white/5 text-white placeholder:text-gray-600" />
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={createInvoice} disabled={saving} className="bg-purple-600 text-white hover:bg-purple-700" size="sm">
+                {saving ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <Plus className="mr-1 h-3 w-3" />} Create
+              </Button>
+              <Button variant="ghost" onClick={() => setShowForm(false)} size="sm"
+                className="border border-white/10 text-gray-400 hover:text-white">Cancel</Button>
+            </div>
+          </div>
+        )}
+
+        {invoices.length === 0 ? (
+          <p className="text-sm text-gray-500">No invoices yet.</p>
+        ) : (
+          <div className="space-y-2">
+            {invoices.map((inv) => (
+              <div key={inv.id} className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+                <DollarSign className="h-4 w-4 text-gray-500 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-white">{inv.invoiceNumber}</p>
+                    <Badge className={`text-xs ${INVOICE_STATUS_COLORS[inv.status] ?? ""}`}>{inv.status}</Badge>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    {inv.currency} {inv.amount.toLocaleString()}
+                    {inv.dueDate && ` · Due ${new Date(inv.dueDate).toLocaleDateString("en-GB")}`}
+                    {inv.paidAt && ` · Paid ${new Date(inv.paidAt).toLocaleDateString("en-GB")}`}
+                  </p>
+                </div>
+                {inv.status !== "PAID" && inv.status !== "CANCELLED" && (
+                  <button onClick={() => markPaid(inv.id)}
+                    className="text-xs text-green-400 hover:text-green-300 transition-colors whitespace-nowrap">
+                    Mark paid
+                  </button>
+                )}
+                {inv.pdfUrl && (
+                  <a href={inv.pdfUrl} target="_blank" rel="noopener noreferrer"
+                    className="text-xs text-purple-400 hover:text-purple-300 transition-colors">PDF</a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Milestones Panel ─────────────────────────────────────────────────────────
+
+interface MilestoneItem {
+  id: string; title: string; description: string | null; amount: number; currency: string;
+  percentage: number; status: string; dueDate: string | null; completedAt: string | null; paidAt: string | null; sortOrder: number;
+}
+
+const MILESTONE_STATUS_COLORS: Record<string, string> = {
+  PENDING: "bg-gray-500/20 text-gray-400 border-gray-500/20",
+  COMPLETED: "bg-blue-500/20 text-blue-300 border-blue-500/20",
+  PAID: "bg-green-500/20 text-green-300 border-green-500/20",
+  CANCELLED: "bg-red-500/20 text-red-300 border-red-500/20",
+};
+
+interface MilestoneFormRow { title: string; percentage: string; dueDate: string; }
+
+function MilestonesPanel({ orderId, orderTotal }: { orderId: string; orderTotal: number }) {
+  const [milestones, setMilestones] = useState<MilestoneItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [rows, setRows] = useState<MilestoneFormRow[]>([
+    { title: "Deposit", percentage: "50", dueDate: "" },
+    { title: "Final payment", percentage: "50", dueDate: "" },
+  ]);
+
+  useEffect(() => {
+    fetch(`/api/admin/orders/${orderId}/milestones`)
+      .then((r) => r.ok ? r.json() : [])
+      .then(setMilestones)
+      .finally(() => setLoading(false));
+  }, [orderId]);
+
+  const totalPct = rows.reduce((s, r) => s + (parseFloat(r.percentage) || 0), 0);
+
+  async function createMilestones() {
+    if (Math.abs(totalPct - 100) > 0.01) { toast.error("Percentages must sum to 100%"); return; }
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}/milestones`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ milestones: rows.map((r) => ({ title: r.title, percentage: parseFloat(r.percentage), dueDate: r.dueDate || undefined })) }),
+      });
+      if (!res.ok) throw new Error();
+      const created = await res.json();
+      setMilestones(created);
+      setShowForm(false);
+      toast.success("Milestones created");
+    } catch { toast.error("Failed to create milestones"); }
+    finally { setSaving(false); }
+  }
+
+  async function updateStatus(milestoneId: string, status: string) {
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}/milestones`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ milestoneId, status }),
+      });
+      if (!res.ok) throw new Error();
+      setMilestones((prev) => prev.map((m) => m.id === milestoneId ? { ...m, status } : m));
+      toast.success("Milestone updated");
+    } catch { toast.error("Update failed"); }
+  }
+
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-purple-400" /></div>;
+
+  return (
+    <Card className="border-white/10 bg-white/5 text-white">
+      <CardContent className="p-6">
+        <div className="mb-4 flex items-center gap-2">
+          <Milestone className="h-4 w-4 text-purple-400" />
+          <h2 className="font-semibold">Milestones</h2>
+          {milestones.length === 0 && (
+            <button onClick={() => setShowForm((v) => !v)}
+              className="ml-auto flex items-center gap-1 rounded-lg bg-purple-600/20 border border-purple-500/30 px-3 py-1 text-xs text-purple-300 hover:bg-purple-600/30 transition-all">
+              <Plus className="h-3 w-3" /> Set up milestones
+            </button>
+          )}
+        </div>
+
+        {showForm && milestones.length === 0 && (
+          <div className="mb-4 rounded-xl border border-purple-500/20 bg-white/[0.03] p-4 space-y-3">
+            <p className="text-xs text-gray-500">Define payment milestones. Percentages must sum to 100%.</p>
+            {rows.map((row, i) => (
+              <div key={i} className="grid grid-cols-3 gap-2 items-end">
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Title</p>
+                  <Input value={row.title} onChange={(e) => setRows(rows.map((r, j) => j === i ? { ...r, title: e.target.value } : r))}
+                    className="border-white/20 bg-white/5 text-white" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">% of total</p>
+                  <Input value={row.percentage} onChange={(e) => setRows(rows.map((r, j) => j === i ? { ...r, percentage: e.target.value } : r))}
+                    className="border-white/20 bg-white/5 text-white" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Due date</p>
+                  <Input type="date" value={row.dueDate} onChange={(e) => setRows(rows.map((r, j) => j === i ? { ...r, dueDate: e.target.value } : r))}
+                    className="border-white/20 bg-white/5 text-white" />
+                </div>
+              </div>
+            ))}
+            <div className="flex items-center justify-between">
+              <div className="flex gap-2">
+                <button onClick={() => setRows([...rows, { title: "", percentage: "", dueDate: "" }])}
+                  className="text-xs text-purple-400 hover:text-purple-300">+ Add row</button>
+                {rows.length > 1 && (
+                  <button onClick={() => setRows(rows.slice(0, -1))}
+                    className="text-xs text-red-400 hover:text-red-300">- Remove last</button>
+                )}
+              </div>
+              <p className={`text-xs font-medium ${Math.abs(totalPct - 100) < 0.01 ? "text-green-400" : "text-orange-400"}`}>
+                Total: {totalPct}%
+              </p>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <Button onClick={createMilestones} disabled={saving || Math.abs(totalPct - 100) > 0.01}
+                className="bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-40" size="sm">
+                {saving ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <Check className="mr-1 h-3 w-3" />} Create milestones
+              </Button>
+              <Button variant="ghost" onClick={() => setShowForm(false)} size="sm"
+                className="border border-white/10 text-gray-400 hover:text-white">Cancel</Button>
+            </div>
+          </div>
+        )}
+
+        {milestones.length === 0 ? (
+          <p className="text-sm text-gray-500">No milestones set up. This order will be billed as a single payment.</p>
+        ) : (
+          <div className="space-y-2">
+            {milestones.map((m) => (
+              <div key={m.id} className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-purple-500/30 bg-purple-500/10 text-xs font-bold text-purple-300">
+                  {m.sortOrder + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-white">{m.title}</p>
+                    <Badge className={`text-xs ${MILESTONE_STATUS_COLORS[m.status] ?? ""}`}>{m.status}</Badge>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    {m.percentage}% · ${m.amount.toLocaleString()}
+                    {m.dueDate && ` · Due ${new Date(m.dueDate).toLocaleDateString("en-GB")}`}
+                  </p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  {m.status === "PENDING" && (
+                    <button onClick={() => updateStatus(m.id, "COMPLETED")}
+                      className="text-xs text-blue-400 hover:text-blue-300 transition-colors">Complete</button>
+                  )}
+                  {m.status === "COMPLETED" && (
+                    <button onClick={() => updateStatus(m.id, "PAID")}
+                      className="text-xs text-green-400 hover:text-green-300 transition-colors">Mark paid</button>
+                  )}
+                </div>
+              </div>
+            ))}
+            <p className="text-xs text-gray-600 pt-1">
+              Total: ${orderTotal.toLocaleString()} ·{" "}
+              Paid: ${milestones.filter((m) => m.status === "PAID").reduce((s, m) => s + m.amount, 0).toLocaleString()}
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 // ─── Activity Timeline ────────────────────────────────────────────────────────
 
@@ -421,8 +730,10 @@ export default function AdminOrderDetailPage() {
   const statusConfig = STATUS_CONFIG[order.status] || STATUS_CONFIG["PENDING"];
 
   const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: "overview",  label: "Overview",  icon: <LayoutGrid className="h-3.5 w-3.5" /> },
-    { id: "activity",  label: "Activity",  icon: <Activity className="h-3.5 w-3.5" /> },
+    { id: "overview",   label: "Overview",   icon: <LayoutGrid className="h-3.5 w-3.5" /> },
+    { id: "invoices",   label: "Invoices",   icon: <FileText className="h-3.5 w-3.5" /> },
+    { id: "milestones", label: "Milestones", icon: <Milestone className="h-3.5 w-3.5" /> },
+    { id: "activity",   label: "Activity",   icon: <Activity className="h-3.5 w-3.5" /> },
   ];
 
   return (
@@ -833,6 +1144,12 @@ export default function AdminOrderDetailPage() {
             </Card>
           </div>
         )}
+
+        {/* ── Invoices Tab ── */}
+        {activeTab === "invoices" && <InvoicesPanel orderId={id} orderTotal={order.totalPrice} orderCurrency={order.details?.currency as string ?? "USD"} />}
+
+        {/* ── Milestones Tab ── */}
+        {activeTab === "milestones" && <MilestonesPanel orderId={id} orderTotal={order.totalPrice} />}
 
         {/* ── Activity Tab ── */}
         {activeTab === "activity" && (

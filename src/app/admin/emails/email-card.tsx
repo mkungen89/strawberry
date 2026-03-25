@@ -1,13 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
+import { useState } from "react";
+import { ChevronDown, ChevronUp, Send, X, Edit2, Check, Loader2, Mail } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 type EmailThread = {
   id: string;
@@ -15,7 +12,7 @@ type EmailThread = {
   subject: string;
   originalEmail: string;
   aiResponse: string | null;
-  status: 'PENDING' | 'DRAFT' | 'SENT' | 'FAILED';
+  status: "PENDING" | "DRAFT" | "SENT" | "FAILED";
   receivedAt: string;
   sentAt: string | null;
   failureReason: string | null;
@@ -28,42 +25,32 @@ type EmailThread = {
   } | null;
 };
 
-type EmailCardProps = {
+type Props = {
   email: EmailThread;
   onApprove: (draftId: string) => void;
   onReject: (threadId: string) => void;
+  onRefresh: () => void;
 };
 
-export function EmailCard({ email, onApprove, onReject }: EmailCardProps) {
+const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+  DRAFT:   { label: "Draft",   color: "bg-amber-500/20 text-amber-300 border-amber-500/20" },
+  SENT:    { label: "Sent",    color: "bg-green-500/20 text-green-300 border-green-500/20" },
+  FAILED:  { label: "Failed",  color: "bg-red-500/20 text-red-300 border-red-500/20" },
+  PENDING: { label: "Pending", color: "bg-gray-500/20 text-gray-400 border-gray-500/20" },
+};
+
+function fmt(iso: string) {
+  return new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+export function EmailCard({ email, onApprove, onReject, onRefresh }: Props) {
   const [expanded, setExpanded] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [editedBody, setEditedBody] = useState(email.draft?.body || '');
+  const [editing, setEditing] = useState(false);
+  const [editedBody, setEditedBody] = useState(email.draft?.body || "");
   const [sending, setSending] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('sv-SE', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'DRAFT':
-        return <Badge variant="outline" className="bg-yellow-500/20 text-yellow-700 border-yellow-500">⚠️ DRAFT</Badge>;
-      case 'SENT':
-        return <Badge variant="outline" className="bg-green-500/20 text-green-700 border-green-500">✅ SENT</Badge>;
-      case 'FAILED':
-        return <Badge variant="outline" className="bg-red-500/20 text-red-700 border-red-500">❌ FAILED</Badge>;
-      case 'PENDING':
-        return <Badge variant="outline" className="bg-gray-500/20 text-gray-700 border-gray-500">⏳ PENDING</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
+  const status = STATUS_CONFIG[email.status] ?? { label: email.status, color: "bg-gray-500/20 text-gray-400" };
 
   const handleApprove = async () => {
     if (!email.draft) return;
@@ -74,161 +61,144 @@ export function EmailCard({ email, onApprove, onReject }: EmailCardProps) {
 
   const handleSaveEdit = async () => {
     if (!email.draft) return;
+    setSaving(true);
     try {
       const res = await fetch(`/api/admin/emails/${email.draft.id}/edit`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ body: editedBody }),
       });
-
-      if (!res.ok) throw new Error('Failed to save edit');
-
-      setEditDialogOpen(false);
-      window.location.reload(); // Refresh to show updated content
-    } catch (error) {
-      console.error('Failed to save edit:', error);
+      if (!res.ok) throw new Error();
+      toast.success("Draft updated");
+      setEditing(false);
+      onRefresh();
+    } catch {
+      toast.error("Failed to save");
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <>
-      <Card className="hover:shadow-md transition-shadow">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1 flex-1">
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-lg">{email.subject}</h3>
-                {getStatusBadge(email.status)}
-              </div>
-              <p className="text-sm text-muted-foreground">
-                From: <span className="font-medium">{email.from}</span>
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {formatDate(email.receivedAt)}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setExpanded(!expanded)}
-            >
-              {expanded ? '▲ Collapse' : '▼ Expand'}
-            </Button>
+    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+      {/* Header row */}
+      <div className="flex items-start gap-4 p-4">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 border border-purple-500/20">
+          <Mail className="h-4 w-4 text-purple-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-0.5">
+            <p className="font-medium text-white text-sm truncate">{email.subject}</p>
+            <Badge className={`text-xs shrink-0 ${status.color}`}>{status.label}</Badge>
           </div>
-        </CardHeader>
+          <p className="text-xs text-gray-500">
+            From <span className="text-gray-300">{email.from}</span> · {fmt(email.receivedAt)}
+          </p>
+        </div>
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          className="flex items-center gap-1 shrink-0 text-xs text-gray-500 hover:text-white transition-colors"
+        >
+          {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </button>
+      </div>
 
-        {expanded && (
-          <CardContent className="space-y-4 pt-0">
-            <Separator />
-
-            {/* Original Email */}
-            <div>
-              <Label className="text-sm font-semibold text-muted-foreground">
-                Original Email:
-              </Label>
-              <div className="mt-2 p-3 bg-muted/50 rounded-md text-sm whitespace-pre-wrap">
-                {email.originalEmail}
-              </div>
+      {/* Expanded content */}
+      {expanded && (
+        <div className="border-t border-white/[0.06] p-4 space-y-4">
+          {/* Original email */}
+          <div>
+            <p className="text-xs font-medium text-gray-500 mb-2">Original email</p>
+            <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-xs text-gray-300 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
+              {email.originalEmail}
             </div>
+          </div>
 
-            {/* AI Response */}
-            {email.draft && (
-              <>
-                <div>
-                  <Label className="text-sm font-semibold text-muted-foreground">
-                    Elin's Suggested Response:
-                  </Label>
-                  <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-md text-sm whitespace-pre-wrap">
-                    {email.draft.body}
+          {/* AI draft */}
+          {email.draft && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-medium text-gray-500">Elin&apos;s suggested response</p>
+                {email.status === "DRAFT" && !editing && (
+                  <button
+                    onClick={() => { setEditedBody(email.draft!.body); setEditing(true); }}
+                    className="flex items-center gap-1 text-xs text-purple-400 hover:text-purple-300 transition-colors"
+                  >
+                    <Edit2 className="h-3 w-3" /> Edit
+                  </button>
+                )}
+              </div>
+
+              {editing ? (
+                <div className="space-y-2">
+                  <Textarea
+                    value={editedBody}
+                    onChange={(e) => setEditedBody(e.target.value)}
+                    rows={8}
+                    className="border-white/20 bg-white/5 text-white text-xs font-mono leading-relaxed resize-none"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleSaveEdit}
+                      disabled={saving}
+                      className="flex items-center gap-1 rounded-lg bg-purple-600/20 border border-purple-500/30 px-3 py-1.5 text-xs text-purple-300 hover:bg-purple-600/30 transition-all disabled:opacity-50"
+                    >
+                      {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setEditing(false)}
+                      className="flex items-center gap-1 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-gray-400 hover:text-white transition-all"
+                    >
+                      <X className="h-3 w-3" /> Cancel
+                    </button>
                   </div>
                 </div>
+              ) : (
+                <div className="rounded-xl border border-purple-500/10 bg-purple-500/[0.04] p-3 text-xs text-gray-300 whitespace-pre-wrap leading-relaxed max-h-64 overflow-y-auto">
+                  {email.draft.body}
+                </div>
+              )}
 
-                {/* Actions */}
-                {email.status === 'DRAFT' && (
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => {
-                        setEditedBody(email.draft!.body);
-                        setEditDialogOpen(true);
-                      }}
-                      variant="outline"
-                      size="sm"
-                    >
-                      ✏️ Edit
-                    </Button>
-                    <Button
-                      onClick={handleApprove}
-                      variant="default"
-                      size="sm"
-                      disabled={sending}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      {sending ? 'Sending...' : '✅ Approve & Send'}
-                    </Button>
-                    <Button
-                      onClick={() => onReject(email.id)}
-                      variant="outline"
-                      size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      ❌ Reject
-                    </Button>
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* Sent Confirmation */}
-            {email.status === 'SENT' && email.sentAt && (
-              <div className="text-sm text-green-600 font-medium">
-                ✅ Sent at {formatDate(email.sentAt)}
-              </div>
-            )}
-
-            {/* Error Message */}
-            {email.status === 'FAILED' && email.failureReason && (
-              <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-md text-sm text-red-700">
-                <strong>Error:</strong> {email.failureReason}
-              </div>
-            )}
-          </CardContent>
-        )}
-      </Card>
-
-      {/* Edit Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Edit Email Response</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>To: {email.draft?.to}</Label>
+              {/* Actions */}
+              {email.status === "DRAFT" && !editing && (
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={handleApprove}
+                    disabled={sending}
+                    className="flex items-center gap-1.5 rounded-xl bg-green-600/15 hover:bg-green-600/25 border border-green-500/25 px-4 py-2 text-xs font-medium text-green-300 transition-all disabled:opacity-50"
+                  >
+                    {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                    Approve & Send
+                  </button>
+                  <button
+                    onClick={() => onReject(email.id)}
+                    className="flex items-center gap-1.5 rounded-xl bg-red-600/15 hover:bg-red-600/25 border border-red-500/25 px-4 py-2 text-xs font-medium text-red-300 transition-all"
+                  >
+                    <X className="h-3.5 w-3.5" /> Reject
+                  </button>
+                </div>
+              )}
             </div>
-            <div>
-              <Label>Subject: {email.draft?.subject}</Label>
+          )}
+
+          {/* Sent confirmation */}
+          {email.status === "SENT" && email.sentAt && (
+            <div className="flex items-center gap-2 rounded-xl border border-green-500/20 bg-green-500/[0.06] px-3 py-2">
+              <Check className="h-3.5 w-3.5 text-green-400 shrink-0" />
+              <p className="text-xs text-green-300">Sent {fmt(email.sentAt)}</p>
             </div>
-            <div>
-              <Label htmlFor="edit-body">Message Body</Label>
-              <Textarea
-                id="edit-body"
-                value={editedBody}
-                onChange={(e) => setEditedBody(e.target.value)}
-                rows={12}
-                className="mt-2 font-mono text-sm"
-              />
+          )}
+
+          {/* Error */}
+          {email.status === "FAILED" && email.failureReason && (
+            <div className="rounded-xl border border-red-500/20 bg-red-500/[0.06] px-3 py-2">
+              <p className="text-xs font-medium text-red-300 mb-0.5">Send failed</p>
+              <p className="text-xs text-red-400/80">{email.failureReason}</p>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveEdit}>
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

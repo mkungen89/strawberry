@@ -68,3 +68,28 @@ export async function POST(
 
   return NextResponse.json(invoice);
 }
+
+// Update invoice (mark paid, update status)
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session || (session.user as { role?: string }).role !== "ADMIN") {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
+
+  const { id: orderId } = await params;
+  const { invoiceId, status, paidAt, pdfUrl } = await req.json();
+
+  const invoice = await db.invoice.update({
+    where: { id: invoiceId, orderId },
+    data: {
+      status,
+      paidAt: paidAt ? new Date(paidAt) : status === "PAID" ? new Date() : undefined,
+      pdfUrl: pdfUrl || undefined,
+    },
+  });
+
+  return NextResponse.json(invoice);
+}

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+import { MILESTONE_STATUS_CONFIG as MILESTONE_STATUS, INVOICE_STATUS_CONFIG as INVOICE_STATUS } from "@/lib/order-status";
 
 interface Message {
   id: string;
@@ -104,20 +105,6 @@ const STATUS_STEPS = [
   { key: "COMPLETED", label: "Done" },
 ];
 
-const MILESTONE_STATUS: Record<string, { label: string; color: string }> = {
-  PENDING: { label: "Pending", color: "text-gray-400" },
-  IN_PROGRESS: { label: "In progress", color: "text-purple-400" },
-  COMPLETED: { label: "Completed", color: "text-green-400" },
-  PAID: { label: "Paid", color: "text-blue-400" },
-};
-
-const INVOICE_STATUS: Record<string, { label: string; color: string }> = {
-  DRAFT: { label: "Draft", color: "bg-gray-500/20 text-gray-300" },
-  SENT: { label: "Sent", color: "bg-blue-500/20 text-blue-300" },
-  PAID: { label: "Paid", color: "bg-green-500/20 text-green-300" },
-  OVERDUE: { label: "Overdue", color: "bg-red-500/20 text-red-300" },
-};
-
 export default function OrderDetailPage() {
   const { id } = useParams();
   const [order, setOrder] = useState<Order | null>(null);
@@ -144,11 +131,11 @@ export default function OrderDetailPage() {
   useEffect(() => {
     Promise.all([
       fetch(`/api/orders/${id}`).then((r) => r.json()),
-      fetch(`/api/orders/${id}/milestones`).then((r) => r.json()).catch(() => []),
-      fetch(`/api/orders/${id}/invoices`).then((r) => r.json()).catch(() => []),
-      fetch(`/api/orders/${id}/files`).then((r) => r.json()).catch(() => []),
+      fetch(`/api/orders/${id}/milestones`).then((r) => r.json()).catch(() => { toast.error("Could not load milestones"); return []; }),
+      fetch(`/api/orders/${id}/invoices`).then((r) => r.json()).catch(() => { toast.error("Could not load invoices"); return []; }),
+      fetch(`/api/orders/${id}/files`).then((r) => r.json()).catch(() => { toast.error("Could not load files"); return []; }),
       fetch(`/api/orders/${id}/activity`).then((r) => r.json()).catch(() => []),
-      fetch(`/api/orders/${id}/concepts`).then((r) => r.json()).catch(() => []),
+      fetch(`/api/orders/${id}/concepts`).then((r) => r.json()).catch(() => { toast.error("Could not load concepts"); return []; }),
     ]).then(([orderData, msData, invData, filesData, actData, conceptsData]) => {
       setOrder(orderData.error ? null : orderData);
       setMilestones(Array.isArray(msData) ? msData : []);

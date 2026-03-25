@@ -86,7 +86,7 @@ export default function SocialPage() {
       fetch("/api/admin/social/boards")
         .then((r) => r.ok ? r.json() : [])
         .then((b) => { setBoards(b); if (b.length > 0) setBoardId(b[0].id); })
-        .catch(() => {});
+        .catch(() => { toast.error("Could not load Pinterest boards"); });
     }
   }, [platform, boards.length]);
 

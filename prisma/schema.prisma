@@ -639,6 +639,43 @@ model CostEntry {
   updatedAt  DateTime @updatedAt
 }
 
+// ─── Testimonials ─────────────────────────────────────────────────────────────
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  handle    String?
+  service   String
+  stars     Int      @default(5)
+  text      String
+  published Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published])
+}
+
+// ─── Portfolio ────────────────────────────────────────────────────────────────
+
+model PortfolioProject {
+  id          String   @id @default(cuid())
+  title       String
+  service     String
+  category    String   // Discord, YouTube, Streaming, Website, App, Branding
+  description String
+  imageUrl    String?
+  gradient    String   @default("from-purple-600 via-pink-600 to-rose-600")
+  featured    Boolean  @default(false)
+  published   Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published])
+  @@index([category])
+}
+
 model AiUsageLog {
   id           String   @id @default(cuid())
   source       String

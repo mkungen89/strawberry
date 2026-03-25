@@ -13,7 +13,6 @@ import {
   Package,
   Clock,
   CheckCircle,
-  XCircle,
   Loader2,
   MessageCircle,
   Zap,
@@ -22,6 +21,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { SUBSCRIPTION_PLANS } from "@/lib/subscription-data";
+import { ORDER_STATUS_CONFIG } from "@/lib/order-status";
+import { toast } from "sonner";
 
 interface Subscription {
   id: string;
@@ -31,15 +32,7 @@ interface Subscription {
   cancelAtPeriodEnd: boolean;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  PENDING: { label: "Pending payment", color: "bg-yellow-500/20 text-yellow-300 border-yellow-500/20", icon: <Clock className="h-3 w-3" /> },
-  PAID: { label: "Paid — In queue", color: "bg-blue-500/20 text-blue-300 border-blue-500/20", icon: <Clock className="h-3 w-3" /> },
-  IN_PROGRESS: { label: "In progress", color: "bg-purple-500/20 text-purple-300 border-purple-500/20", icon: <Zap className="h-3 w-3" /> },
-  REVIEW: { label: "Under review", color: "bg-orange-500/20 text-orange-300 border-orange-500/20", icon: <Clock className="h-3 w-3" /> },
-  REVISION: { label: "Revision", color: "bg-pink-500/20 text-pink-300 border-pink-500/20", icon: <Clock className="h-3 w-3" /> },
-  COMPLETED: { label: "Completed", color: "bg-green-500/20 text-green-300 border-green-500/20", icon: <CheckCircle className="h-3 w-3" /> },
-  CANCELLED: { label: "Cancelled", color: "bg-red-500/20 text-red-300 border-red-500/20", icon: <XCircle className="h-3 w-3" /> },
-};
+const STATUS_CONFIG = ORDER_STATUS_CONFIG;
 
 interface Order {
   id: string;
@@ -78,7 +71,7 @@ export default function DashboardPage() {
       fetch("/api/subscriptions/current")
         .then((r) => r.json())
         .then((data) => { if (data && data.id) setSubscription(data); })
-        .catch(() => {});
+        .catch(() => { toast.error("Could not load subscription info"); });
     }
   }, [session]);
 

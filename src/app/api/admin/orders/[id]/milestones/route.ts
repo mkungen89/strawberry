@@ -80,3 +80,28 @@ export async function POST(
 
   return NextResponse.json(created);
 }
+
+// Update a single milestone status
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session || (session.user as { role?: string }).role !== "ADMIN") {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
+
+  const { id: orderId } = await params;
+  const { milestoneId, status } = await req.json();
+
+  const milestone = await db.milestone.update({
+    where: { id: milestoneId, orderId },
+    data: {
+      status,
+      completedAt: status === "COMPLETED" || status === "PAID" ? new Date() : undefined,
+      paidAt: status === "PAID" ? new Date() : undefined,
+    },
+  });
+
+  return NextResponse.json(milestone);
+}

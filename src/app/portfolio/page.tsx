@@ -5,46 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Star, ArrowRight } from "lucide-react";
 import PortfolioGrid from "@/components/portfolio/PortfolioGrid";
+import { db } from "@/lib/db";
 
-const TESTIMONIALS = [
-  {
-    name: "Marcus L.",
-    handle: "@marcusgaming",
-    service: "Discord Server",
-    stars: 5,
-    text: "The server Vexcraft built for our community is absolutely top-notch. Every channel, role and bot is perfectly configured. Our members were blown away on launch day.",
-  },
-  {
-    name: "Sofia K.",
-    handle: "@sofiacreates",
-    service: "YouTube Banner & Avatar",
-    stars: 5,
-    text: "My channel looks so much more professional now. The banner and avatar perfectly match my content style and I've had loads of comments about the new look.",
-  },
-  {
-    name: "Erik A.",
-    handle: "@eriklive",
-    service: "Streaming Overlay",
-    stars: 5,
-    text: "The overlay pack is insane. Smooth animations, perfect colours, and the alerts are exactly what I wanted. Set up in OBS in minutes.",
-  },
-  {
-    name: "Linnea B.",
-    handle: "@linneadev",
-    service: "Website",
-    stars: 5,
-    text: "We needed a full business website fast and Vexcraft delivered ahead of schedule. Clean code, great SEO and exactly the design we briefed.",
-  },
-  {
-    name: "Jesper T.",
-    handle: "@jespert",
-    service: "Mobile App",
-    stars: 5,
-    text: "Launching our app on both iOS and Android felt daunting, but Vexcraft handled everything from design to App Store submission. Outstanding work.",
-  },
-];
+async function getTestimonials() {
+  try {
+    return await db.testimonial.findMany({
+      where: { published: true },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+    });
+  } catch {
+    return [];
+  }
+}
 
-export default function PortfolioPage() {
+export default async function PortfolioPage() {
+  const testimonials = await getTestimonials();
+
   return (
     <div className="bg-black text-white">
       <Navbar />
@@ -80,36 +56,31 @@ export default function PortfolioPage() {
               </p>
             </div>
 
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {TESTIMONIALS.map((t) => (
-                <div
-                  key={t.handle}
-                  className="rounded-xl border border-white/10 bg-white/5 p-6"
-                >
-                  {/* Stars */}
-                  <div className="mb-3 flex gap-0.5">
-                    {Array.from({ length: t.stars }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className="h-4 w-4 fill-yellow-400 text-yellow-400"
-                      />
-                    ))}
-                  </div>
-                  <p className="mb-4 text-sm leading-relaxed text-gray-300">
-                    &ldquo;{t.text}&rdquo;
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-white">{t.name}</p>
-                      <p className="text-xs text-gray-500">{t.handle}</p>
+            {testimonials.length === 0 ? (
+              <p className="text-center text-gray-500 text-sm">No testimonials yet.</p>
+            ) : (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {testimonials.map((t) => (
+                  <div key={t.id} className="rounded-xl border border-white/10 bg-white/5 p-6">
+                    <div className="mb-3 flex gap-0.5">
+                      {Array.from({ length: t.stars }).map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      ))}
                     </div>
-                    <Badge className="bg-purple-600/20 text-purple-400 border border-purple-500/30 text-xs">
-                      {t.service}
-                    </Badge>
+                    <p className="mb-4 text-sm leading-relaxed text-gray-300">&ldquo;{t.text}&rdquo;</p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-white">{t.name}</p>
+                        {t.handle && <p className="text-xs text-gray-500">{t.handle}</p>}
+                      </div>
+                      <Badge className="bg-purple-600/20 text-purple-400 border border-purple-500/30 text-xs">
+                        {t.service}
+                      </Badge>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 

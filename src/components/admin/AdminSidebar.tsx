@@ -15,6 +15,11 @@ import {
   BarChart3,
   Share2,
   TrendingUp,
+  Images,
+  Star,
+  GitBranch,
+  UserCheck,
+  Quote,
 } from "lucide-react";
 
 const NAV = [
@@ -26,6 +31,11 @@ const NAV = [
   { href: "/admin/qa", icon: ShieldCheck, label: "QA Review" },
   { href: "/admin/chat", icon: MessageCircle, label: "Live Chat" },
   { href: "/admin/social", icon: Share2, label: "Social" },
+  { href: "/admin/portfolio", icon: Images, label: "Portfolio" },
+  { href: "/admin/testimonials", icon: Quote, label: "Testimonials" },
+  { href: "/admin/customers", icon: UserCheck, label: "Customers" },
+  { href: "/admin/reviews", icon: Star, label: "Reviews" },
+  { href: "/admin/referrals", icon: GitBranch, label: "Referrals" },
   { href: "/admin/analytics", icon: BarChart3, label: "Analytics" },
   { href: "/admin/economics", icon: TrendingUp, label: "Economics" },
 ];
