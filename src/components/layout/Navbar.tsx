@@ -25,7 +25,6 @@ export default function Navbar() {
     { href: "/pricing", label: "Pricing" },
     { href: "/plans", label: "Plans" },
     { href: "/portfolio", label: "Portfolio" },
-    { href: "/team", label: "Team" },
     { href: "/faq", label: "FAQ" },
   ];
 
@@ -34,7 +33,7 @@ export default function Navbar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5">
+          <Link href="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg shadow-purple-600/20">
               <Zap className="h-5 w-5 text-white" />
             </div>
