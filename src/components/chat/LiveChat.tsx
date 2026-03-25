@@ -91,8 +91,9 @@ export default function LiveChat() {
         }),
       });
       if (res.ok) {
-        const newMsg = await res.json();
-        setMessages((prev) => [...prev, newMsg]);
+        const data = await res.json();
+        // Add both visitor message and Elin's response
+        setMessages((prev) => [...prev, data.visitorMessage, data.elinMessage]);
         setMessage("");
       }
     } catch {

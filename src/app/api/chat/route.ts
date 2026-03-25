@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { getElinResponse } from "@/lib/ai";
 
 // Create a new chat conversation
 export async function POST(req: NextRequest) {
@@ -21,6 +22,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Message is required." }, { status: 400 });
     }
 
+    // Create conversation with initial visitor message
     const conversation = await db.chatConversation.create({
       data: {
         visitorName: visitorName?.trim() || "Visitor",
@@ -34,10 +36,31 @@ export async function POST(req: NextRequest) {
           },
         },
       },
-      include: { messages: true },
+      include: { messages: { orderBy: { createdAt: "asc" } } },
     });
 
-    return NextResponse.json(conversation);
+    // Generate AI response from Elin
+    const aiResponse = await getElinResponse([
+      { role: "user", content: message.trim() },
+    ]);
+
+    // Add Elin's response
+    const elinMessage = await db.chatMessage.create({
+      data: {
+        conversationId: conversation.id,
+        content: aiResponse,
+        senderType: "AGENT",
+        senderName: "Elin Nyström",
+      },
+    });
+
+    // Return conversation with both messages
+    const updatedConversation = await db.chatConversation.findUnique({
+      where: { id: conversation.id },
+      include: { messages: { orderBy: { createdAt: "asc" } } },
+    });
+
+    return NextResponse.json(updatedConversation);
   } catch (err) {
     console.error("[Chat API Error]", err);
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });

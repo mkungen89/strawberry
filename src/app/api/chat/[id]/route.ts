@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { getElinResponse, type ChatMessage } from "@/lib/ai";
 
 // Get conversation messages
 export async function GET(
@@ -46,11 +47,16 @@ export async function POST(
     return NextResponse.json({ error: "Content is required." }, { status: 400 });
   }
 
-  const conversation = await db.chatConversation.findUnique({ where: { id } });
+  const conversation = await db.chatConversation.findUnique({
+    where: { id },
+    include: { messages: { orderBy: { createdAt: "asc" } } },
+  });
+
   if (!conversation) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  // Create visitor message
   const message = await db.chatMessage.create({
     data: {
       conversationId: id,
@@ -66,5 +72,31 @@ export async function POST(
     data: { updatedAt: new Date() },
   });
 
-  return NextResponse.json(message);
+  // Build conversation history for AI
+  const history: ChatMessage[] = conversation.messages.map((msg) => ({
+    role: msg.senderType === "VISITOR" ? "user" : "assistant",
+    content: msg.content,
+  }));
+
+  // Add the new visitor message
+  history.push({ role: "user", content: content.trim() });
+
+  // Generate AI response from Elin
+  const aiResponse = await getElinResponse(history);
+
+  // Create Elin's response message
+  const elinMessage = await db.chatMessage.create({
+    data: {
+      conversationId: id,
+      content: aiResponse,
+      senderType: "AGENT",
+      senderName: "Elin Nyström",
+    },
+  });
+
+  // Return both messages (visitor + Elin)
+  return NextResponse.json({
+    visitorMessage: message,
+    elinMessage,
+  });
 }
