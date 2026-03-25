@@ -81,8 +81,21 @@ export default function EmailAdminPage() {
   };
 
   const handleReject = async (threadId: string) => {
-    // TODO: Implement delete draft endpoint
-    toast.info('Reject feature coming soon');
+    if (!confirm('Are you sure you want to reject this draft?')) return;
+
+    try {
+      const res = await fetch(`/api/admin/emails/${threadId}/delete`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) throw new Error('Failed to reject draft');
+
+      toast.success('Draft rejected ❌');
+      setRefreshKey((prev) => prev + 1); // Refresh list
+    } catch (error) {
+      toast.error('Failed to reject draft');
+      console.error(error);
+    }
   };
 
   const filteredEmails = emails;

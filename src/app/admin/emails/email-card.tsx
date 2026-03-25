@@ -72,9 +72,22 @@ export function EmailCard({ email, onApprove, onReject }: EmailCardProps) {
     setSending(false);
   };
 
-  const handleSaveEdit = () => {
-    // TODO: Implement edit endpoint
-    setEditDialogOpen(false);
+  const handleSaveEdit = async () => {
+    if (!email.draft) return;
+    try {
+      const res = await fetch(`/api/admin/emails/${email.draft.id}/edit`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body: editedBody }),
+      });
+
+      if (!res.ok) throw new Error('Failed to save edit');
+
+      setEditDialogOpen(false);
+      window.location.reload(); // Refresh to show updated content
+    } catch (error) {
+      console.error('Failed to save edit:', error);
+    }
   };
 
   return (
