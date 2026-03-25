@@ -34,9 +34,14 @@ export default function TermsPage() {
           <section>
             <h2 className="mb-3 text-xl font-semibold text-white">2. Services</h2>
             <p>
-              Vexcraft provides professional digital services including, but not limited to, Discord
-              server setup and design, website development, streaming overlays, mobile application
-              development, and related digital creative work.
+              Vexcraft provides professional digital services including, but not limited to, logo and
+              brand identity design, social media kits, YouTube channel art and thumbnails, streaming
+              overlays and emotes, Discord server setup, copywriting, SEO audits, growth strategy,
+              community management, video shorts, Notion templates, email templates, website
+              development, mobile application development, SaaS platform development, and related
+              digital creative work. We also offer monthly subscription plans providing recurring
+              deliverables and one-time bundle packages combining multiple services at a discounted
+              price.
             </p>
             <p className="mt-3">
               All services are delivered as described in the relevant service listing at the time of
@@ -48,6 +53,12 @@ export default function TermsPage() {
               Delivery timelines are estimates and may vary depending on project complexity,
               communication, and client response times. Vexcraft is not liable for delays caused by
               incomplete or delayed client input.
+            </p>
+            <p className="mt-3">
+              Monthly subscription plans are billed automatically on a recurring basis. You may
+              cancel your subscription at any time from your account dashboard. Cancellation takes
+              effect at the end of the current billing period. No refunds are issued for partial
+              billing periods unless otherwise required by applicable law.
             </p>
           </section>
 

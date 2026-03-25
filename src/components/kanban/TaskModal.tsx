@@ -251,11 +251,17 @@ export function TaskModal({ task, onClose, onUpdate }: TaskModalProps) {
                 onChange={(e) => updateField("status", e.target.value)}
                 className="w-full bg-transparent text-sm text-white/80 outline-none cursor-pointer"
               >
-                {COLUMNS.map((c) => (
+                {COLUMNS.filter((c) => c.id !== "REVIEW" && c.id !== "DONE").map((c) => (
                   <option key={c.id} value={c.id} className="bg-[#1a1a1a]">
                     {c.label}
                   </option>
                 ))}
+                {/* REVIEW and DONE are read-only — set via QA endpoints */}
+                {(localTask.status === "REVIEW" || localTask.status === "DONE") && (
+                  <option value={localTask.status} className="bg-[#1a1a1a]">
+                    {COLUMNS.find((c) => c.id === localTask.status)?.label}
+                  </option>
+                )}
               </select>
             </div>
 

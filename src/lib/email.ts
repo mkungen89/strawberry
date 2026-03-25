@@ -98,6 +98,30 @@ export function statusUpdateEmail(customerName: string, serviceName: string, ord
   };
 }
 
+export function conceptsReadyEmail(customerName: string, serviceName: string, orderId: string) {
+  return {
+    subject: `Your concepts are ready to review — ${serviceName} | Vexcraft`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; color: #e5e5e5; padding: 40px 30px; border-radius: 12px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #a855f6; margin: 0;">⚡ Vexcraft</h1>
+        </div>
+        <h2 style="color: white; margin-bottom: 10px;">Your Concepts Are Ready! 🎨</h2>
+        <p>Hi ${customerName},</p>
+        <p>We've reviewed your brief and prepared <strong>3 custom concepts</strong> for your <strong>${serviceName}</strong> project.</p>
+        <p>Log in to your dashboard to review each concept and select the one you'd like us to proceed with.</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${process.env.NEXT_PUBLIC_APP_URL}/orders/${orderId}" style="display: inline-block; background: #a855f6; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+            Review My Concepts →
+          </a>
+        </div>
+        <p style="color: #888; font-size: 13px;">Once you select a concept, our team will begin production immediately.</p>
+        <p style="color: #888; font-size: 12px; margin-top: 30px;">— The Vexcraft Team</p>
+      </div>
+    `,
+  };
+}
+
 export function newMessageEmail(customerName: string, orderId: string) {
   return {
     subject: `New message on your order | Vexcraft`,

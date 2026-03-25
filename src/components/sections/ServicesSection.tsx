@@ -27,7 +27,7 @@ export default function ServicesSection() {
             </span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-400">
-            From Discord servers to full-stack apps — we craft digital products that stand out.
+            Design, SEO, copywriting, streaming, Discord, websites and more — everything your brand needs under one roof.
           </p>
         </div>
 

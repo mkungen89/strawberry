@@ -38,6 +38,14 @@ export async function PATCH(
   if (!order) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   if (conceptId) {
+    // Verify the concept belongs to this order before selecting it
+    const concept = await db.orderConcept.findFirst({
+      where: { id: conceptId, orderId: id },
+    });
+    if (!concept) {
+      return NextResponse.json({ error: "Concept not found" }, { status: 404 });
+    }
+
     // Deselect all, then select the chosen one
     await db.orderConcept.updateMany({
       where: { orderId: id },

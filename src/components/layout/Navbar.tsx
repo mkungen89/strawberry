@@ -22,7 +22,7 @@ export default function Navbar() {
 
   const navLinks = [
     { href: "/services", label: "Services" },
-    { href: "/pricing", label: "Pricing" },
+    { href: "/pricing", label: "Bundles" },
     { href: "/plans", label: "Plans" },
     { href: "/portfolio", label: "Portfolio" },
     { href: "/faq", label: "FAQ" },

@@ -5,12 +5,40 @@ import Footer from "@/components/layout/Footer";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, ArrowRight, Sparkles, Zap } from "lucide-react";
-import { SUBSCRIPTION_PLANS, BUNDLES } from "@/lib/subscription-data";
+import { CheckCircle2, ArrowRight, Sparkles, Zap, Loader2 } from "lucide-react";
+import { SUBSCRIPTION_PLANS } from "@/lib/subscription-data";
 import { useCurrency } from "@/lib/currency-context";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useSession } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 export default function PlansPage() {
   const { format, currency } = useCurrency();
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
+  async function subscribe(planSlug: string) {
+    if (!session) {
+      router.push(`/login?redirect=/plans`);
+      return;
+    }
+    setLoadingPlan(planSlug);
+    try {
+      const res = await fetch("/api/subscriptions/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planSlug }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to create checkout");
+      window.location.href = data.checkoutUrl;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Something went wrong");
+      setLoadingPlan(null);
+    }
+  }
 
   return (
     <div className="bg-black text-white">
@@ -73,92 +101,39 @@ export default function PlansPage() {
                   ))}
                 </ul>
                 <p className="text-xs text-gray-600 mb-4">{plan.bestFor}</p>
-                <Link href="/contact">
-                  <Button
-                    className={`w-full ${
-                      plan.popular
-                        ? "bg-purple-600 text-white hover:bg-purple-700"
-                        : "border border-white/20 bg-transparent text-white hover:bg-white/10"
-                    }`}
-                  >
-                    Get started <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
+                <Button
+                  onClick={() => subscribe(plan.slug)}
+                  disabled={loadingPlan === plan.slug}
+                  className={`w-full ${
+                    plan.popular
+                      ? "bg-purple-600 text-white hover:bg-purple-700"
+                      : "border border-white/20 bg-transparent text-white hover:bg-white/10"
+                  }`}
+                >
+                  {loadingPlan === plan.slug ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <>Get started <ArrowRight className="ml-2 h-4 w-4" /></>
+                  )}
+                </Button>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Bundle Deals */}
+        {/* Bundle Deals CTA */}
         <section className="px-4 pb-28 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl">
-            <div className="mb-12 text-center">
-              <Badge className="mb-4 border-green-500/30 bg-green-500/10 text-green-300 px-3">
-                <Zap className="mr-2 h-3.5 w-3.5" /> Save up to 22%
-              </Badge>
-              <h2 className="mb-4 text-3xl font-bold sm:text-4xl">
-                Bundle deals
-              </h2>
-              <p className="mx-auto max-w-2xl text-lg text-gray-400">
-                Get more for less. Curated packages for the best value.
-              </p>
-            </div>
-
-            <div className="grid gap-6 sm:grid-cols-2">
-              {BUNDLES.map((bundle) => (
-                <div
-                  key={bundle.slug}
-                  className={`relative rounded-2xl border p-6 transition-all duration-300 hover:border-green-500/20 hover:bg-white/[0.04] ${
-                    bundle.popular
-                      ? "border-green-500/20 bg-green-500/5"
-                      : "border-white/[0.06] bg-white/[0.02]"
-                  }`}
-                >
-                  {bundle.popular && (
-                    <Badge className="absolute -top-3 right-4 bg-green-500 text-white border-0">
-                      Best Value
-                    </Badge>
-                  )}
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/10 text-2xl shrink-0">
-                      {bundle.icon}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-white">{bundle.name}</h3>
-                      <p className="text-sm text-gray-400">{bundle.description}</p>
-                    </div>
-                  </div>
-                  <ul className="space-y-1.5 mb-5">
-                    {bundle.services.map((s) => (
-                      <li key={s} className="flex items-center gap-2 text-sm text-gray-300">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-green-400 shrink-0" />
-                        {s}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <span className="text-sm text-gray-600 line-through">
-                        {format(bundle.originalPrice, bundle.originalPriceGBP, bundle.originalPriceEUR)}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl font-bold text-white">
-                          {format(bundle.bundlePrice, bundle.bundlePriceGBP, bundle.bundlePriceEUR)}
-                        </span>
-                        <Badge className="bg-green-500/20 text-green-300 border-green-500/20 text-xs">
-                          -{bundle.discount}%
-                        </Badge>
-                      </div>
-                    </div>
-                    <Link href="/contact">
-                      <Button size="sm" className="bg-green-600 text-white hover:bg-green-700">
-                        Order bundle <ArrowRight className="ml-1 h-3.5 w-3.5" />
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="mx-auto max-w-2xl text-center rounded-2xl border border-green-500/20 bg-green-500/5 p-10">
+            <Badge className="mb-4 border-green-500/30 bg-green-500/10 text-green-300 px-3">
+              <Zap className="mr-2 h-3.5 w-3.5" /> Save up to 25%
+            </Badge>
+            <h2 className="mb-3 text-2xl font-bold">Looking for a one-time deal?</h2>
+            <p className="text-gray-400 mb-6">Check out our curated bundle packages — multiple services, one discounted price.</p>
+            <Link href="/pricing">
+              <Button className="bg-green-600 text-white hover:bg-green-700 px-8">
+                View bundle deals <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </section>
       </main>

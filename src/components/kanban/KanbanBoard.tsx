@@ -100,16 +100,20 @@ export function KanbanBoard() {
     const activeTask = tasks.find((t) => t.id === activeId);
     if (!activeTask) return;
 
-    // Check if dragging over a column
+    // Determine target status
     const overColumn = COLUMNS.find((c) => c.id === overId);
+    const overTask = tasks.find((t) => t.id === overId);
+    const targetStatus = overColumn?.id ?? overTask?.status;
+
+    // Block visual preview into QA-gated columns
+    if (targetStatus === "REVIEW" || targetStatus === "DONE") return;
+
     if (overColumn && activeTask.status !== overId) {
       setTasks((prev) =>
         prev.map((t) => t.id === activeId ? { ...t, status: overId } : t)
       );
     }
 
-    // Check if dragging over another task
-    const overTask = tasks.find((t) => t.id === overId);
     if (overTask && overTask.status !== activeTask.status) {
       setTasks((prev) =>
         prev.map((t) => t.id === activeId ? { ...t, status: overTask.status } : t)
@@ -140,6 +144,18 @@ export function KanbanBoard() {
     }
 
     if (newStatus !== movedTask.status) {
+      // Block QA-gated transitions — must go through proper endpoints
+      if (newStatus === "DONE") {
+        toast.error("Use the Approve button in QA Review to move to Done");
+        fetchTasks();
+        return;
+      }
+      if (newStatus === "REVIEW") {
+        toast.error("Use 'Submit for QA Review' button to submit for review");
+        fetchTasks();
+        return;
+      }
+
       // Optimistic update already applied in dragOver, now persist
       try {
         await fetch(`/api/admin/tasks/${activeId}`, {

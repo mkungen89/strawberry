@@ -6,6 +6,51 @@ import { db } from "@/lib/db";
 import Stripe from "stripe";
 import { sendEmail, orderConfirmationEmail } from "@/lib/email";
 import { orderInQueueEmail } from "@/lib/email-templates";
+import { SUBSCRIPTION_PLANS } from "@/lib/subscription-data";
+
+async function handleSubscriptionUpsert(sub: Stripe.Subscription) {
+  const userId = sub.metadata?.userId;
+  if (!userId) return;
+
+  const priceId = sub.items.data[0]?.price.id;
+  const plan = SUBSCRIPTION_PLANS.find(
+    (p) => process.env[`STRIPE_PRICE_${p.slug.toUpperCase()}`] === priceId
+  ) ?? SUBSCRIPTION_PLANS.find((p) => sub.metadata?.planSlug === p.slug);
+
+  // current_period_end moved from Subscription to SubscriptionItem in newer Stripe SDK
+  const periodEnd = sub.items.data[0]?.current_period_end ?? 0;
+
+  await db.subscription.upsert({
+    where: { userId },
+    create: {
+      userId,
+      stripeSubscriptionId: sub.id,
+      stripePriceId: priceId ?? "",
+      planSlug: plan?.slug ?? sub.metadata?.planSlug ?? "unknown",
+      status: sub.status,
+      currentPeriodEnd: new Date(periodEnd * 1000),
+      cancelAtPeriodEnd: sub.cancel_at_period_end,
+    },
+    update: {
+      stripeSubscriptionId: sub.id,
+      stripePriceId: priceId ?? "",
+      planSlug: plan?.slug ?? sub.metadata?.planSlug ?? "unknown",
+      status: sub.status,
+      currentPeriodEnd: new Date(periodEnd * 1000),
+      cancelAtPeriodEnd: sub.cancel_at_period_end,
+    },
+  });
+}
+
+async function handleSubscriptionDeleted(sub: Stripe.Subscription) {
+  const userId = sub.metadata?.userId;
+  if (!userId) return;
+
+  await db.subscription.updateMany({
+    where: { stripeSubscriptionId: sub.id },
+    data: { status: "canceled", cancelAtPeriodEnd: false },
+  });
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -20,6 +65,16 @@ export async function POST(req: NextRequest) {
     );
   } catch {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+  }
+
+  // Subscription lifecycle events
+  if (event.type === "customer.subscription.created" ||
+      event.type === "customer.subscription.updated") {
+    await handleSubscriptionUpsert(event.data.object as Stripe.Subscription);
+  }
+
+  if (event.type === "customer.subscription.deleted") {
+    await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
   }
 
   if (event.type === "checkout.session.completed") {

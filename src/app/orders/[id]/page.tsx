@@ -87,6 +87,7 @@ interface Order {
   currency: string;
   paymentType: string;
   createdAt: string;
+  briefLocked: boolean;
   details: Record<string, string>;
   techStack?: Record<string, string>;
   service: { name: string; slug: string };
@@ -99,6 +100,7 @@ const STATUS_STEPS = [
   { key: "PAID", label: "Paid" },
   { key: "IN_PROGRESS", label: "Building" },
   { key: "REVIEW", label: "Review" },
+  { key: "REVISION", label: "Revision" },
   { key: "COMPLETED", label: "Done" },
 ];
 
@@ -155,6 +157,10 @@ export default function OrderDetailPage() {
       setActivities(Array.isArray(actData) ? actData : []);
       setConcepts(Array.isArray(conceptsData) ? conceptsData : []);
       if (orderData?.details?.description) setBriefText(orderData.details.description);
+      // Auto-switch to concepts tab if order is in REVIEW and concepts exist
+      if (orderData?.status === "REVIEW" && Array.isArray(conceptsData) && conceptsData.length > 0) {
+        setActiveTab("concepts");
+      }
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [id]);
@@ -163,22 +169,35 @@ export default function OrderDetailPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [order?.messages]);
 
-  // Poll for new messages
+  // Poll for new messages and concepts
   useEffect(() => {
     if (!order) return;
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/orders/${id}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.messages?.length !== order.messages.length) {
+        const [orderRes, conceptsRes] = await Promise.all([
+          fetch(`/api/orders/${id}`),
+          fetch(`/api/orders/${id}/concepts`),
+        ]);
+        if (orderRes.ok) {
+          const data = await orderRes.json();
+          if (data.messages?.length !== order.messages.length || data.status !== order.status) {
             setOrder(data);
+          }
+        }
+        if (conceptsRes.ok) {
+          const conceptsData = await conceptsRes.json();
+          if (Array.isArray(conceptsData) && conceptsData.length !== concepts.length) {
+            setConcepts(conceptsData);
+            // Auto-switch to concepts tab when they first appear
+            if (conceptsData.length > 0 && concepts.length === 0) {
+              setActiveTab("concepts");
+            }
           }
         }
       } catch { /* silent */ }
     }, 10000);
     return () => clearInterval(interval);
-  }, [id, order?.messages?.length, order]);
+  }, [id, order, concepts.length]);
 
   async function sendMessage() {
     if (!message.trim()) return;
@@ -312,6 +331,47 @@ export default function OrderDetailPage() {
               </p>
             </div>
           )}
+
+          {/* Concepts ready banner */}
+          {order.status === "REVIEW" && concepts.length > 0 && !concepts.some(c => c.isSelected) && (
+            <div className="mt-5 rounded-xl bg-purple-500/10 border border-purple-500/30 p-4 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-purple-300">
+                  <Palette className="inline h-4 w-4 mr-1.5 -mt-0.5" />
+                  Your concepts are ready!
+                </p>
+                <p className="text-xs text-purple-400/70 mt-0.5">
+                  We&apos;ve prepared {concepts.length} concepts based on your brief. Pick the one you like best.
+                </p>
+              </div>
+              <button
+                onClick={() => setActiveTab("concepts")}
+                className="shrink-0 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition-colors"
+              >
+                Review concepts →
+              </button>
+            </div>
+          )}
+
+          {/* Concept selected banner */}
+          {concepts.some(c => c.isSelected) && (
+            <div className="mt-5 rounded-xl bg-green-500/5 border border-green-500/20 p-4">
+              <p className="text-sm text-green-300">
+                <CheckCircle className="inline h-4 w-4 mr-1.5 -mt-0.5" />
+                You&apos;ve selected a concept — we&apos;re now building it for you!
+              </p>
+            </div>
+          )}
+
+          {/* Revision message */}
+          {order.status === "REVISION" && (
+            <div className="mt-5 rounded-xl bg-pink-500/5 border border-pink-500/20 p-4">
+              <p className="text-sm text-pink-300">
+                <Clock className="inline h-4 w-4 mr-1.5 -mt-0.5" />
+                We&apos;re working on the revisions you requested. We&apos;ll notify you when they&apos;re ready.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Description / Editable brief */}
@@ -319,7 +379,7 @@ export default function OrderDetailPage() {
           <div className="mb-8 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-semibold">Project brief</h2>
-              {!(order as unknown as { briefLocked: boolean }).briefLocked ? (
+              {!order.briefLocked ? (
                 <button
                   onClick={() => setEditingBrief(!editingBrief)}
                   className="flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300 transition-colors"

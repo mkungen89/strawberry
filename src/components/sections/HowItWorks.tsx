@@ -18,9 +18,9 @@ export default function HowItWorks() {
     },
     {
       number: "03",
-      title: "Get a recommendation",
-      description: "Our AI analyzes your needs and recommends the best tech stack and hosting.",
-      icon: "🤖",
+      title: "We review your brief",
+      description: "Our team reviews your order and reaches out within 24 hours to confirm details and get started.",
+      icon: "🔍",
       color: "from-cyan-500/20 to-cyan-600/10",
     },
     {

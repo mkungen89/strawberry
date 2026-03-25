@@ -56,6 +56,10 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  if (conversation.status === "CLOSED") {
+    return NextResponse.json({ error: "Conversation is closed." }, { status: 409 });
+  }
+
   // Create visitor message
   const message = await db.chatMessage.create({
     data: {
@@ -99,4 +103,24 @@ export async function POST(
     visitorMessage: message,
     elinMessage,
   });
+}
+
+// Close a conversation
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  const conversation = await db.chatConversation.findUnique({ where: { id } });
+  if (!conversation) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  await db.chatConversation.update({
+    where: { id },
+    data: { status: "CLOSED", closedAt: new Date() },
+  });
+
+  return NextResponse.json({ success: true });
 }

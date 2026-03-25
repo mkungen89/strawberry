@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { headers } from "next/headers";
-import { sendEmail, statusUpdateEmail } from "@/lib/email";
+import { sendEmail, statusUpdateEmail, conceptsReadyEmail } from "@/lib/email";
+import { autoGenerateConcepts } from "@/lib/auto-generate-concepts";
 
 export async function GET(
   _req: NextRequest,
@@ -48,6 +49,10 @@ export async function PATCH(
       data.briefLocked = true;
       data.briefLockedAt = new Date();
     }
+    // Record delivery timestamp
+    if (body.status === "COMPLETED") {
+      data.deliveredAt = new Date();
+    }
   }
   if (body.invoiceUrl !== undefined) data.invoiceUrl = body.invoiceUrl;
 
@@ -57,8 +62,32 @@ export async function PATCH(
     include: { user: { select: { name: true, email: true } }, service: { select: { name: true } } },
   });
 
-  // Send email notification on status change
-  if (body.status && order.user?.email) {
+  // When work starts: auto-generate AI concepts, move to REVIEW, notify customer
+  if (body.status === "IN_PROGRESS" && order.user?.email) {
+    // Run in background — don't block the response
+    (async () => {
+      try {
+        await autoGenerateConcepts(id);
+
+        // Move order to REVIEW now that concepts are ready
+        await db.order.update({
+          where: { id },
+          data: { status: "REVIEW" },
+        });
+
+        // Email customer: concepts ready
+        const emailData = conceptsReadyEmail(
+          order.user!.name || "Customer",
+          order.service?.name || "your order",
+          id
+        );
+        await sendEmail({ to: order.user!.email!, ...emailData });
+      } catch (err) {
+        console.error(`[AutoConcepts] Failed for order ${id}:`, err);
+      }
+    })();
+  } else if (body.status && order.user?.email) {
+    // Regular status update email
     const emailData = statusUpdateEmail(
       order.user.name || "Customer",
       order.service?.name || "Your order",

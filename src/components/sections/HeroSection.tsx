@@ -35,7 +35,7 @@ export default function HeroSection() {
         </h1>
 
         <p className="mx-auto mb-12 max-w-2xl text-lg text-gray-400 sm:text-xl leading-relaxed">
-          Discord servers, websites, streaming overlays, mobile apps and more.
+          Logo design, social media kits, SEO, copywriting, streaming overlays, websites, apps and more.
           Tell us what you need — we handle the rest.{" "}
           <span className="text-gray-300">No technical knowledge required.</span>
         </p>

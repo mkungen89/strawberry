@@ -20,7 +20,7 @@ const FAQ_DATA: FaqCategory[] = [
       {
         question: "What is Vexcraft?",
         answer:
-          "Vexcraft is a digital studio specialising in custom services for creators and businesses — including Discord server setup, YouTube branding, streaming overlays, websites, mobile apps, and streaming emote packs.",
+          "Vexcraft is a full-service digital studio for creators and businesses. We offer logo and branding, social media kits, YouTube thumbnails and channel art, streaming overlays and emotes, Discord server setup, copywriting, SEO audits, growth strategy, community management, video shorts, Notion templates, email templates, and enterprise services including websites, mobile apps, and SaaS platforms. We also offer monthly subscription plans for ongoing creative support.",
       },
       {
         question: "How do I place an order?",
@@ -101,6 +101,41 @@ const FAQ_DATA: FaqCategory[] = [
         question: "Do your websites include SEO?",
         answer:
           "All websites include basic on-page SEO as standard. Our Business and Custom packages include more advanced SEO setup including meta tags, structured data, and sitemap generation.",
+      },
+    ],
+  },
+  {
+    label: "Subscriptions & Plans",
+    items: [
+      {
+        question: "What are the monthly plans?",
+        answer:
+          "We offer four monthly subscription plans: Creator ($29/mo), Streamer ($49/mo), Business ($99/mo), and Growth ($199/mo). Each plan includes a set of recurring deliverables — such as thumbnails, design deliverables, copywriting, and strategy calls — along with a discount on all one-time orders.",
+      },
+      {
+        question: "Can I cancel my subscription at any time?",
+        answer:
+          "Yes. You can cancel your subscription at any time from your dashboard. Your plan remains active until the end of the current billing period — there are no cancellation fees.",
+      },
+      {
+        question: "Can I switch plans?",
+        answer:
+          "Yes. You can upgrade or downgrade your plan at any time. Changes take effect at the start of your next billing cycle. Contact us at support@vexcraft.io if you need help switching.",
+      },
+      {
+        question: "What counts as a design deliverable on Business or Growth plans?",
+        answer:
+          "A design deliverable is any completed piece of work from our service catalogue — for example a social media banner, a logo update, a set of thumbnails, a Notion template, or an email template. You choose what you need each month.",
+      },
+      {
+        question: "Are subscription payments charged automatically?",
+        answer:
+          "Yes. Subscriptions are billed monthly via Stripe using the payment method you provide at checkout. You will receive an email receipt after each charge.",
+      },
+      {
+        question: "What is the difference between a Plan and a Bundle?",
+        answer:
+          "Plans are monthly subscriptions giving you ongoing deliverables and discounts. Bundles are one-time packages that combine multiple services at a discounted price — no recurring commitment.",
       },
     ],
   },

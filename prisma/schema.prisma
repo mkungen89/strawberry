@@ -8,21 +8,37 @@ datasource db {
 
 // Better Auth models
 model User {
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
-  image         String?
-  role          Role      @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id               String    @id @default(cuid())
+  name             String
+  email            String    @unique
+  emailVerified    Boolean   @default(false)
+  image            String?
+  role             Role      @default(USER)
+  stripeCustomerId String?   @unique
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   sessions          Session[]
   accounts          Account[]
   orders            Order[]
   reviews           Review[]
+  subscription      Subscription?
   referralsGiven    Referral[] @relation("referrer")
   referralsReceived Referral[] @relation("referred")
+}
+
+model Subscription {
+  id                     String   @id @default(cuid())
+  userId                 String   @unique
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeSubscriptionId   String   @unique
+  stripePriceId          String
+  planSlug               String   // creator | streamer | business | growth
+  status                 String   // active | canceled | past_due | trialing | incomplete
+  currentPeriodEnd       DateTime
+  cancelAtPeriodEnd      Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 }
 
 model Session {
@@ -361,7 +377,9 @@ model TeamMember {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  tasks     Task[]
+  tasks         Task[]
+  socialPosts   SocialPost[]
+  socialReplies SocialReply[]
 }
 
 model Task {
@@ -546,4 +564,64 @@ model EmailDraft {
   updatedAt      DateTime  @updatedAt
 
   @@index([approved])
+}
+
+// ─── Social Media ─────────────────────────────────────────────────────────────
+
+model SocialAccount {
+  id           String    @id @default(cuid())
+  platform     String    @unique // "X" | "PINTEREST" | "REDDIT"
+  accessToken  String
+  refreshToken String?
+  tokenExpiry  DateTime?
+  accountName  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model SocialPost {
+  id          String    @id @default(cuid())
+  platform    String    // "X" | "PINTEREST" | "REDDIT"
+  content     String    @db.Text
+  title       String?   // Pinterest/Reddit title
+  link        String?   // Pinterest destination URL
+  boardId     String?   // Pinterest board ID
+  boardName   String?   // Pinterest board name
+  imageUrl    String?   // Pinterest pin image
+  subreddit   String?   // Reddit subreddit
+  status      String    @default("DRAFT") // DRAFT | PUBLISHED | FAILED
+  authorId    String
+  authorName  String
+  externalId  String?   // Post ID on the platform
+  externalUrl String?   // URL of the post
+  errorMsg    String?
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  author  TeamMember    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  replies SocialReply[]
+
+  @@index([platform, status])
+  @@index([authorId])
+}
+
+model SocialReply {
+  id          String    @id @default(cuid())
+  postId      String
+  content     String    @db.Text
+  status      String    @default("DRAFT") // DRAFT | PUBLISHED | FAILED
+  authorId    String
+  authorName  String
+  externalId  String?
+  errorMsg    String?
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  post   SocialPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author TeamMember @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([authorId])
 }

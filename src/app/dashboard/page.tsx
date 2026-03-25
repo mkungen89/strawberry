@@ -17,7 +17,19 @@ import {
   Loader2,
   MessageCircle,
   Zap,
+  Sparkles,
+  CreditCard,
+  ExternalLink,
 } from "lucide-react";
+import { SUBSCRIPTION_PLANS } from "@/lib/subscription-data";
+
+interface Subscription {
+  id: string;
+  planSlug: string;
+  status: string;
+  currentPeriodEnd: string;
+  cancelAtPeriodEnd: boolean;
+}
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   PENDING: { label: "Pending payment", color: "bg-yellow-500/20 text-yellow-300 border-yellow-500/20", icon: <Clock className="h-3 w-3" /> },
@@ -45,6 +57,9 @@ export default function DashboardPage() {
   const { data: session, isPending } = useSession();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [cancellingSubscription, setCancellingSubscription] = useState(false);
+  const [openingPortal, setOpeningPortal] = useState(false);
 
   useEffect(() => {
     if (!isPending && !session) router.push("/login");
@@ -59,8 +74,35 @@ export default function DashboardPage() {
           setLoading(false);
         })
         .catch(() => setLoading(false));
+
+      fetch("/api/subscriptions/current")
+        .then((r) => r.json())
+        .then((data) => { if (data && data.id) setSubscription(data); })
+        .catch(() => {});
     }
   }, [session]);
+
+  async function handleCancelSubscription() {
+    if (!confirm("Cancel your subscription? You'll keep access until the end of the billing period.")) return;
+    setCancellingSubscription(true);
+    try {
+      const res = await fetch("/api/subscriptions/cancel", { method: "POST" });
+      if (res.ok) setSubscription((s) => s ? { ...s, cancelAtPeriodEnd: true } : s);
+    } finally {
+      setCancellingSubscription(false);
+    }
+  }
+
+  async function handleOpenPortal() {
+    setOpeningPortal(true);
+    try {
+      const res = await fetch("/api/subscriptions/portal", { method: "POST" });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } finally {
+      setOpeningPortal(false);
+    }
+  }
 
   if (isPending || !session) {
     return (
@@ -139,6 +181,77 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+
+        {/* Subscription */}
+        {(() => {
+          const plan = subscription ? SUBSCRIPTION_PLANS.find((p) => p.slug === subscription.planSlug) : null;
+          const isActive = subscription && subscription.status === "active";
+          return (
+            <div className="mb-10 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/10 text-2xl shrink-0">
+                    {plan ? plan.icon : <CreditCard className="h-6 w-6 text-gray-500" />}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h2 className="text-lg font-semibold">
+                        {plan ? plan.name : "No active plan"}
+                      </h2>
+                      {isActive && (
+                        <Badge className={`text-xs border ${subscription.cancelAtPeriodEnd ? "bg-red-500/10 text-red-300 border-red-500/20" : "bg-green-500/10 text-green-300 border-green-500/20"}`}>
+                          {subscription.cancelAtPeriodEnd ? "Cancels at period end" : "Active"}
+                        </Badge>
+                      )}
+                    </div>
+                    {subscription ? (
+                      <p className="text-sm text-gray-400">
+                        {subscription.cancelAtPeriodEnd ? "Access until" : "Renews"}{" "}
+                        {new Date(subscription.currentPeriodEnd).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-gray-400">Get monthly deliveries and save up to 25%</p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {subscription ? (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleOpenPortal}
+                        disabled={openingPortal}
+                        className="border-white/20 bg-transparent text-white hover:bg-white/10"
+                      >
+                        {openingPortal ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <ExternalLink className="mr-2 h-3.5 w-3.5" />}
+                        Manage billing
+                      </Button>
+                      {!subscription.cancelAtPeriodEnd && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleCancelSubscription}
+                          disabled={cancellingSubscription}
+                          className="border-red-500/30 bg-transparent text-red-400 hover:bg-red-500/10"
+                        >
+                          {cancellingSubscription ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Cancel"}
+                        </Button>
+                      )}
+                    </>
+                  ) : (
+                    <Link href="/plans">
+                      <Button size="sm" className="bg-purple-600 text-white hover:bg-purple-700">
+                        <Sparkles className="mr-2 h-3.5 w-3.5" />
+                        View plans
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Orders */}
         <h2 className="text-xl font-semibold mb-4">Your orders</h2>

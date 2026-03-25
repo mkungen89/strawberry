@@ -3,6 +3,7 @@ import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/sections/HeroSection";
 import ServicesSection from "@/components/sections/ServicesSection";
 import HowItWorks from "@/components/sections/HowItWorks";
+import PlansTeaser from "@/components/sections/PlansTeaser";
 import TestimonialsSection from "@/components/sections/TestimonialsSection";
 import FaqSection from "@/components/sections/FaqSection";
 import CtaSection from "@/components/sections/CtaSection";
@@ -14,6 +15,7 @@ export default function HomePage() {
       <main>
         <HeroSection />
         <ServicesSection />
+        <PlansTeaser />
         <HowItWorks />
         <TestimonialsSection />
         <FaqSection />

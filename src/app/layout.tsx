@@ -11,12 +11,17 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Vexcraft — Digital Services for Creators & Businesses",
   description:
-    "We build Discord servers, websites, streaming overlays, mobile apps and more. Tailored for you — whether you're a beginner or a pro.",
+    "Vexcraft is a full-service digital studio offering logo design, social media kits, streaming overlays, YouTube branding, Discord setup, SEO, copywriting, growth strategy, community management, websites, mobile apps, and monthly subscription plans.",
   openGraph: {
-    title: "Vexcraft",
-    description: "Professional digital services for creators & businesses",
+    title: "Vexcraft — Digital Services for Creators & Businesses",
+    description: "Full-service digital studio for creators and businesses. Design, SEO, copywriting, websites, apps and more.",
     url: "https://vexcraft.io",
     siteName: "Vexcraft",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Vexcraft — Digital Services for Creators & Businesses",
+    description: "Full-service digital studio for creators and businesses. Design, SEO, copywriting, websites, apps and more.",
   },
 };
 

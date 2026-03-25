@@ -31,7 +31,7 @@ export default function CtaSection() {
               ?
             </h2>
             <p className="mx-auto mb-10 max-w-xl text-lg text-gray-400 leading-relaxed">
-              Tell us what you need — we handle everything from design to deployment.
+              Tell us what you need — we handle everything from first concept to final delivery.
               No technical knowledge required.
             </p>
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">

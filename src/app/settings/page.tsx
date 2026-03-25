@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useSession, authClient } from "@/lib/auth-client";
@@ -9,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, User, Lock, Shield, Save, Smartphone, CheckCircle } from "lucide-react";
+import { Loader2, User, Lock, Shield, Save, Smartphone, CheckCircle, CreditCard, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
@@ -163,7 +164,7 @@ export default function SettingsPage() {
                 <Input
                   value={session.user.email}
                   disabled
-                  className="border-white/10 bg-white/[0.02] text-gray-500"
+                  className="border-white/10 bg-white/[0.02] text-gray-300 opacity-100 disabled:opacity-100"
                 />
                 <Badge className="bg-green-500/20 text-green-300 border-green-500/20 shrink-0">Verified</Badge>
               </div>
@@ -336,6 +337,27 @@ export default function SettingsPage() {
               Set up 2FA
             </Button>
           )}
+        </div>
+
+        {/* Subscription */}
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10">
+              <CreditCard className="h-5 w-5 text-purple-400" />
+            </div>
+            <div>
+              <h2 className="font-semibold">Subscription</h2>
+              <p className="text-xs text-gray-500">Manage your plan and billing</p>
+            </div>
+          </div>
+          <p className="text-sm text-gray-400 mb-4">
+            View your active plan, upgrade, downgrade, or cancel from your dashboard.
+          </p>
+          <Link href="/dashboard">
+            <Button size="sm" variant="ghost" className="border border-white/20 text-gray-300 hover:text-white">
+              Go to dashboard <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
         </div>
 
         {/* Account info */}
