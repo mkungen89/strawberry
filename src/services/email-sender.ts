@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { db } from '@/lib/db';
+import { db } from '../lib/db';
 
 interface EmailOptions {
   to: string;

@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmailAIProcessor = void 0;
 const sdk_1 = __importDefault(require("@anthropic-ai/sdk"));
-const db_1 = require("@/lib/db");
+const db_1 = require("../lib/db");
 const ELIN_SYSTEM_PROMPT = `You are Elin, the AI customer support assistant for Vexcraft — a global digital agency.
 
 **Your role:**

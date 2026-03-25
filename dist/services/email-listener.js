@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmailListener = void 0;
 const imap_1 = __importDefault(require("imap"));
 const mailparser_1 = require("mailparser");
-const db_1 = require("@/lib/db");
+const db_1 = require("../lib/db");
 class EmailListener {
     constructor() {
         this.config = {

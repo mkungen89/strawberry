@@ -1,6 +1,6 @@
 import Imap from 'imap';
 import { simpleParser } from 'mailparser';
-import { db } from '@/lib/db';
+import { db } from '../lib/db';
 
 interface EmailConfig {
   user: string;

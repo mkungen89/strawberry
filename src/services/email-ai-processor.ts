@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { db } from '@/lib/db';
+import { db } from '../lib/db';
 
 const ELIN_SYSTEM_PROMPT = `You are Elin, the AI customer support assistant for Vexcraft — a global digital agency.
 

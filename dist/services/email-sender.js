@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmailSender = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
-const db_1 = require("@/lib/db");
+const db_1 = require("../lib/db");
 class EmailSender {
     constructor() {
         const host = process.env.SMTP_HOST || 'mail.spacemail.com';
