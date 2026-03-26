@@ -152,6 +152,9 @@ model Order {
   briefLockedAt   DateTime?
   concepts        OrderConcept[]
   escalations     OrderEscalation[]
+  buildLogs       OrderBuildLog[]
+  landingPage     LandingPageAccess?
+  auditLogs       AuditLog[]
 }
 
 model OrderConcept {
@@ -366,6 +369,8 @@ enum ServiceCategory {
   SEO
   GROWTH
   SOCIAL
+  WEB
+  STRATEGY
 }
 
 enum OrderStatus {
@@ -714,5 +719,86 @@ model AiUsageLog {
   createdAt    DateTime @default(now())
 
   @@index([source])
+  @@index([createdAt])
+}
+
+// ─── Landing Page Automation ──────────────────────────────────────────────────
+
+model OrderBuildLog {
+  id               String    @id @default(cuid())
+  orderId          String
+  order            Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  deploymentId     String    @unique
+  vercelProjectId  String
+
+  status           String    // BUILDING, SUCCESS, FAILED, CANCELED
+  buildNumber      Int
+
+  errorType        String?   // typescript_error, missing_env, timeout, etc
+  errorMessage     String?
+  errorStack       String?
+  suggestedFix     String?
+
+  buildLogs        Json?
+
+  startedAt        DateTime
+  completedAt      DateTime?
+  resolvedAt       DateTime?
+  resolvedBy       String?
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+}
+
+model LandingPageAccess {
+  id                String   @id @default(cuid())
+  orderId           String   @unique
+  order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  accessToken       String   @unique
+  accessTokenHash   String
+
+  githubRepo        String
+  vercelProjectId   String
+  vercelUrl         String
+
+  customDomain      String?
+
+  canEdit           Boolean  @default(false)
+  canDeploy         Boolean  @default(false)
+  requiresApproval  Boolean  @default(true)
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  orderId      String
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  action       String
+  actor        String
+  actorEmail   String?
+
+  resourceType String?
+  resourceId   String?
+
+  details      Json
+  ipAddress    String?
+  userAgent    String?
+
+  status       String   // SUCCESS, FAILED, PENDING
+  errorMessage String?
+
+  createdAt    DateTime @default(now())
+
+  @@index([orderId])
+  @@index([action])
+  @@index([actor])
   @@index([createdAt])
 }

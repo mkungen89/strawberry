@@ -8,6 +8,24 @@ import { sendEmail, orderConfirmationEmail } from "@/lib/email";
 import { orderInQueueEmail } from "@/lib/email-templates";
 import { SUBSCRIPTION_PLANS } from "@/lib/subscription-data";
 
+async function triggerLandingPageSetup(
+  orderId: string,
+  customerName: string,
+  customerEmail: string
+) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://vexcraft.io";
+  const secret = process.env.INTERNAL_API_SECRET ?? "";
+
+  await fetch(`${appUrl}/api/landing-pages/setup`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-internal-secret": secret,
+    },
+    body: JSON.stringify({ orderId, customerName, customerEmail }),
+  }).catch((e) => console.error("[Stripe webhook] Landing page setup call failed:", e.message));
+}
+
 async function handleSubscriptionUpsert(sub: Stripe.Subscription) {
   const userId = sub.metadata?.userId;
   if (!userId) return;
@@ -93,6 +111,15 @@ export async function POST(req: NextRequest) {
           service: { select: { name: true } },
         },
       });
+
+      // Trigger landing page automation for landing-page-design service
+      if (order.service?.name?.toLowerCase().includes("landing page") && order.user?.email) {
+        triggerLandingPageSetup(
+          orderId,
+          order.user.name || "Customer",
+          order.user.email
+        ).catch(() => {});
+      }
 
       // Send order confirmation + queue notification email to customer
       if (order.user?.email) {
