@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { createLandingPageRepo } from "@/lib/github";
+import { createLandingPageRepo, pushBriefFile } from "@/lib/github";
 import { createVercelProject } from "@/lib/vercel";
 import { generateAccessToken, hashToken, logAuditEvent } from "@/lib/landing-page-auth";
 import { notifyRepoCreated } from "@/lib/landing-page-discord";
@@ -41,11 +41,26 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  // Fetch order to get customer brief + tech stack
+  const order = await db.order.findUnique({
+    where: { id: orderId },
+    select: { details: true, techStack: true },
+  });
+
+  const customerBrief =
+    (order?.details as Record<string, string> | null)?.description ?? "";
+  const techStack = order?.techStack as Record<string, string> | null;
+
   try {
     // 1. Create GitHub repo from template
     const { repoName, repoUrl } = await createLandingPageRepo(orderId, customerName);
 
-    // 2. Create Vercel project linked to repo
+    // 2. Push brief + tech stack to repo as VEXCRAFT_BRIEF.md
+    await pushBriefFile(repoName, orderId, customerName, customerBrief, techStack).catch((e) =>
+      console.warn("[LandingPage] Could not push brief file:", e.message)
+    );
+
+    // 3. Create Vercel project linked to repo
     const { projectId, previewUrl } = await createVercelProject(orderId, repoName);
 
     // 3. Generate access token
@@ -72,7 +87,7 @@ export async function POST(req: NextRequest) {
     }, { resourceType: "github_repo", resourceId: repoName });
 
     // 6. Discord + email (fire-and-forget)
-    notifyRepoCreated(orderId, repoUrl, previewUrl).catch(() => {});
+    notifyRepoCreated(orderId, repoUrl, previewUrl, techStack).catch(() => {});
     sendPreviewReadyEmail(customerEmail, customerName, orderId, previewUrl).catch(() => {});
 
     return NextResponse.json({

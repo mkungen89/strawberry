@@ -385,6 +385,7 @@ export default function OrderForm({ service }: Props) {
                     <SelectValue placeholder="Choose type..." />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-900 border-white/10 text-white">
+                    <SelectItem value="landing-page">Landing page / Campaign</SelectItem>
                     <SelectItem value="portfolio">Portfolio / Personal site</SelectItem>
                     <SelectItem value="ecommerce">E-commerce / Online store</SelectItem>
                     <SelectItem value="blog">Blog / News</SelectItem>

@@ -281,6 +281,7 @@ export const SERVICES = [
     basePriceEUR: 359,
     popular: false,
     icon: "🌐",
+    hasTechStack: true,
     features: ["Custom design", "Responsive layout", "CTA optimization", "Fast loading", "Mobile-friendly"],
     packages: [
       { name: "Single Page", price: 399, priceGBP: 319, priceEUR: 359, features: ["1 custom page", "CTA sections", "Mobile responsive", "Ready to deploy"] },
@@ -622,5 +623,12 @@ export const RECOMMENDATIONS: Record<string, { frontend: string; backend: string
     database: "PostgreSQL",
     hosting: "DigitalOcean",
     reason: "Flexible and scalable solution for complex web apps.",
+  },
+  "landing-page": {
+    frontend: "Next.js",
+    backend: "Next.js API routes",
+    database: "None",
+    hosting: "Vercel",
+    reason: "Best for fast, SEO-optimized landing pages. Deploys instantly on Vercel — free tier more than enough for a landing page.",
   },
 };

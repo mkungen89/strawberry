@@ -16,14 +16,21 @@ async function sendDiscordEmbed(embed: object) {
 export async function notifyRepoCreated(
   orderId: string,
   repoUrl: string,
-  previewUrl: string
+  previewUrl: string,
+  techStack?: Record<string, string> | null
 ): Promise<void> {
+  const stackText = techStack
+    ? `${techStack.frontend || "—"} / ${techStack.backend || "—"} / ${techStack.hosting || "—"}`
+    : "Not specified";
+
   await sendDiscordEmbed({
     title: "🏗️ LANDING PAGE REPO CREATED",
     color: 0x9333ea,
     fields: [
       { name: "Order ID", value: orderId, inline: true },
+      { name: "Tech Stack", value: stackText, inline: true },
       { name: "GitHub", value: `[View repo](${repoUrl})`, inline: true },
+      { name: "Brief", value: `[VEXCRAFT_BRIEF.md](${repoUrl}/blob/main/VEXCRAFT_BRIEF.md)`, inline: true },
       { name: "Preview", value: `[Open preview](${previewUrl})`, inline: false },
     ],
     footer: { text: "Vexcraft Automation" },
