@@ -180,13 +180,12 @@ export const SERVICES = [
       { name: "Suite", price: 299, priceGBP: 239, priceEUR: 269, features: ["6 templates", "Full email system", "A/B test variants", "Source files"] },
     ],
   },
-  // === TIER 2: New AI-powered services ===
   {
     slug: "copywriting",
     name: "Copywriting",
     category: "CONTENT",
     briefPlaceholder: "Example: I'm launching a landing page for my online course on YouTube growth. Target audience is small creators (under 10k subs) who want to monetize. I want punchy, motivating copy with a clear CTA to sign up. Tone should feel like a friend giving real advice, not a salesman.",
-    description: "AI-powered copywriting that converts. Website copy, landing pages, email sequences, and ad copy. Fast turnaround, unlimited revisions on Pro.",
+    description: "Copywriting that converts. Website copy, landing pages, email sequences, and ad copy. Fast turnaround, unlimited revisions on Pro.",
     basePrice: 149,
     basePriceGBP: 119,
     basePriceEUR: 134,
@@ -200,35 +199,17 @@ export const SERVICES = [
     ],
   },
   {
-    slug: "ai-video-shorts",
-    name: "AI Video Shorts",
-    category: "VIDEO",
-    briefPlaceholder: "Example: I want a 60-second TikTok/Shorts video about '5 Minecraft builds that will impress your friends'. Energetic voiceover, fast cuts, trending style. My audience is teens and young adults. Add captions. I want it to feel viral and shareable — not scripted or boring.",
-    description: "Scroll-stopping short-form videos for TikTok, YouTube Shorts, and Instagram Reels. Script, AI visuals, voiceover, and captions — all included.",
-    basePrice: 79,
-    basePriceGBP: 63,
-    basePriceEUR: 71,
-    popular: true,
-    icon: "🎬",
-    features: ["AI-generated visuals", "Professional voiceover", "Captions included", "All platform formats", "Script writing"],
-    packages: [
-      { name: "Single", price: 79, priceGBP: 63, priceEUR: 71, features: ["1 video (60 sec)", "Script included", "AI visuals + voiceover", "2 revisions"] },
-      { name: "5-Pack", price: 299, priceGBP: 239, priceEUR: 269, features: ["5 videos", "Consistent branding", "All formats", "3 revisions each"] },
-      { name: "Monthly Plan", price: 599, priceGBP: 479, priceEUR: 539, features: ["10 videos/month", "Custom intro/outro", "Unlimited revisions", "Strategy call"] },
-    ],
-  },
-  {
     slug: "ai-images",
-    name: "AI Images",
+    name: "Custom Images",
     category: "GRAPHICS",
-    briefPlaceholder: "Example: I need 10 fantasy-style AI images for my YouTube channel thumbnails. Think dark forests, glowing swords, epic landscapes. Color palette: deep blues, purples, and gold. High resolution, no watermarks. I'll use them for commercial content.",
-    description: "Custom AI-generated images using advanced AI models. On-brand, high resolution, commercial rights included.",
+    briefPlaceholder: "Example: I need 10 fantasy-style images for my YouTube channel thumbnails. Think dark forests, glowing swords, epic landscapes. Color palette: deep blues, purples, and gold. High resolution, no watermarks. I'll use them for commercial content.",
+    description: "Custom-generated images. On-brand, high resolution, commercial rights included.",
     basePrice: 49,
     basePriceGBP: 39,
     basePriceEUR: 44,
     popular: false,
-    icon: "🤖",
-    features: ["Advanced AI models", "4K resolution", "Commercial rights", "Custom prompts", "Fast delivery"],
+    icon: "🖼️",
+    features: ["Advanced image generation", "4K resolution", "Commercial rights", "Custom prompts", "Fast delivery"],
     packages: [
       { name: "Image Pack", price: 49, priceGBP: 39, priceEUR: 44, features: ["10 images", "1 style/theme", "High resolution", "24h delivery"] },
       { name: "Brand Visuals", price: 149, priceGBP: 119, priceEUR: 134, features: ["30 images", "3 themes", "Consistent brand aesthetic"] },
@@ -289,6 +270,96 @@ export const SERVICES = [
       { name: "Pro", price: 1199, priceGBP: 959, priceEUR: 1079, features: ["3+ platforms", "40 posts/week", "Events & AMAs", "Dedicated manager"] },
     ],
   },
+  {
+    slug: "landing-page-design",
+    name: "Landing Page Design",
+    category: "WEB",
+    briefPlaceholder: "Example: I'm launching an online course about digital marketing. I need a landing page that sells the course and captures email signups. My brand colors are blue/white. I want it to feel trustworthy and professional — think clean, modern, minimal clutter. I have my own domain.",
+    description: "Custom landing pages that convert. Perfect for products, services, or campaigns. Includes design, layout, and ready-to-deploy.",
+    basePrice: 399,
+    basePriceGBP: 319,
+    basePriceEUR: 359,
+    popular: false,
+    icon: "🌐",
+    features: ["Custom design", "Responsive layout", "CTA optimization", "Fast loading", "Mobile-friendly"],
+    packages: [
+      { name: "Single Page", price: 399, priceGBP: 319, priceEUR: 359, features: ["1 custom page", "CTA sections", "Mobile responsive", "Ready to deploy"] },
+      { name: "3-Page Site", price: 699, priceGBP: 559, priceEUR: 630, features: ["3 pages", "Navigation", "Contact form", "SEO optimized"] },
+      { name: "Full Package with Strategy", price: 999, priceGBP: 799, priceEUR: 900, features: ["Up to 5 pages", "Conversion strategy", "A/B tested layout", "Analytics setup", "Unlimited revisions"] },
+    ],
+  },
+  {
+    slug: "custom-illustrations",
+    name: "Custom Illustrations",
+    category: "GRAPHICS",
+    briefPlaceholder: "Example: I'm a SaaS startup and I want custom illustrations for our app onboarding. Think friendly, modern, tech-forward. We need 3 character illustrations (different professions using our app) and 2 scene illustrations. Our brand is minimalist with purple accents. Should feel welcoming, not corporate.",
+    description: "Unique, custom illustrations for your brand. Characters, mascots, or scene illustrations — made just for you.",
+    basePrice: 99,
+    basePriceGBP: 79,
+    basePriceEUR: 89,
+    popular: false,
+    icon: "🎨",
+    features: ["Original artwork", "Brand-aligned", "Multiple concepts", "Commercial rights", "Source files"],
+    packages: [
+      { name: "Single Illustration", price: 99, priceGBP: 79, priceEUR: 89, features: ["1 custom illustration", "2 revisions", "PNG + SVG export"] },
+      { name: "5-Pack", price: 299, priceGBP: 239, priceEUR: 269, features: ["5 illustrations", "Consistent style", "3 revisions each", "Source files"] },
+      { name: "10-Pack + Unlimited Revisions", price: 399, priceGBP: 319, priceEUR: 359, features: ["10 illustrations", "Unlimited revisions", "Full source files", "Commercial license"] },
+    ],
+  },
+  {
+    slug: "email-newsletter-template",
+    name: "Email Newsletter Template",
+    category: "GRAPHICS",
+    briefPlaceholder: "Example: I run a tech newsletter with 5k subscribers. I want a sleek, modern email template that looks good on mobile. Dark mode support. I want space for featured article, 3-4 links, and a call-to-action. My brand is dark blue and white with orange accents.",
+    description: "Beautiful, ready-to-use email templates for Substack, Beehiiv, or Mailchimp. One-off or monthly subscriptions.",
+    basePrice: 99,
+    basePriceGBP: 79,
+    basePriceEUR: 89,
+    popular: false,
+    icon: "📮",
+    features: ["Custom design", "Responsive layout", "Drag-and-drop ready", "Brand colors", "Monthly options"],
+    packages: [
+      { name: "Single Template", price: 99, priceGBP: 79, priceEUR: 89, features: ["1 email template", "Mobile responsive", "Platform-ready export"] },
+      { name: "5-Template Pack", price: 199, priceGBP: 159, priceEUR: 179, features: ["5 templates", "Cohesive design system", "Welcome + newsletter + promo + more"] },
+      { name: "Monthly Subscription", price: 99, priceGBP: 79, priceEUR: 89, features: ["2 new templates/month", "Brand refresh each month", "Priority delivery"] },
+    ],
+  },
+  {
+    slug: "brand-guidelines",
+    name: "Brand Guidelines Document",
+    category: "STRATEGY",
+    briefPlaceholder: "Example: My personal brand is growing and I need official brand guidelines so I can work with contractors. I have a logo already, but I need rules for: logo usage (sizing, spacing), color palette, typography (which fonts), how to describe my brand voice (I'm casual but professional), and examples of what 'on-brand' looks like. I want it as a PDF and a Figma file.",
+    description: "Professional brand guidelines document. Logo usage, colors, typography, voice, and more — everything your team needs.",
+    basePrice: 199,
+    basePriceGBP: 159,
+    basePriceEUR: 179,
+    popular: false,
+    icon: "📋",
+    features: ["Logo guidelines", "Color palette", "Typography rules", "Brand voice", "Usage examples"],
+    packages: [
+      { name: "Basic Guidelines", price: 199, priceGBP: 159, priceEUR: 179, features: ["Logo rules", "Color palette", "Typography", "PDF export"] },
+      { name: "Standard Package", price: 349, priceGBP: 279, priceEUR: 314, features: ["Everything in Basic", "Brand voice guide", "Do/don't examples", "Figma file"] },
+      { name: "Premium with Video Guidelines", price: 599, priceGBP: 479, priceEUR: 540, features: ["Full guidelines doc", "Loom walkthrough video", "Social templates", "Onboarding kit for contractors"] },
+    ],
+  },
+  {
+    slug: "social-media-calendar",
+    name: "Social Media Content Calendar",
+    category: "GRAPHICS",
+    briefPlaceholder: "Example: I'm a life coach and I post on Instagram and TikTok. I need 30 custom graphics per month that align with my brand (pink/gold, motivational quotes, before-after stories, tips). I want them ready-to-post with captions. I can't spend time making graphics — I need them done and scheduled. Different graphics for Instagram vs TikTok sizes.",
+    description: "Monthly content calendar with custom graphics ready to post. 30 on-brand graphics + scheduling strategy.",
+    basePrice: 149,
+    basePriceGBP: 119,
+    basePriceEUR: 134,
+    popular: false,
+    icon: "📅",
+    features: ["30+ monthly graphics", "Multi-platform", "Ready to post", "Custom captions", "Strategy call"],
+    packages: [
+      { name: "Standard", price: 149, priceGBP: 119, priceEUR: 134, features: ["30 graphics/month", "Instagram + TikTok sizes", "Custom captions", "Monthly delivery"] },
+      { name: "Premium with Strategy", price: 249, priceGBP: 199, priceEUR: 224, features: ["40 graphics/month", "Bi-weekly strategy calls", "Content mix planning", "Scheduling recommendations"] },
+      { name: "Quarterly Prepay", price: 379, priceGBP: 303, priceEUR: 341, features: ["90 graphics (3 months)", "Save 15%", "Priority support", "Dedicated content theme"] },
+    ],
+  },
 ];
 
 // === ENTERPRISE SERVICES (Contact for quote) ===
@@ -328,6 +399,92 @@ export const ENTERPRISE_SERVICES = [
   },
 ];
 
+// Platform size requirements per service slug
+export interface PlatformSize {
+  label: string;
+  dimensions: string;
+}
+
+export interface Platform {
+  id: string;
+  name: string;
+  icon: string;
+  sizes: PlatformSize[];
+}
+
+export const SERVICE_PLATFORMS: Record<string, Platform[]> = {
+  "logo-branding": [
+    { id: "youtube", name: "YouTube", icon: "▶", sizes: [{ label: "Channel Art", dimensions: "2560×1440px" }, { label: "Profile Picture", dimensions: "800×800px" }] },
+    { id: "twitch", name: "Twitch", icon: "🟣", sizes: [{ label: "Profile Banner", dimensions: "1200×380px" }, { label: "Profile Picture", dimensions: "800×800px" }] },
+    { id: "twitter", name: "Twitter/X", icon: "✕", sizes: [{ label: "Header", dimensions: "1500×500px" }, { label: "Profile Picture", dimensions: "400×400px" }] },
+    { id: "instagram", name: "Instagram", icon: "📷", sizes: [{ label: "Profile Picture", dimensions: "320×320px" }] },
+    { id: "tiktok", name: "TikTok", icon: "♪", sizes: [{ label: "Profile Picture", dimensions: "200×200px" }] },
+    { id: "facebook", name: "Facebook", icon: "f", sizes: [{ label: "Cover Photo", dimensions: "851×315px" }, { label: "Profile Picture", dimensions: "170×170px" }] },
+    { id: "discord", name: "Discord", icon: "💬", sizes: [{ label: "Server Icon", dimensions: "512×512px" }] },
+    { id: "linkedin", name: "LinkedIn", icon: "in", sizes: [{ label: "Banner", dimensions: "1584×396px" }, { label: "Profile Picture", dimensions: "400×400px" }] },
+  ],
+  "social-media-kit": [
+    { id: "youtube", name: "YouTube", icon: "▶", sizes: [{ label: "Channel Art", dimensions: "2560×1440px" }, { label: "Profile Picture", dimensions: "800×800px" }] },
+    { id: "twitch", name: "Twitch", icon: "🟣", sizes: [{ label: "Profile Banner", dimensions: "1200×380px" }, { label: "Profile Picture", dimensions: "800×800px" }, { label: "Offline Banner", dimensions: "1920×1080px" }, { label: "Panels", dimensions: "320×160px" }] },
+    { id: "twitter", name: "Twitter/X", icon: "✕", sizes: [{ label: "Header", dimensions: "1500×500px" }, { label: "Profile Picture", dimensions: "400×400px" }] },
+    { id: "instagram", name: "Instagram", icon: "📷", sizes: [{ label: "Profile Picture", dimensions: "320×320px" }, { label: "Post", dimensions: "1080×1080px" }, { label: "Story/Reel", dimensions: "1080×1920px" }] },
+    { id: "tiktok", name: "TikTok", icon: "♪", sizes: [{ label: "Profile Picture", dimensions: "200×200px" }, { label: "Video Cover", dimensions: "1080×1920px" }] },
+    { id: "facebook", name: "Facebook", icon: "f", sizes: [{ label: "Cover Photo", dimensions: "851×315px" }, { label: "Profile Picture", dimensions: "170×170px" }] },
+    { id: "discord", name: "Discord", icon: "💬", sizes: [{ label: "Server Icon", dimensions: "512×512px" }, { label: "Banner", dimensions: "960×540px" }] },
+    { id: "linkedin", name: "LinkedIn", icon: "in", sizes: [{ label: "Banner", dimensions: "1584×396px" }, { label: "Profile Picture", dimensions: "400×400px" }] },
+    { id: "kick", name: "Kick", icon: "🟢", sizes: [{ label: "Banner", dimensions: "1920×480px" }, { label: "Profile Picture", dimensions: "400×400px" }] },
+  ],
+  "youtube-banner": [
+    { id: "youtube", name: "YouTube", icon: "▶", sizes: [{ label: "Channel Art", dimensions: "2560×1440px" }, { label: "Avatar/Logo", dimensions: "800×800px" }, { label: "Thumbnail", dimensions: "1280×720px" }] },
+  ],
+  "youtube-thumbnails": [
+    { id: "youtube", name: "YouTube", icon: "▶", sizes: [{ label: "Thumbnail", dimensions: "1280×720px" }] },
+    { id: "shorts", name: "YouTube Shorts", icon: "▶", sizes: [{ label: "Thumbnail/Cover", dimensions: "1080×1920px" }] },
+  ],
+  "streaming-overlay": [
+    { id: "twitch", name: "Twitch", icon: "🟣", sizes: [{ label: "Stream Overlay", dimensions: "1920×1080px" }, { label: "Alert Box", dimensions: "1920×1080px" }, { label: "Panels", dimensions: "320×160px" }] },
+    { id: "youtube-gaming", name: "YouTube Gaming", icon: "▶", sizes: [{ label: "Stream Overlay", dimensions: "1920×1080px" }] },
+    { id: "tiktok-live", name: "TikTok Live", icon: "♪", sizes: [{ label: "Overlay", dimensions: "1080×1920px" }] },
+    { id: "kick", name: "Kick", icon: "🟢", sizes: [{ label: "Stream Overlay", dimensions: "1920×1080px" }] },
+  ],
+  "streaming-icons": [
+    { id: "twitch", name: "Twitch", icon: "🟣", sizes: [{ label: "Emotes (small)", dimensions: "28×28px" }, { label: "Emotes (medium)", dimensions: "56×56px" }, { label: "Emotes (large)", dimensions: "112×112px" }, { label: "Sub Badges", dimensions: "18×18 / 36×36 / 72×72px" }] },
+    { id: "discord", name: "Discord", icon: "💬", sizes: [{ label: "Server Emoji", dimensions: "128×128px" }] },
+    { id: "youtube-gaming", name: "YouTube Gaming", icon: "▶", sizes: [{ label: "Membership Badges", dimensions: "48×48px" }, { label: "Emojis", dimensions: "512×512px" }] },
+    { id: "kick", name: "Kick", icon: "🟢", sizes: [{ label: "Emotes", dimensions: "128×128px" }] },
+  ],
+  "gaming-profile": [
+    { id: "steam", name: "Steam", icon: "🎮", sizes: [{ label: "Avatar", dimensions: "184×184px" }, { label: "Artwork Background", dimensions: "3840×1240px" }, { label: "Mini Profile Background", dimensions: "2000×600px" }] },
+    { id: "xbox", name: "Xbox", icon: "🎮", sizes: [{ label: "Gamerpic", dimensions: "1080×1080px" }, { label: "Background", dimensions: "1920×1080px" }] },
+    { id: "playstation", name: "PlayStation", icon: "🎮", sizes: [{ label: "Avatar", dimensions: "512×512px" }, { label: "Background", dimensions: "1920×1080px" }] },
+    { id: "epic", name: "Epic Games", icon: "🎮", sizes: [{ label: "Avatar", dimensions: "512×512px" }] },
+    { id: "battlenet", name: "Battle.net", icon: "🎮", sizes: [{ label: "Avatar", dimensions: "512×512px" }] },
+  ],
+  "landing-page-design": [
+    { id: "web", name: "Website", icon: "🌐", sizes: [{ label: "Desktop", dimensions: "1440×900px" }, { label: "Mobile", dimensions: "390×844px" }] },
+  ],
+  "custom-illustrations": [
+    { id: "web", name: "Website / App", icon: "🌐", sizes: [{ label: "Standard", dimensions: "1000×1000px" }, { label: "Wide", dimensions: "1920×600px" }] },
+    { id: "print", name: "Print", icon: "🖨", sizes: [{ label: "A4 (300dpi)", dimensions: "2480×3508px" }] },
+    { id: "social", name: "Social Media", icon: "📱", sizes: [{ label: "Post", dimensions: "1080×1080px" }] },
+  ],
+  "email-newsletter-template": [
+    { id: "email-desktop", name: "Email (Desktop)", icon: "📧", sizes: [{ label: "Email Width", dimensions: "600px wide" }] },
+    { id: "email-mobile", name: "Email (Mobile)", icon: "📱", sizes: [{ label: "Mobile Email", dimensions: "375px wide" }] },
+  ],
+  "brand-guidelines": [
+    { id: "pdf", name: "PDF Document", icon: "📄", sizes: [{ label: "A4", dimensions: "210×297mm" }] },
+    { id: "figma", name: "Figma File", icon: "🎨", sizes: [{ label: "Canvas", dimensions: "Scalable" }] },
+  ],
+  "social-media-calendar": [
+    { id: "instagram", name: "Instagram", icon: "📷", sizes: [{ label: "Post", dimensions: "1080×1080px" }, { label: "Story/Reel", dimensions: "1080×1920px" }] },
+    { id: "tiktok", name: "TikTok", icon: "♪", sizes: [{ label: "Cover / Graphic", dimensions: "1080×1920px" }] },
+    { id: "twitter", name: "Twitter/X", icon: "✕", sizes: [{ label: "Post Image", dimensions: "1200×675px" }] },
+    { id: "facebook", name: "Facebook", icon: "f", sizes: [{ label: "Post", dimensions: "1200×630px" }] },
+    { id: "linkedin", name: "LinkedIn", icon: "in", sizes: [{ label: "Post", dimensions: "1200×627px" }] },
+  ],
+};
+
 export const TECH_STACKS = {
   frontend: ["Next.js", "React", "Vue.js", "Nuxt.js", "SvelteKit", "HTML/CSS/JS"],
   backend: ["Node.js", "PHP", "Python (Django)", "Python (FastAPI)", "Laravel", "Express.js"],
@@ -362,6 +519,80 @@ export const MODULES: Module[] = [
   { id: "brand-social", name: "Social Media Assets", description: "Profile pics and banners for all platforms", price: 99, priceGBP: 79, priceEUR: 89, category: ["logo-branding"] },
   { id: "brand-guidelines", name: "Brand Guidelines PDF", description: "Complete style guide document for your brand", price: 99, priceGBP: 79, priceEUR: 89, category: ["logo-branding"] },
 ];
+
+// ---------------------------------------------------------------------------
+// Deliverables per service+package — drives what Midjourney jobs to generate
+// ---------------------------------------------------------------------------
+
+export interface DeliverableSpec {
+  type: string;         // internal key: "banner", "avatar", "logo", etc.
+  label: string;        // human-readable: "Banner", "Avatar", "Logo"
+  ar: string;           // Midjourney --ar flag
+  promptSuffix: string; // appended to the base concept prompt
+}
+
+/** Returns the list of image deliverables for a given service + package combo.
+ *  Services that don't produce Midjourney images return an empty array.
+ */
+export function getServiceDeliverables(serviceSlug: string, packageName: string): DeliverableSpec[] {
+  const p = packageName.toLowerCase();
+
+  switch (serviceSlug) {
+    case "youtube-banner":
+      if (p === "banner") return [
+        { type: "banner", label: "Banner", ar: "32:9", promptSuffix: "YouTube channel banner, ultra-wide format 2560x1440, horizontal composition" },
+      ];
+      if (p === "package") return [
+        { type: "banner", label: "Banner", ar: "32:9", promptSuffix: "YouTube channel banner, ultra-wide format 2560x1440, horizontal composition" },
+        { type: "avatar", label: "Avatar", ar: "1:1", promptSuffix: "profile picture avatar, square format 800x800, centered subject, clean background" },
+      ];
+      if (p === "complete") return [
+        { type: "banner", label: "Banner", ar: "32:9", promptSuffix: "YouTube channel banner, ultra-wide format 2560x1440, horizontal composition" },
+        { type: "avatar", label: "Avatar", ar: "1:1", promptSuffix: "profile picture avatar, square format 800x800, centered subject, clean background" },
+      ];
+      return [{ type: "banner", label: "Banner", ar: "32:9", promptSuffix: "YouTube channel banner, ultra-wide format 2560x1440" }];
+
+    case "social-media-kit":
+      return [
+        { type: "banner", label: "Banner", ar: "16:9", promptSuffix: "social media channel banner, wide format, horizontal composition" },
+        { type: "avatar", label: "Profile Picture", ar: "1:1", promptSuffix: "profile picture avatar, square format, centered subject, clean background" },
+      ];
+
+    case "gaming-profile":
+      return [
+        { type: "avatar", label: "Avatar", ar: "1:1", promptSuffix: "gaming profile picture avatar, square format 800x800, centered subject" },
+        { type: "banner", label: "Banner", ar: "16:9", promptSuffix: "gaming profile banner, wide format, horizontal composition" },
+      ];
+
+    case "logo-branding":
+      return [
+        { type: "logo", label: "Logo", ar: "1:1", promptSuffix: "logo design, square canvas, transparent/white background, vector style" },
+      ];
+
+    case "streaming-overlay":
+      return [
+        { type: "overlay", label: "Overlay Preview", ar: "16:9", promptSuffix: "streaming overlay layout, 1920x1080, dark background, showing webcam frame and info bars" },
+      ];
+
+    case "youtube-thumbnails":
+      return [
+        { type: "thumbnail", label: "Thumbnail", ar: "16:9", promptSuffix: "YouTube thumbnail, 1280x720, bold composition, eye-catching" },
+      ];
+
+    case "streaming-icons":
+      return [
+        { type: "emote", label: "Emote Preview", ar: "1:1", promptSuffix: "emote/icon design, square format, simple expressive design, suitable for Twitch/Discord" },
+      ];
+
+    case "ai-images":
+      return [
+        { type: "main", label: "Image", ar: "16:9", promptSuffix: "high quality digital art, detailed, professional" },
+      ];
+
+    default:
+      return [];
+  }
+}
 
 export const RECOMMENDATIONS: Record<string, { frontend: string; backend: string; database: string; hosting: string; reason: string }> = {
   portfolio: {
