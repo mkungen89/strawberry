@@ -80,13 +80,13 @@ export default function PortfolioGrid() {
             className="group overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] transition-all duration-300 hover:border-purple-500/20 hover:bg-white/[0.04]"
           >
             {/* Image or gradient placeholder */}
-            <div className={`relative h-48 w-full bg-gradient-to-br ${project.gradient} overflow-hidden`}>
+            <div className={`relative h-48 w-full overflow-hidden ${!project.imageUrl ? `bg-gradient-to-br ${project.gradient}` : "bg-black"}`}>
               {project.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={project.imageUrl}
                   alt={project.title}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center">
