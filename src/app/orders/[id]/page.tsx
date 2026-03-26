@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Loader2, Send, CheckCircle, Clock, Star, Zap,
   FileText, CreditCard, ArrowLeft, MessageCircle,
-  Download, Activity, Palette, Pencil, Lock,
+  Download, Activity, Palette, Pencil, Lock, X, ZoomIn,
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -79,6 +79,9 @@ interface Concept {
   isSelected: boolean;
   feedback: string | null;
   sortOrder: number;
+  conceptIndex: number;
+  deliverableType: string;
+  deliverableLabel: string;
 }
 
 interface Order {
@@ -126,6 +129,7 @@ export default function OrderDetailPage() {
   const [reviewComment, setReviewComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
   const [activeTab, setActiveTab] = useState<"chat" | "concepts" | "milestones" | "invoices" | "files" | "activity">("chat");
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -173,11 +177,16 @@ export default function OrderDetailPage() {
         }
         if (conceptsRes.ok) {
           const conceptsData = await conceptsRes.json();
-          if (Array.isArray(conceptsData) && conceptsData.length !== concepts.length) {
-            setConcepts(conceptsData);
-            // Auto-switch to concepts tab when they first appear
-            if (conceptsData.length > 0 && concepts.length === 0) {
-              setActiveTab("concepts");
+          if (Array.isArray(conceptsData)) {
+            const changed =
+              conceptsData.length !== concepts.length ||
+              conceptsData.some((c, i) => c.imageUrl !== concepts[i]?.imageUrl || c.isSelected !== concepts[i]?.isSelected);
+            if (changed) {
+              setConcepts(conceptsData);
+              // Auto-switch to concepts tab when they first appear
+              if (conceptsData.length > 0 && concepts.length === 0) {
+                setActiveTab("concepts");
+              }
             }
           }
         }
@@ -253,6 +262,27 @@ export default function OrderDetailPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      {/* Lightbox */}
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <button
+            className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
+            onClick={() => setLightboxUrl(null)}
+          >
+            <X className="h-5 w-5" />
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={lightboxUrl}
+            alt="Concept preview"
+            className="max-h-[90vh] max-w-[90vw] rounded-xl object-contain shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
       <Navbar />
       <main className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Back link */}
@@ -535,9 +565,17 @@ export default function OrderDetailPage() {
         )}
 
         {/* Concepts tab */}
-        {activeTab === "concepts" && (
+        {activeTab === "concepts" && (() => {
+          const anySelected = concepts.some(c => c.isSelected);
+          // Group concepts by conceptIndex
+          const groups = Array.from(new Set(concepts.map(c => c.conceptIndex))).map(idx => ({
+            conceptIndex: idx,
+            deliverables: concepts.filter(c => c.conceptIndex === idx).sort((a, b) => a.sortOrder - b.sortOrder),
+          }));
+          // The "representative" for selection is the first deliverable of each group
+          return (
           <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6">
-            {concepts.length === 0 ? (
+            {groups.length === 0 ? (
               <div className="text-center py-12">
                 <Palette className="mx-auto h-10 w-10 text-gray-700 mb-3" />
                 <p className="text-gray-500 text-sm">No concepts yet</p>
@@ -546,117 +584,180 @@ export default function OrderDetailPage() {
             ) : (
               <div>
                 <p className="text-sm text-gray-400 mb-6">
-                  {concepts.some(c => c.isSelected)
-                    ? "✅ You've selected a concept. We'll refine it based on your feedback."
+                  {anySelected
+                    ? "✅ You've selected a concept — we're generating your final designs now."
                     : "Review the concepts below and select the one you like best. You can add feedback to help us refine it."}
                 </p>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {concepts.map((concept) => (
-                    <div
-                      key={concept.id}
-                      className={`rounded-xl border p-4 transition-all duration-300 ${
-                        concept.isSelected
-                          ? "border-green-500/30 bg-green-500/5 ring-2 ring-green-500/20"
-                          : "border-white/[0.06] bg-white/[0.02] hover:border-purple-500/20"
-                      }`}
-                    >
-                      {concept.imageUrl && (
-                        <div className="mb-3 rounded-lg overflow-hidden bg-white/[0.03]">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={concept.imageUrl} alt={concept.title} className="w-full h-40 object-cover" />
-                        </div>
-                      )}
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <h3 className="font-semibold text-white text-sm">{concept.title}</h3>
-                        {concept.isSelected && (
-                          <Badge className="bg-green-500/20 text-green-300 border-green-500/20 text-xs shrink-0">
-                            <CheckCircle className="mr-1 h-3 w-3" /> Selected
-                          </Badge>
-                        )}
-                      </div>
-                      {concept.description && (
-                        <p className="text-xs text-gray-400 mb-3">{concept.description}</p>
-                      )}
-                      {concept.fileUrl && (
-                        <a
-                          href={concept.fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300 mb-3"
-                        >
-                          <Download className="h-3 w-3" /> Download file
-                        </a>
-                      )}
-                      {!concept.isSelected && !concepts.some(c => c.isSelected) && (
-                        <div className="space-y-2 mt-3">
-                          {selectingConcept === concept.id ? (
-                            <>
-                              <Textarea
-                                value={conceptFeedback}
-                                onChange={(e) => setConceptFeedback(e.target.value)}
-                                placeholder="Any feedback or tweaks you'd like? (optional)"
-                                className="min-h-16 text-xs border-white/10 bg-white/[0.03] text-white"
-                                rows={2}
-                              />
-                              <div className="flex gap-2">
-                                <Button
-                                  onClick={async () => {
-                                    try {
-                                      const res = await fetch(`/api/orders/${id}/concepts`, {
-                                        method: "PATCH",
-                                        headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify({ conceptId: concept.id, feedback: conceptFeedback }),
-                                      });
-                                      if (res.ok) {
-                                        const updated = await res.json();
-                                        setConcepts(updated);
-                                        setSelectingConcept(null);
-                                        setConceptFeedback("");
-                                        toast.success("Concept selected! We'll start refining it.");
-                                      }
-                                    } catch {
-                                      toast.error("Could not select concept.");
-                                    }
-                                  }}
-                                  className="bg-purple-600 text-white hover:bg-purple-700 flex-1"
-                                  size="sm"
-                                >
-                                  <CheckCircle className="mr-1 h-3 w-3" /> Confirm
-                                </Button>
-                                <Button
-                                  onClick={() => { setSelectingConcept(null); setConceptFeedback(""); }}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="border border-white/10 bg-transparent text-gray-400"
-                                >
-                                  Cancel
-                                </Button>
+                <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                  {groups.map(({ conceptIndex: cIdx, deliverables }) => {
+                    const primary = deliverables[0];
+                    const isGroupSelected = deliverables.some(d => d.isSelected);
+                    const hasMultiple = deliverables.length > 1;
+                    // Base title without deliverable label suffix
+                    const baseTitle = primary.title.replace(/ — [^—]+$/, "");
+                    const feedback = deliverables.find(d => d.feedback)?.feedback;
+
+                    return (
+                      <div
+                        key={cIdx}
+                        className={`rounded-2xl border overflow-hidden transition-all duration-300 ${
+                          isGroupSelected
+                            ? "border-green-500/40 bg-green-500/5 ring-2 ring-green-500/20"
+                            : "border-white/[0.08] bg-white/[0.02] hover:border-purple-500/30 hover:bg-white/[0.04]"
+                        }`}
+                      >
+                        {/* Images — stacked or single */}
+                        {hasMultiple ? (
+                          <div className="grid grid-cols-2 border-b border-white/[0.06]">
+                            {deliverables.map((d) => (
+                              <div
+                                key={d.id}
+                                className="relative bg-white/[0.02] overflow-hidden cursor-zoom-in group"
+                                style={{ aspectRatio: d.deliverableType === "avatar" ? "1/1" : "16/9" }}
+                                onClick={() => d.imageUrl && setLightboxUrl(d.imageUrl)}
+                              >
+                                {d.imageUrl ? (
+                                  <>
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={d.imageUrl} alt={d.deliverableLabel} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" />
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
+                                      <ZoomIn className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="w-full h-full flex flex-col items-center justify-center">
+                                    <Palette className="h-5 w-5 text-gray-700 mb-1" />
+                                    <p className="text-[10px] text-gray-600">{d.deliverableLabel} generating…</p>
+                                  </div>
+                                )}
+                                <div className="absolute bottom-1 left-1">
+                                  <span className="text-[10px] bg-black/60 text-gray-300 rounded px-1.5 py-0.5">{d.deliverableLabel}</span>
+                                </div>
                               </div>
-                            </>
-                          ) : (
-                            <Button
-                              onClick={() => setSelectingConcept(concept.id)}
-                              variant="ghost"
-                              size="sm"
-                              className="w-full border border-purple-500/20 text-purple-400 hover:bg-purple-500/10"
+                            ))}
+                          </div>
+                        ) : (
+                          primary.imageUrl ? (
+                            <div
+                              className="relative bg-white/[0.03] overflow-hidden cursor-zoom-in group"
+                              onClick={() => setLightboxUrl(primary.imageUrl!)}
                             >
-                              Select this concept
-                            </Button>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={primary.imageUrl} alt={baseTitle} className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
+                                <ZoomIn className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-lg" />
+                              </div>
+                              {isGroupSelected && (
+                                <div className="absolute top-3 right-3">
+                                  <Badge className="bg-green-500/90 text-white border-0 shadow-lg">
+                                    <CheckCircle className="mr-1 h-3 w-3" /> Selected
+                                  </Badge>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="h-48 bg-white/[0.02] flex items-center justify-center border-b border-white/[0.06]">
+                              <div className="text-center">
+                                <Palette className="mx-auto h-8 w-8 text-gray-700 mb-2" />
+                                <p className="text-xs text-gray-600">Image generating…</p>
+                              </div>
+                            </div>
+                          )
+                        )}
+
+                        <div className="p-5">
+                          <div className="flex items-start justify-between gap-2 mb-3">
+                            <h3 className="font-bold text-white text-base leading-snug">{baseTitle}</h3>
+                            {isGroupSelected && (
+                              <Badge className="bg-green-500/20 text-green-300 border-green-500/20 text-xs shrink-0">
+                                <CheckCircle className="mr-1 h-3 w-3" /> Selected
+                              </Badge>
+                            )}
+                          </div>
+                          {primary.description && (
+                            <p className="text-sm text-gray-400 mb-4 leading-relaxed">{primary.description}</p>
+                          )}
+                          {deliverables.some(d => d.fileUrl) && (
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              {deliverables.filter(d => d.fileUrl).map(d => (
+                                <a key={d.id} href={d.fileUrl!} target="_blank" rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300">
+                                  <Download className="h-3 w-3" /> {d.deliverableLabel}
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                          {!isGroupSelected && !anySelected && (
+                            <div className="space-y-2 mt-3">
+                              {selectingConcept === primary.id ? (
+                                <>
+                                  <Textarea
+                                    value={conceptFeedback}
+                                    onChange={(e) => setConceptFeedback(e.target.value)}
+                                    placeholder="Any feedback or tweaks you'd like? (optional)"
+                                    className="min-h-16 text-xs border-white/10 bg-white/[0.03] text-white"
+                                    rows={2}
+                                  />
+                                  <div className="flex gap-2">
+                                    <Button
+                                      onClick={async () => {
+                                        try {
+                                          const res = await fetch(`/api/orders/${id}/concepts`, {
+                                            method: "PATCH",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({ conceptId: primary.id, feedback: conceptFeedback }),
+                                          });
+                                          if (res.ok) {
+                                            const updated = await res.json();
+                                            setConcepts(updated);
+                                            setSelectingConcept(null);
+                                            setConceptFeedback("");
+                                            toast.success("Concept selected! Generating your final designs…");
+                                          }
+                                        } catch {
+                                          toast.error("Could not select concept.");
+                                        }
+                                      }}
+                                      className="bg-purple-600 text-white hover:bg-purple-700 flex-1"
+                                      size="sm"
+                                    >
+                                      <CheckCircle className="mr-1 h-3 w-3" /> Confirm
+                                    </Button>
+                                    <Button
+                                      onClick={() => { setSelectingConcept(null); setConceptFeedback(""); }}
+                                      variant="ghost" size="sm"
+                                      className="border border-white/10 bg-transparent text-gray-400"
+                                    >
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                </>
+                              ) : (
+                                <Button
+                                  onClick={() => setSelectingConcept(primary.id)}
+                                  variant="ghost" size="sm"
+                                  className="w-full border border-purple-500/20 text-purple-400 hover:bg-purple-500/10"
+                                >
+                                  Select this concept
+                                </Button>
+                              )}
+                            </div>
+                          )}
+                          {isGroupSelected && feedback && (
+                            <div className="mt-3 rounded-lg bg-green-500/5 border border-green-500/10 p-3">
+                              <p className="text-xs text-gray-400"><span className="text-green-400">Your feedback:</span> {feedback}</p>
+                            </div>
                           )}
                         </div>
-                      )}
-                      {concept.isSelected && concept.feedback && (
-                        <div className="mt-3 rounded-lg bg-green-500/5 border border-green-500/10 p-3">
-                          <p className="text-xs text-gray-400"><span className="text-green-400">Your feedback:</span> {concept.feedback}</p>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
           </div>
-        )}
+          );
+        })()}
 
         {/* Milestones tab */}
         {activeTab === "milestones" && (

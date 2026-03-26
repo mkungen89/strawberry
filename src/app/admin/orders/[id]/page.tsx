@@ -519,6 +519,7 @@ export default function AdminOrderDetailPage() {
   const [publishingConcepts, setPublishingConcepts] = useState(false);
   const [expandedConcept, setExpandedConcept] = useState<number | null>(null);
   const [copiedPrompt, setCopiedPrompt] = useState<number | null>(null);
+  const [retryingUpscale, setRetryingUpscale] = useState(false);
 
   useEffect(() => {
     if (!isPending && !session) router.push("/login");
@@ -1005,6 +1006,42 @@ export default function AdminOrderDetailPage() {
                   </span>
                   <span className="ml-auto text-xs text-gray-600">Sent to customer for review</span>
                 </div>
+
+                {/* Retry upscale — shown when customer has selected a concept */}
+                {order.status === "REVIEW" && (
+                  <div className="mb-4 flex items-center gap-3 rounded-lg border border-orange-500/20 bg-orange-500/[0.05] p-3">
+                    <div className="flex-1">
+                      <p className="text-sm text-orange-300 font-medium">Customer selected a concept</p>
+                      <p className="text-xs text-gray-500 mt-0.5">If upscale didn&apos;t trigger automatically (Midjourney slow mode), retry it here.</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      disabled={retryingUpscale}
+                      onClick={async () => {
+                        setRetryingUpscale(true);
+                        try {
+                          const res = await fetch(`/api/admin/orders/${id}/concepts`, { method: "PATCH" });
+                          const data = await res.json();
+                          if (res.ok) {
+                            toast.success(`Upscale submitted: ${data.results.join(", ")}`);
+                          } else {
+                            toast.error(data.error || "Retry failed");
+                          }
+                        } catch {
+                          toast.error("Retry failed");
+                        } finally {
+                          setRetryingUpscale(false);
+                        }
+                      }}
+                      className="shrink-0 bg-orange-600 text-white hover:bg-orange-700"
+                    >
+                      {retryingUpscale
+                        ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />Retrying…</>
+                        : <><RotateCcw className="mr-1.5 h-3.5 w-3.5" />Retry Upscale</>
+                      }
+                    </Button>
+                  </div>
+                )}
 
                 {/* Customer brief preview */}
                 {(order.details as { description?: string })?.description && (

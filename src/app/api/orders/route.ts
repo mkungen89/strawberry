@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { serviceSlug, packageName, price, details, techStack } = body;
+  const { serviceSlug, packageName, price, details, techStack, platforms } = body;
 
   const serviceData = SERVICES.find((s) => s.slug === serviceSlug);
   if (!serviceData) {
@@ -55,7 +55,11 @@ export async function POST(req: NextRequest) {
       userId: session.user.id,
       serviceId: service.id,
       totalPrice: price,
-      details: { description: details, packageName },
+      details: {
+        description: details,
+        packageName,
+        ...(platforms?.length ? { platforms } : {}),
+      },
       techStack: techStack || undefined,
       status: "PENDING",
     },

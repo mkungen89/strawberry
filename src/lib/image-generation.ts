@@ -1,5 +1,5 @@
 const USEAPI_TOKEN = process.env.USEAPI_TOKEN;
-const BASE = "https://api.useapi.net/v2";
+const BASE = "https://api.useapi.net/v3/midjourney";
 const WEBHOOK_URL = `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/midjourney`;
 
 export function isMidjourneyEnabled() {
@@ -20,6 +20,7 @@ export async function submitMidjourneyImagine(
     },
     body: JSON.stringify({
       prompt,
+      stream: false,
       replyUrl: WEBHOOK_URL,
       replyRef: JSON.stringify({ conceptId, stage: "imagine" }),
     }),
@@ -38,8 +39,8 @@ export async function submitMidjourneyImagine(
 export async function submitMidjourneyUpscale(
   jobId: string,
   conceptId: string
-): Promise<void> {
-  if (!USEAPI_TOKEN) return;
+): Promise<string | null> {
+  if (!USEAPI_TOKEN) return null;
 
   const res = await fetch(`${BASE}/jobs/button`, {
     method: "POST",
@@ -48,17 +49,19 @@ export async function submitMidjourneyUpscale(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      jobid: jobId,
+      jobId,
       button: "U1",
+      stream: false,
       replyUrl: WEBHOOK_URL,
-      replyRef: JSON.stringify({ conceptId, stage: "upscale" }),
     }),
   });
 
   if (!res.ok) {
     console.error(`[Midjourney] upscale failed: ${res.status} ${await res.text()}`);
-    return;
+    return null;
   }
 
-  console.log(`[Midjourney] upscale job submitted for concept ${conceptId}`);
+  const data = await res.json();
+  console.log(`[Midjourney] upscale job submitted: ${data.jobid} for concept ${conceptId}`);
+  return data.jobid as string;
 }

@@ -8,7 +8,7 @@ import Link from "next/link";
 const faqs = [
   {
     question: "Do I need technical knowledge to place an order?",
-    answer: "No! We've designed the entire process to be simple for everyone. You just need to tell us what you want — we handle the technical side. Our AI gives you recommendations on what suits your needs best.",
+    answer: "No! We've designed the entire process to be simple for everyone. You just need to tell us what you want — we handle the technical side. We guide you and recommend what suits your needs best.",
   },
   {
     question: "How long does delivery take?",
@@ -20,7 +20,7 @@ const faqs = [
   },
   {
     question: "Which tech stack should I choose for my website?",
-    answer: "Don't worry — our AI recommendation helps you choose the right one. You answer simple questions about your website and we explain which option fits best and why, in a way everyone can understand.",
+    answer: "Don't worry — we help you choose the right one. You answer simple questions about your website and we explain which option fits best and why, in a way everyone can understand.",
   },
   {
     question: "Can I track the status of my order?",

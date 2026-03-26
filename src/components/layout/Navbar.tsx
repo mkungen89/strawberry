@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Zap } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useSession, signOut } from "@/lib/auth-client";
 import {
   DropdownMenu,
@@ -29,15 +30,14 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-md">
+    <nav className="sticky top-0 z-50 bg-black/75 backdrop-blur-xl">
+      {/* Gradient border bottom */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/40 to-transparent" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg shadow-purple-600/20">
-              <Zap className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-white">Vexcraft</span>
+          <Link href="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center">
+            <Image src="/logo.png" alt="Vexcraft" width={140} height={40} className="h-9 w-auto object-contain" priority />
           </Link>
 
           {/* Desktop nav */}
@@ -46,9 +46,10 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm text-gray-400 transition-colors hover:text-white"
+                className="group relative text-sm text-gray-400 transition-colors hover:text-white"
               >
                 {link.label}
+                <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300 group-hover:w-full" />
               </Link>
             ))}
           </div>
@@ -97,7 +98,8 @@ export default function Navbar() {
                   </Button>
                 </Link>
                 <Link href="/register">
-                  <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
+                  <Button size="sm" className="relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:opacity-90 border-0">
+                    <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-500 hover:translate-x-full" />
                     Get started
                   </Button>
                 </Link>

@@ -7,6 +7,40 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { db } from "@/lib/db";
 import { isMidjourneyEnabled, submitMidjourneyImagine } from "@/lib/image-generation";
+import { SERVICE_PLATFORMS, getServiceDeliverables } from "@/lib/services-data";
+
+// Maps platform size dimensions to Midjourney --ar flag
+function dimensionsToAspectRatio(dimensions: string): string | null {
+  const match = dimensions.match(/^(\d+)[×x](\d+)/);
+  if (!match) return null;
+  const w = parseInt(match[1]);
+  const h = parseInt(match[2]);
+  const gcd = (a: number, b: number): number => b === 0 ? a : gcd(b, a % b);
+  const d = gcd(w, h);
+  return `${w / d}:${h / d}`;
+}
+
+// Returns platform context text + primary Midjourney aspect ratio for the order
+function getPlatformContext(serviceSlug: string, selectedPlatformIds: string[]): { text: string; primaryAr: string | null } {
+  if (!selectedPlatformIds.length) return { text: "", primaryAr: null };
+
+  const allPlatforms = SERVICE_PLATFORMS[serviceSlug] ?? [];
+  const selected = allPlatforms.filter((p) => selectedPlatformIds.includes(p.id));
+  if (!selected.length) return { text: "", primaryAr: null };
+
+  const lines = selected.flatMap((p) =>
+    p.sizes.map((s) => `- ${p.name} ${s.label}: ${s.dimensions}`)
+  );
+
+  // Primary AR = first size of first selected platform
+  const primaryDimensions = selected[0].sizes[0].dimensions;
+  const primaryAr = dimensionsToAspectRatio(primaryDimensions);
+
+  return {
+    text: `**Required output sizes (must be respected in Midjourney prompts):**\n${lines.join("\n")}`,
+    primaryAr,
+  };
+}
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
@@ -60,6 +94,13 @@ function getServiceInstructions(serviceSlug: string, serviceName: string): strin
 - Alert animations style
 - Color palette
 - A Midjourney prompt for the overlay preview`,
+
+    "ai-video-shorts": `You are a short-form video director. Generate 3 distinct video concepts for short-form content. Each should describe:
+- Visual style and pacing (fast cuts, cinematic, animated, etc.)
+- Opening hook (first 2 seconds)
+- Key scenes/moments
+- On-screen text style
+- A Midjourney prompt for a key frame that captures the visual style (will be used as reference for Runway video generation)`,
   };
 
   return map[serviceSlug] ?? `You are a creative professional at a digital agency. Generate 3 distinct delivery concepts for the service: ${serviceName}. Each concept should describe the approach, visual direction, and key deliverables.`;
@@ -76,7 +117,7 @@ export async function autoGenerateConcepts(orderId: string): Promise<void> {
 
   if (!order) throw new Error(`Order ${orderId} not found`);
 
-  const details = order.details as { description?: string; packageName?: string };
+  const details = order.details as { description?: string; packageName?: string; platforms?: string[] };
   const techStack = order.techStack as Record<string, string> | null;
 
   const brief = details?.description?.trim() || "(No description provided)";
@@ -85,7 +126,26 @@ export async function autoGenerateConcepts(orderId: string): Promise<void> {
     ? Object.entries(techStack).map(([k, v]) => `${k}: ${v}`).join(", ")
     : null;
 
+  const { text: platformText, primaryAr } = getPlatformContext(order.service.slug, details?.platforms ?? []);
+
   const serviceInstructions = getServiceInstructions(order.service.slug, order.service.name);
+  const deliverables = getServiceDeliverables(order.service.slug, packageName);
+  const hasMultipleDeliverables = deliverables.length > 1;
+
+  // Build the prompt fields instruction based on deliverables
+  const promptFieldsDoc = deliverables.length > 0
+    ? deliverables.map(d =>
+        `      "${d.type}Prompt": "Midjourney prompt for the ${d.label} (--ar ${d.ar}), or null"`
+      ).join(",\n")
+    : `      "midjourneyPrompt": "Ready-to-use Midjourney prompt, or null if not applicable"`;
+
+  const arInstruction = deliverables.length > 0
+    ? deliverables.map(d =>
+        `- ${d.label}: append --ar ${d.ar} and include "${d.promptSuffix}"`
+      ).join("\n")
+    : primaryAr
+      ? `When writing Midjourney prompts, always append --ar ${primaryAr} at the end.`
+      : `When writing Midjourney prompts, choose an appropriate --ar flag (e.g. --ar 1:1 for logos, --ar 16:9 for banners).`;
 
   const systemPrompt = `You are a senior creative director at Vexcraft, a digital agency. You generate structured creative concepts based on customer briefs.
 
@@ -95,20 +155,25 @@ ALWAYS respond with valid JSON only — no markdown, no extra text. The JSON mus
     {
       "title": "Concept name (short, 3-6 words)",
       "description": "Detailed description (150-250 words). Be specific and directly reference the customer brief.",
-      "midjourneyPrompt": "Ready-to-use Midjourney prompt, or null if not applicable"
+${promptFieldsDoc}
     }
   ]
 }
 
-${serviceInstructions}`;
+${serviceInstructions}
+
+Each concept must include a separate Midjourney prompt for each deliverable:
+${arInstruction}`;
 
   const userMessage = `Generate 3 concepts for this customer order:
 
 **Service:** ${order.service.name}${packageName ? ` — ${packageName} package` : ""}
 **Customer:** ${order.user?.name || "Unknown"}
+${hasMultipleDeliverables ? `**Deliverables required:** ${deliverables.map(d => d.label).join(", ")}` : ""}
 
 **Customer Brief:**
 ${brief}
+${platformText ? `\n${platformText}` : ""}
 ${techStackText ? `\n**Tech Stack / Requirements:**\n${techStackText}` : ""}
 
 Generate 3 clearly differentiated concepts that directly address what the customer described.`;
@@ -131,9 +196,10 @@ Generate 3 clearly differentiated concepts that directly address what the custom
     },
   }).catch(() => {});
 
-  const text = message.content[0].type === "text" ? message.content[0].text : "{}";
+  const raw = message.content[0].type === "text" ? message.content[0].text : "{}";
+  const text = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
 
-  let parsed: { concepts: Array<{ title: string; description: string; midjourneyPrompt: string | null }> };
+  let parsed: { concepts: Array<Record<string, string | null>> };
   try {
     parsed = JSON.parse(text);
   } catch {
@@ -142,44 +208,88 @@ Generate 3 clearly differentiated concepts that directly address what the custom
 
   if (!parsed.concepts?.length) throw new Error("No concepts in AI response");
 
-  // Save concepts to DB
-  const savedConcepts = await Promise.all(
-    parsed.concepts.map((c, i) =>
-      db.orderConcept.create({
+  // Save one OrderConcept per concept × deliverable
+  // conceptIndex groups deliverables of the same concept together
+  const savedRows: Array<{ conceptIndex: number; deliverableType: string; id: string; prompt: string | null }> = [];
+
+  for (let conceptIdx = 0; conceptIdx < parsed.concepts.length; conceptIdx++) {
+    const c = parsed.concepts[conceptIdx];
+    const title = (c.title as string) || `Concept ${conceptIdx + 1}`;
+    const description = (c.description as string) || null;
+
+    if (deliverables.length > 0) {
+      for (let dIdx = 0; dIdx < deliverables.length; dIdx++) {
+        const d = deliverables[dIdx];
+        const prompt = (c[`${d.type}Prompt`] as string | null) ?? null;
+        const isMain = dIdx === 0;
+
+        const saved = await db.orderConcept.create({
+          data: {
+            orderId,
+            title: deliverables.length > 1 ? `${title} — ${d.label}` : title,
+            description: isMain ? description : null,
+            imageUrl: null,
+            sortOrder: conceptIdx * 10 + dIdx,
+            conceptIndex: conceptIdx,
+            deliverableType: d.type,
+            deliverableLabel: d.label,
+            status: "PENDING",
+          },
+        });
+        savedRows.push({ conceptIndex: conceptIdx, deliverableType: d.type, id: saved.id, prompt });
+      }
+    } else {
+      // Service has no Midjourney deliverables (e.g. copywriting, discord-server)
+      const prompt = (c.midjourneyPrompt as string | null) ?? null;
+      const saved = await db.orderConcept.create({
         data: {
           orderId,
-          title: c.title,
-          description: c.description || null,
+          title,
+          description,
           imageUrl: null,
-          sortOrder: i,
+          sortOrder: conceptIdx,
+          conceptIndex: conceptIdx,
+          deliverableType: "main",
+          deliverableLabel: "Design",
           status: "PENDING",
         },
-      })
-    )
-  );
+      });
+      savedRows.push({ conceptIndex: conceptIdx, deliverableType: "main", id: saved.id, prompt });
+    }
+  }
 
-  // Trigger Midjourney image generation in background if configured
+  // Trigger Midjourney imagine jobs for each row that has a prompt
   if (isMidjourneyEnabled()) {
-    for (let i = 0; i < savedConcepts.length; i++) {
-      const concept = savedConcepts[i];
-      const midjourneyPrompt = parsed.concepts[i].midjourneyPrompt;
-      if (midjourneyPrompt) {
-        submitMidjourneyImagine(midjourneyPrompt, concept.id).catch((err) =>
-          console.error(`[AutoConcepts] Midjourney failed for concept ${concept.id}:`, err)
+    for (const row of savedRows) {
+      if (!row.prompt) continue;
+      submitMidjourneyImagine(row.prompt, row.id)
+        .then(async (jobId) => {
+          if (jobId) {
+            await db.orderConcept.update({
+              where: { id: row.id },
+              data: { midjourneyJobId: jobId },
+            });
+            console.log(`[AutoConcepts] Saved jobId ${jobId} for concept ${row.id} (${row.deliverableType})`);
+          }
+        })
+        .catch((err) =>
+          console.error(`[AutoConcepts] Midjourney failed for concept ${row.id}:`, err)
         );
-      }
     }
   }
 
   // Log activity
+  const deliverablesSummary = deliverables.length > 1
+    ? ` (${deliverables.map(d => d.label).join(" + ")} per concept)`
+    : "";
   await db.orderActivity.create({
     data: {
       orderId,
       action: "CONCEPTS_ADDED",
-      description: `3 AI-generated concepts created automatically from customer brief`,
+      description: `3 AI-generated concepts created automatically from customer brief${deliverablesSummary}`,
       actorName: "Vexcraft AI",
     },
   });
 
-  console.log(`[AutoConcepts] Generated and saved 3 concepts for order ${orderId}`);
+  console.log(`[AutoConcepts] Generated and saved concepts for order ${orderId} — ${savedRows.length} total rows`);
 }

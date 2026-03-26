@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Zap } from "lucide-react";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -11,11 +11,8 @@ export default function Footer() {
         <div className="grid grid-cols-2 gap-10 md:grid-cols-4">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="inline-flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg shadow-purple-600/20">
-                <Zap className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-white">Vexcraft</span>
+            <Link href="/">
+              <Image src="/logo.png" alt="Vexcraft" width={120} height={40} className="h-8 w-auto object-contain" />
             </Link>
             <p className="mt-4 text-sm text-gray-500 leading-relaxed max-w-xs">
               Professional digital services for creators & businesses. We build what you dream of.

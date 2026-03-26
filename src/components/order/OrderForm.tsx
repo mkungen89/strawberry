@@ -10,8 +10,38 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Sparkles } from "lucide-react";
+import {
+  SiYoutube, SiTwitch, SiX, SiInstagram, SiTiktok, SiFacebook,
+  SiDiscord, SiKick, SiSteam, SiPlaystation,
+  SiEpicgames, SiBattledotnet,
+} from "react-icons/si";
+import { FaLinkedin, FaXbox } from "react-icons/fa6";
 import { toast } from "sonner";
-import { TECH_STACKS, RECOMMENDATIONS, MODULES } from "@/lib/services-data";
+import { TECH_STACKS, RECOMMENDATIONS, MODULES, SERVICE_PLATFORMS } from "@/lib/services-data";
+
+const PLATFORM_ICONS: Record<string, React.ReactNode> = {
+  youtube:         <SiYoutube className="h-4 w-4 text-[#FF0000]" />,
+  "youtube-shorts": <SiYoutube className="h-4 w-4 text-[#FF0000]" />,
+  "youtube-gaming": <SiYoutube className="h-4 w-4 text-[#FF0000]" />,
+  "youtube-landscape": <SiYoutube className="h-4 w-4 text-[#FF0000]" />,
+  twitch:          <SiTwitch className="h-4 w-4 text-[#9146FF]" />,
+  twitter:         <SiX className="h-4 w-4 text-white" />,
+  instagram:       <SiInstagram className="h-4 w-4 text-[#E1306C]" />,
+  "instagram-reels": <SiInstagram className="h-4 w-4 text-[#E1306C]" />,
+  tiktok:          <SiTiktok className="h-4 w-4 text-white" />,
+  "tiktok-live":   <SiTiktok className="h-4 w-4 text-white" />,
+  facebook:        <SiFacebook className="h-4 w-4 text-[#1877F2]" />,
+  discord:         <SiDiscord className="h-4 w-4 text-[#5865F2]" />,
+  linkedin:        <FaLinkedin className="h-4 w-4 text-[#0A66C2]" />,
+  kick:            <SiKick className="h-4 w-4 text-[#53FC18]" />,
+  steam:           <SiSteam className="h-4 w-4 text-white" />,
+  xbox:            <FaXbox className="h-4 w-4 text-[#107C10]" />,
+  playstation:     <SiPlaystation className="h-4 w-4 text-[#003791]" />,
+  epic:            <SiEpicgames className="h-4 w-4 text-white" />,
+  battlenet:       <SiBattledotnet className="h-4 w-4 text-[#009AE4]" />,
+  "twitter-video": <SiX className="h-4 w-4 text-white" />,
+  shorts:          <SiYoutube className="h-4 w-4 text-[#FF0000]" />,
+};
 import { useCurrency } from "@/lib/currency-context";
 import ModuleSelector from "@/components/order/ModuleSelector";
 
@@ -45,6 +75,8 @@ export default function OrderForm({ service }: Props) {
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [details, setDetails] = useState("");
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+  const availablePlatforms = SERVICE_PLATFORMS[service.slug] ?? [];
   const [siteType, setSiteType] = useState("");
   const [techStack, setTechStack] = useState({
     frontend: "",
@@ -59,6 +91,12 @@ export default function OrderForm({ service }: Props) {
     hosting: string;
     reason: string;
   } | null>(null);
+
+  function togglePlatform(platformId: string) {
+    setSelectedPlatforms((prev) =>
+      prev.includes(platformId) ? prev.filter((id) => id !== platformId) : [...prev, platformId]
+    );
+  }
 
   function toggleModule(moduleId: string) {
     setSelectedModules((prev) =>
@@ -113,6 +151,7 @@ export default function OrderForm({ service }: Props) {
           price: totalUSD,
           details,
           modules: selectedModules,
+          platforms: selectedPlatforms,
           techStack: service.hasTechStack ? techStack : null,
         }),
       });
@@ -202,6 +241,50 @@ export default function OrderForm({ service }: Props) {
             <p className="mb-4 text-sm text-gray-400">
               Don&apos;t worry about being technical — just describe your idea, style, colors, and what you need.
             </p>
+
+            {/* Platform selection (only shown for relevant services) */}
+            {availablePlatforms.length > 0 && (
+              <div className="mb-5 rounded-xl border border-white/10 bg-white/5 p-4">
+                <p className="mb-3 text-sm font-medium text-gray-200">Which platforms do you need this for?</p>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {availablePlatforms.map((platform) => {
+                    const isSelected = selectedPlatforms.includes(platform.id);
+                    return (
+                      <button
+                        key={platform.id}
+                        type="button"
+                        onClick={() => togglePlatform(platform.id)}
+                        className={`rounded-lg border p-3 text-left transition-all ${
+                          isSelected
+                            ? "border-purple-500 bg-purple-600/15"
+                            : "border-white/10 bg-white/5 hover:border-white/25"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-5 w-5 items-center justify-center">
+                            {PLATFORM_ICONS[platform.id] ?? <span className="text-sm">{platform.icon}</span>}
+                          </span>
+                          <span className="text-sm font-medium">{platform.name}</span>
+                        </div>
+                        <div className="mt-1 space-y-0.5">
+                          {platform.sizes.map((s) => (
+                            <p key={s.label} className="text-[10px] leading-tight text-gray-500">
+                              {s.label}: {s.dimensions}
+                            </p>
+                          ))}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                {selectedPlatforms.length > 0 && (
+                  <p className="mt-2 text-xs text-purple-400">
+                    {selectedPlatforms.length} platform{selectedPlatforms.length > 1 ? "s" : ""} selected
+                  </p>
+                )}
+              </div>
+            )}
+
             <Textarea
               value={details}
               onChange={(e) => setDetails(e.target.value)}
@@ -286,14 +369,14 @@ export default function OrderForm({ service }: Props) {
           <div>
             <h3 className="mb-2 font-semibold text-gray-200">Tech stack & hosting</h3>
             <p className="mb-4 text-sm text-gray-400">
-              Not sure what to choose? Use the AI recommendation below — we&apos;ll explain everything!
+              Not sure what to choose? Use the recommendation tool below — we&apos;ll explain everything!
             </p>
 
-            {/* AI recommendation */}
+            {/* Recommendation */}
             <div className="mb-6 rounded-xl border border-purple-500/30 bg-purple-600/10 p-4">
               <h4 className="mb-3 flex items-center gap-2 font-semibold text-purple-300">
                 <Sparkles className="h-4 w-4" />
-                AI Recommendation
+                Recommendation
               </h4>
               <div className="mb-3">
                 <Label className="text-gray-400 text-xs">What type of website is it?</Label>

@@ -204,7 +204,7 @@ export default function ServicesPage() {
 
             <div className="grid gap-6 sm:grid-cols-3">
               {ENTERPRISE_SERVICES.map((service) => (
-                <Link key={service.slug} href="/contact" className="group">
+                <Link key={service.slug} href={`/services/enterprise/${service.slug}`} className="group">
                   <div className="relative h-full rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 transition-all duration-300 hover:border-orange-500/20 hover:bg-white/[0.04]">
                     <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500/10 to-red-500/10 text-3xl border border-white/[0.06]">
                       {service.icon}

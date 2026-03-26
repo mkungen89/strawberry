@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { headers } from "next/headers";
+import { isMidjourneyEnabled, submitMidjourneyUpscale } from "@/lib/image-generation";
 
 // Create concepts for an order (admin)
 export async function POST(
@@ -53,4 +54,57 @@ export async function POST(
   });
 
   return NextResponse.json(created);
+}
+
+// Retry upscale for all selected concepts in this order (admin)
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session || (session.user as { role?: string }).role !== "ADMIN") {
+    return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+  }
+
+  if (!isMidjourneyEnabled()) {
+    return NextResponse.json({ error: "Midjourney not configured" }, { status: 400 });
+  }
+
+  const { id } = await params;
+
+  // Find all selected concepts that still have a midjourneyJobId (imagine jobId)
+  const selected = await db.orderConcept.findMany({
+    where: { orderId: id, isSelected: true, midjourneyJobId: { not: null } },
+  });
+
+  if (!selected.length) {
+    return NextResponse.json({ error: "No selected concepts with a job ID to upscale" }, { status: 400 });
+  }
+
+  const results: string[] = [];
+
+  for (const concept of selected) {
+    const upscaleJobId = await submitMidjourneyUpscale(concept.midjourneyJobId!, concept.id);
+    if (upscaleJobId) {
+      await db.orderConcept.update({
+        where: { id: concept.id },
+        data: { midjourneyJobId: upscaleJobId },
+      });
+      results.push(`${concept.deliverableLabel}: job ${upscaleJobId}`);
+      console.log(`[Admin] Retry upscale job ${upscaleJobId} for concept ${concept.id} (${concept.deliverableLabel})`);
+    } else {
+      results.push(`${concept.deliverableLabel}: failed`);
+    }
+  }
+
+  await db.orderActivity.create({
+    data: {
+      orderId: id,
+      action: "UPSCALE_RETRY",
+      description: `Admin retried upscale: ${results.join(", ")}`,
+      actorName: session.user.name || "Admin",
+    },
+  });
+
+  return NextResponse.json({ results });
 }
