@@ -5,7 +5,7 @@
  */
 
 import { spawn } from "child_process";
-import { mkdirSync, writeFileSync, createWriteStream } from "fs";
+import { mkdirSync, writeFileSync, openSync, closeSync } from "fs";
 import { join } from "path";
 import { db } from "@/lib/db";
 
@@ -16,6 +16,7 @@ export interface CodeSessionContext {
   techStack?: Record<string, string> | null;
   previewUrl: string;
   githubRepo: string;
+  vercelProjectId?: string;
 }
 
 /**
@@ -36,11 +37,13 @@ export async function spawnLandingPageCodingAgent(
     // Create isolated working directory
     mkdirSync(workDir, { recursive: true });
 
-    // Git identity & credential store
+    // Git identity — use GitHub noreply email so Vercel can associate commits with the account
+    const githubUserId = process.env.GITHUB_USER_ID || "127892048";
+    const githubLogin = process.env.GITHUB_LOGIN || "mkungen89";
     const gitConfig = [
       "[user]",
       "  name = Vexcraft Agent",
-      "  email = agent@vexcraft.io",
+      `  email = ${githubUserId}+${githubLogin}@users.noreply.github.com`,
       "[credential]",
       "  helper = store",
       "[init]",
@@ -56,33 +59,52 @@ export async function spawnLandingPageCodingAgent(
       );
     }
 
-    const prompt = buildCodingPrompt({ orderId, repoName, customerBrief, techStack, previewUrl, githubRepo });
+    const prompt = buildCodingPrompt({ orderId, repoName, customerBrief, techStack, previewUrl, githubRepo, vercelProjectId: context.vercelProjectId });
     const logPath = join(workDir, "agent.log");
-    const logStream = createWriteStream(logPath, { flags: "a" });
+
+    // openSync gives a real fd that spawn can pass to the child process
+    const logFd = openSync(logPath, "a");
 
     const env: NodeJS.ProcessEnv = {
       ...process.env,
       HOME: workDir,
       GIT_CONFIG_NOSYSTEM: "1",
-      // Ensure ANTHROPIC_API_KEY is forwarded
       ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ?? "",
+      VERCEL_API_TOKEN: process.env.VERCEL_API_TOKEN ?? "",
+      VERCEL_TEAM_ID: process.env.VERCEL_TEAM_ID ?? "",
+      VERCEL_PROJECT_ID: context.vercelProjectId ?? "",
     };
 
+    const scriptPath = join(process.cwd(), "src/scripts/run-coding-agent.ts");
+
     const agentProcess = spawn(
-      "claude",
+      "npx",
       [
-        "--dangerously-skip-permissions",
-        "--model", "claude-sonnet-4-6",
-        "--bare",
-        "-p", prompt,
+        "ts-node",
+        "--project", "tsconfig.scripts.json",
+        "--transpile-only",
+        scriptPath,
+        orderId,
+        repoName,
+        githubRepo,
+        previewUrl,
+        context.vercelProjectId ?? "",
       ],
       {
-        cwd: workDir,
+        cwd: process.cwd(), // Next.js root — where tsconfig lives
         detached: true,
-        stdio: ["ignore", logStream, logStream],
-        env,
+        stdio: ["ignore", logFd, logFd],
+        env: {
+          ...env,
+          AGENT_BRIEF: customerBrief,
+          AGENT_TECH_STACK: JSON.stringify(techStack ?? {}),
+          AGENT_WORKDIR: workDir,
+        },
       }
     );
+
+    // Close parent's copy of the fd — child has its own
+    closeSync(logFd);
 
     // Detach so the process outlives the HTTP request
     agentProcess.unref();
@@ -135,10 +157,11 @@ interface BuildPromptOptions {
   techStack?: Record<string, string> | null;
   previewUrl: string;
   githubRepo: string;
+  vercelProjectId?: string;
 }
 
 function buildCodingPrompt(options: BuildPromptOptions): string {
-  const { orderId, repoName, customerBrief, techStack, previewUrl, githubRepo } = options;
+  const { orderId, repoName, customerBrief, techStack, previewUrl, githubRepo, vercelProjectId } = options;
 
   const techSection = techStack
     ? `
@@ -151,6 +174,58 @@ function buildCodingPrompt(options: BuildPromptOptions): string {
     : "";
 
   const cloneUrl = `https://github.com/${githubRepo}.git`;
+
+  const teamParam = process.env.VERCEL_TEAM_ID ? `&teamId=${process.env.VERCEL_TEAM_ID}` : "";
+
+  const vercelPollingScript = vercelProjectId
+    ? `
+### After every \`git push\`: verify Vercel deployment
+Run this script after each push to check if Vercel built successfully.
+If it fails, read the error logs and fix the code before pushing again.
+
+\`\`\`bash
+echo "⏳ Waiting for Vercel deployment..."
+sleep 15
+
+for i in $(seq 1 24); do
+  RESPONSE=$(curl -sf "https://api.vercel.com/v6/deployments?projectId=${vercelProjectId}&limit=1${teamParam}" \\
+    -H "Authorization: Bearer $VERCEL_API_TOKEN" 2>/dev/null)
+  STATE=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['deployments'][0]['state'])" 2>/dev/null)
+  DEPLOY_ID=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['deployments'][0]['uid'])" 2>/dev/null)
+
+  if [ "$STATE" = "READY" ]; then
+    echo "✅ Vercel deployment READY — ${previewUrl}"
+    break
+  elif [ "$STATE" = "ERROR" ]; then
+    echo "❌ Vercel deployment FAILED — fetching build logs..."
+    curl -sf "https://api.vercel.com/v2/deployments/$DEPLOY_ID/events?limit=200${teamParam}" \\
+      -H "Authorization: Bearer $VERCEL_API_TOKEN" | \\
+      python3 -c "
+import sys, json
+events = json.load(sys.stdin).get('events', [])
+for e in events:
+    t = e.get('type','')
+    text = e.get('payload', {}).get('text', '')
+    if t in ('stderr', 'stdout') and text.strip():
+        print(text)
+"
+    echo "--- End of Vercel logs ---"
+    echo "Fix the errors above, then commit and push again."
+    break
+  else
+    echo "⏳ Still building... state=$STATE ($i/24)"
+    sleep 10
+  fi
+done
+\`\`\`
+
+**RULE: Never consider a feature done until this script shows ✅ READY.**
+If it shows ❌ FAILED, read the logs carefully, fix the issue, push again, and re-run the check.
+`
+    : `
+### After every \`git push\`
+Wait ~30s then check ${previewUrl} to verify the deployment succeeded.
+`;
 
   return `You are a senior fullstack developer. Your job is to build a complete, professional landing page for a Vexcraft customer.
 
@@ -165,19 +240,21 @@ ${techSection}
 
 ## Step-by-step Instructions
 
-### 1. Clone the repository
+### 1. Clone and scaffold
 \`\`\`bash
 git clone ${cloneUrl} ${repoName}
 cd ${repoName}
+
+# Scaffold Next.js into the existing repo directory
+npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --no-git --yes
+
+# Install dependencies
+npm install
 \`\`\`
 
 ### 2. Read the brief
 Read VEXCRAFT_BRIEF.md — it contains everything the customer wants.
-
-### 3. Install dependencies
-\`\`\`bash
-npm install
-\`\`\`
+The brief was pushed to the repo root before you cloned it.
 
 ### 4. Build the landing page
 Implement all sections from the brief:
@@ -201,15 +278,16 @@ git add -A
 git commit -m "feat: <feature name>"
 git push origin main
 \`\`\`
-**Push = Deploy. Every push triggers Vercel. Push often.**
+
+${vercelPollingScript}
 
 ### 6. Done when
 - All brief requirements are implemented
 - \`npm run build\` passes with no errors
 - All changes are pushed to main
-- Vercel shows a successful deployment at ${previewUrl}
+- Vercel shows ✅ READY for the latest deployment
 
-Start now. Work systematically through each section. Push after every meaningful feature.`;
+Start now. Work systematically through each section. After every push, always run the Vercel check script and fix any errors before continuing.`;
 }
 
 /**
