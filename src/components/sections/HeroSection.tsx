@@ -9,7 +9,7 @@ const MARQUEE_ITEMS = [
 
 export default function HeroSection() {
   return (
-    <section className="relative flex min-h-[92vh] items-center overflow-hidden px-4 pb-16 pt-20 sm:px-6 lg:px-8">
+    <section className="relative overflow-hidden px-4 pb-16 pt-20 sm:px-6 lg:px-8">
 
       {/* Floating gradient orbs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -72,10 +72,9 @@ export default function HeroSection() {
         </p>
 
         {/* CTA buttons */}
-        <div className="mb-20 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+        <div className="mb-14 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <Link href="/services">
             <button className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-10 py-4 text-base font-semibold text-white shadow-2xl shadow-purple-600/30 transition-all duration-300 hover:scale-[1.03] hover:shadow-purple-600/50">
-              {/* Shimmer sweep */}
               <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-700 group-hover:translate-x-full" />
               <span className="relative flex items-center gap-2">
                 See all services
@@ -90,26 +89,30 @@ export default function HeroSection() {
           </Link>
         </div>
 
-        {/* Marquee strip */}
-        <div className="relative mb-20 -mx-4 sm:-mx-6 lg:-mx-8 overflow-hidden">
-          <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-32 bg-gradient-to-r from-black to-transparent" />
-          <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-32 bg-gradient-to-l from-black to-transparent" />
-          <div
-            className="flex"
-            style={{ animation: "marquee 30s linear infinite" }}
-          >
-            {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
-              <div key={i} className="flex shrink-0 items-center gap-3 px-8 py-2">
-                <span className="h-1 w-1 rounded-full bg-purple-500/60" />
-                <span className="whitespace-nowrap text-sm text-gray-500">
-                  {item}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+      </div>
 
-        {/* Stats */}
+      {/* Marquee — full viewport width, breaks out of max-w container */}
+      <div
+        className="relative mb-14 overflow-hidden"
+        style={{
+          width: "100vw",
+          marginLeft: "calc(-50vw + 50%)",
+        }}
+      >
+        <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-48 bg-gradient-to-r from-black to-transparent" />
+        <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-48 bg-gradient-to-l from-black to-transparent" />
+        <div className="flex" style={{ animation: "marquee 35s linear infinite" }}>
+          {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS, ...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
+            <div key={i} className="flex shrink-0 items-center gap-3 px-8 py-2">
+              <span className="h-1 w-1 rounded-full bg-purple-500/60" />
+              <span className="whitespace-nowrap text-sm text-gray-500">{item}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="relative mx-auto w-full max-w-6xl">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {[
             { value: "100+", label: "Happy clients", glow: "shadow-purple-500/20", border: "border-purple-500/15", bg: "from-purple-500/10 to-transparent" },
@@ -126,6 +129,7 @@ export default function HeroSection() {
           ))}
         </div>
       </div>
+
     </section>
   );
 }
