@@ -3,9 +3,9 @@ import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer className="relative border-t border-white/[0.06] bg-black">
-      {/* Top gradient line */}
-      <div className="absolute left-1/2 top-0 -translate-x-1/2 h-px w-2/3 bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
+    <footer className="relative bg-black">
+      {/* Section divider */}
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
 
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-4">
@@ -14,7 +14,7 @@ export default function Footer() {
             <Link href="/">
               <Image src="/logo.png" alt="Vexcraft" width={120} height={40} className="h-8 w-auto object-contain" />
             </Link>
-            <p className="mt-4 text-sm text-gray-500 leading-relaxed max-w-xs">
+            <p className="mt-4 text-sm text-white/35 leading-relaxed max-w-xs">
               Professional digital services for creators & businesses. We build what you dream of.
             </p>
             {/* Social links */}
@@ -23,7 +23,7 @@ export default function Footer() {
                 href="https://discord.gg/GsgGFt7Rgu"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-gray-500 hover:text-purple-400 hover:border-purple-500/30 transition-all duration-300"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-white/30 hover:text-purple-400 hover:border-purple-500/30 hover:bg-purple-500/5 hover:scale-[1.1] transition-all duration-200"
                 aria-label="Discord"
               >
                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
@@ -34,7 +34,7 @@ export default function Footer() {
                 href="https://twitter.com/vexcraft"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-gray-500 hover:text-purple-400 hover:border-purple-500/30 transition-all duration-300"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-white/30 hover:text-purple-400 hover:border-purple-500/30 hover:bg-purple-500/5 hover:scale-[1.1] transition-all duration-200"
                 aria-label="X (Twitter)"
               >
                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
@@ -45,7 +45,7 @@ export default function Footer() {
                 href="https://reddit.com/r/vexcraft"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-gray-500 hover:text-purple-400 hover:border-purple-500/30 transition-all duration-300"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-white/30 hover:text-purple-400 hover:border-purple-500/30 hover:bg-purple-500/5 hover:scale-[1.1] transition-all duration-200"
                 aria-label="Reddit"
               >
                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
@@ -56,7 +56,7 @@ export default function Footer() {
                 href="https://pinterest.com/vexcraft"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-gray-500 hover:text-purple-400 hover:border-purple-500/30 transition-all duration-300"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-white/30 hover:text-purple-400 hover:border-purple-500/30 hover:bg-purple-500/5 hover:scale-[1.1] transition-all duration-200"
                 aria-label="Pinterest"
               >
                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
@@ -65,7 +65,7 @@ export default function Footer() {
               </a>
               <a
                 href="mailto:support@vexcraft.io"
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-gray-500 hover:text-purple-400 hover:border-purple-500/30 transition-all duration-300"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-white/30 hover:text-purple-400 hover:border-purple-500/30 hover:bg-purple-500/5 hover:scale-[1.1] transition-all duration-200"
                 aria-label="Email"
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -88,7 +88,7 @@ export default function Footer() {
                 { href: "/services/streaming-icons", label: "Emotes & Icons" },
               ].map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="text-sm text-gray-500 hover:text-purple-400 transition-colors">
+                  <Link href={item.href} className="inline-block text-sm text-white/35 hover:text-purple-400 hover:translate-x-0.5 transition-all duration-200">
                     {item.label}
                   </Link>
                 </li>
@@ -108,7 +108,7 @@ export default function Footer() {
                 { href: "/contact", label: "Contact" },
               ].map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="text-sm text-gray-500 hover:text-purple-400 transition-colors">
+                  <Link href={item.href} className="inline-block text-sm text-white/35 hover:text-purple-400 hover:translate-x-0.5 transition-all duration-200">
                     {item.label}
                   </Link>
                 </li>
@@ -127,7 +127,7 @@ export default function Footer() {
                 { href: "/ccpa", label: "CCPA" },
               ].map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="text-sm text-gray-500 hover:text-purple-400 transition-colors">
+                  <Link href={item.href} className="inline-block text-sm text-white/35 hover:text-purple-400 hover:translate-x-0.5 transition-all duration-200">
                     {item.label}
                   </Link>
                 </li>
@@ -142,7 +142,7 @@ export default function Footer() {
                   { href: "/dashboard", label: "Dashboard" },
                 ].map((item) => (
                   <li key={item.href}>
-                    <Link href={item.href} className="text-sm text-gray-500 hover:text-purple-400 transition-colors">
+                    <Link href={item.href} className="inline-block text-sm text-white/35 hover:text-purple-400 hover:translate-x-0.5 transition-all duration-200">
                       {item.label}
                     </Link>
                   </li>
@@ -153,10 +153,10 @@ export default function Footer() {
         </div>
 
         <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-white/[0.06] pt-8 md:flex-row">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-white/20">
             © {new Date().getFullYear()} Vexcraft. All rights reserved.
           </p>
-          <p className="text-xs text-gray-700">
+          <p className="text-xs text-white/15">
             Crafted with ⚡ by the Vexcraft team
           </p>
         </div>

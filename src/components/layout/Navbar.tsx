@@ -30,14 +30,14 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-black/75 backdrop-blur-xl">
+    <nav className="sticky top-0 z-50 bg-black/50 backdrop-blur-xl border-b border-white/[0.07]">
       {/* Gradient border bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/40 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center">
-            <Image src="/logo.png" alt="Vexcraft" width={140} height={40} className="h-9 w-auto object-contain" priority />
+            <Image src="/logo.png" alt="Vexcraft" width={240} height={64} className="h-16 w-auto object-contain" priority />
           </Link>
 
           {/* Desktop nav */}
@@ -46,7 +46,7 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="group relative text-sm text-gray-400 transition-colors hover:text-white"
+                className="group relative text-sm text-white/50 transition-colors hover:text-white"
               >
                 {link.label}
                 <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300 group-hover:w-full" />
@@ -93,15 +93,15 @@ export default function Navbar() {
             ) : (
               <>
                 <Link href="/login">
-                  <Button variant="ghost" size="sm" className="text-gray-400 hover:text-purple-300 hover:bg-transparent">
+                  <Button variant="ghost" className="text-white/70 hover:text-white hover:bg-white/10 text-sm font-medium px-4">
                     Log in
                   </Button>
                 </Link>
                 <Link href="/register">
-                  <Button size="sm" className="relative overflow-hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:opacity-90 border-0">
-                    <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-500 hover:translate-x-full" />
-                    Get started
-                  </Button>
+                  <button className="group relative overflow-hidden rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-1.5 text-sm font-medium text-white transition-all duration-200 ease-out hover:scale-[1.03] hover:shadow-lg hover:shadow-purple-600/30 active:scale-[0.98]">
+                    <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-500 group-hover:translate-x-full" />
+                    <span className="relative">Get started</span>
+                  </button>
                 </Link>
               </>
             )}

@@ -17,37 +17,34 @@ export default function CtaSection() {
           {/* Grid overlay */}
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.04)_1px,transparent_1px)] bg-[size:32px_32px]" />
 
-          <div className="relative">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-4 py-1.5 text-sm text-purple-300">
+          <div className="relative animate-fade-up">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-4 py-1.5 text-sm text-purple-300 backdrop-blur-sm">
               <Sparkles className="h-4 w-4" />
               Start your project today
             </div>
 
-            <h2 className="mb-5 text-4xl font-bold sm:text-5xl leading-tight">
+            <h2 className="mb-5 text-4xl font-bold tracking-tight leading-[1.1] sm:text-5xl">
               Ready to bring your{" "}
-              <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                vision to life
-              </span>
-              ?
+              <span className="gradient-text">vision to life</span>?
             </h2>
-            <p className="mx-auto mb-10 max-w-xl text-lg text-gray-400 leading-relaxed">
+            <p className="mx-auto mb-10 max-w-xl text-lg text-white/55 leading-relaxed">
               Tell us what you need — we handle everything from first concept to final delivery.
               No technical knowledge required.
             </p>
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
               <Link href="/services">
-                <Button size="lg" className="group relative bg-purple-600 px-10 py-6 text-lg text-white hover:bg-purple-700 shadow-lg shadow-purple-600/25 hover:shadow-purple-600/40 transition-all duration-300">
-                  <span className="absolute inset-0 rounded-md bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <button className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-10 py-4 text-lg font-semibold text-white shadow-xl shadow-purple-600/30 transition-all duration-200 ease-out hover:scale-[1.03] hover:shadow-purple-600/50 active:scale-[0.98]">
+                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-700 group-hover:translate-x-full" />
                   <span className="relative flex items-center gap-2">
                     Get started now
                     <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                   </span>
-                </Button>
+                </button>
               </Link>
               <Link href="/contact">
-                <Button size="lg" variant="ghost" className="border border-white/20 bg-transparent px-10 py-6 text-lg text-white hover:bg-white/10 backdrop-blur-sm">
+                <button className="rounded-xl border border-white/20 bg-white/5 px-10 py-4 text-lg font-semibold text-white backdrop-blur-sm transition-all duration-200 ease-out hover:border-white/30 hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98]">
                   Contact us
-                </Button>
+                </button>
               </Link>
             </div>
           </div>

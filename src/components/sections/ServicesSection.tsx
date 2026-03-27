@@ -16,17 +16,17 @@ export default function ServicesSection() {
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.02)_1px,transparent_1px)] bg-[size:48px_48px]" />
 
       <div className="relative mx-auto max-w-7xl">
-        <div className="mb-16 text-center">
+        <div className="mb-16 text-center animate-fade-up">
           <Badge className="mb-4 border-purple-500/30 bg-purple-500/10 text-purple-300 px-3">
             Services
           </Badge>
-          <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
+          <h2 className="mb-4 text-3xl font-bold tracking-tight leading-[1.1] sm:text-4xl lg:text-5xl">
             Everything you need,{" "}
-            <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <span className="gradient-text">
               in one place
             </span>
           </h2>
-          <p className="mx-auto max-w-2xl text-lg text-gray-400">
+          <p className="mx-auto max-w-2xl text-lg text-white/50 leading-relaxed">
             Design, SEO, copywriting, streaming, Discord, websites and more — everything your brand needs under one roof.
           </p>
         </div>
@@ -41,7 +41,7 @@ export default function ServicesSection() {
               {/* Hover glow effect */}
               <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-purple-600/0 via-purple-600/0 to-pink-600/0 opacity-0 blur-sm group-hover:from-purple-600/20 group-hover:via-purple-600/10 group-hover:to-pink-600/20 group-hover:opacity-100 transition-all duration-500" />
 
-              <div className="relative flex flex-col h-full rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-sm transition-all duration-300 group-hover:border-purple-500/30 group-hover:bg-white/[0.06]">
+              <div className="relative flex flex-col h-full rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-sm transition-all duration-300 group-hover:border-purple-500/25 group-hover:bg-white/[0.06] group-hover:shadow-xl group-hover:shadow-purple-500/[0.07] group-active:scale-[0.99]">
                 {service.popular && (
                   <div className="absolute -top-3 right-4">
                     <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 shadow-lg shadow-purple-600/20">
@@ -67,11 +67,11 @@ export default function ServicesSection() {
                   </div>
                 </div>
 
-                <p className="text-sm text-gray-400 mb-5 leading-relaxed">{service.description}</p>
+                <p className="text-sm text-white/50 mb-5 leading-relaxed">{service.description}</p>
 
                 <ul className="space-y-2 mb-6 flex-1">
                   {service.features.slice(0, 4).map((f) => (
-                    <li key={f} className="flex items-center gap-2.5 text-sm text-gray-400">
+                    <li key={f} className="flex items-center gap-2.5 text-sm text-white/50">
                       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-purple-500/10 text-purple-400 text-xs">✓</span>
                       {f}
                     </li>

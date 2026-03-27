@@ -52,17 +52,15 @@ export default function HowItWorks() {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/[0.03] to-transparent" />
 
       <div className="relative mx-auto max-w-7xl">
-        <div className="mb-16 text-center">
+        <div className="mb-16 text-center animate-fade-up">
           <Badge className="mb-4 border-purple-500/30 bg-purple-500/10 text-purple-300 px-3">
             Process
           </Badge>
-          <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
+          <h2 className="mb-4 text-3xl font-bold tracking-tight leading-[1.1] sm:text-4xl lg:text-5xl">
             From idea to{" "}
-            <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              finished product
-            </span>
+            <span className="gradient-text">finished product</span>
           </h2>
-          <p className="mx-auto max-w-2xl text-lg text-gray-400">
+          <p className="mx-auto max-w-2xl text-lg text-white/50 leading-relaxed">
             Simple, transparent, and hassle-free — every step of the way.
           </p>
         </div>
@@ -71,7 +69,7 @@ export default function HowItWorks() {
           {steps.map((step, i) => (
             <div
               key={step.number}
-              className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 transition-all duration-300 hover:border-purple-500/20 hover:bg-white/[0.04]"
+              className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6 backdrop-blur-sm transition-all duration-300 hover:border-purple-500/25 hover:bg-white/[0.05] hover:shadow-xl hover:shadow-purple-500/[0.06] hover:scale-[1.01]"
             >
               {/* Step connector line (desktop) */}
               {i < steps.length - 1 && i !== 2 && (
@@ -79,16 +77,16 @@ export default function HowItWorks() {
               )}
 
               <div className="mb-5 flex items-center justify-between">
-                <div className={`flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br ${step.color} text-2xl border border-white/[0.05]`}>
+                <div className={`flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br ${step.color} text-2xl border border-white/[0.06] transition-transform duration-300 group-hover:scale-110`}>
                   {step.icon}
                 </div>
-                <span className="text-4xl font-black text-white/[0.04] group-hover:text-white/[0.08] transition-colors select-none">
+                <span className="text-4xl font-black text-white/[0.04] group-hover:text-white/[0.10] transition-colors select-none">
                   {step.number}
                 </span>
               </div>
 
-              <h3 className="mb-2 text-lg font-semibold text-white">{step.title}</h3>
-              <p className="text-sm text-gray-400 leading-relaxed">{step.description}</p>
+              <h3 className="mb-2 text-lg font-semibold text-white tracking-tight">{step.title}</h3>
+              <p className="text-sm text-white/50 leading-relaxed">{step.description}</p>
             </div>
           ))}
         </div>

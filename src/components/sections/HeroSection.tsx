@@ -49,7 +49,7 @@ export default function HeroSection() {
         </div>
 
         {/* Main heading */}
-        <h1 className="mb-6 text-center text-5xl font-extrabold leading-[1.07] tracking-tight sm:text-6xl lg:text-8xl xl:text-[96px]">
+        <h1 className="mb-6 text-center text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl lg:text-8xl xl:text-[96px]">
           <span className="block text-white">We build what</span>
           <span
             className="block"
@@ -67,15 +67,15 @@ export default function HeroSection() {
         </h1>
 
         {/* Subtitle */}
-        <p className="mx-auto mb-10 max-w-2xl text-center text-lg text-gray-400 sm:text-xl leading-relaxed">
+        <p className="mx-auto mb-10 max-w-2xl text-center text-lg text-white/50 sm:text-xl leading-relaxed">
           Logos, social media kits, streaming overlays, websites, apps and more.{" "}
-          <span className="text-white/70">Tell us what you need — we handle the rest.</span>
+          <span className="text-white/75">Tell us what you need — we handle the rest.</span>
         </p>
 
         {/* CTA buttons */}
         <div className="mb-14 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <Link href="/services">
-            <button className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-10 py-4 text-base font-semibold text-white shadow-2xl shadow-purple-600/30 transition-all duration-300 hover:scale-[1.03] hover:shadow-purple-600/50">
+            <button className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-10 py-4 text-base font-semibold text-white shadow-2xl shadow-purple-600/30 transition-all duration-200 ease-out hover:scale-[1.03] hover:shadow-purple-600/50 active:scale-[0.98]">
               <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 transition-transform duration-700 group-hover:translate-x-full" />
               <span className="relative flex items-center gap-2">
                 See all services
@@ -84,7 +84,7 @@ export default function HeroSection() {
             </button>
           </Link>
           <Link href="/portfolio">
-            <button className="rounded-xl border border-white/15 bg-white/5 px-10 py-4 text-base font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:border-purple-500/40 hover:bg-white/10">
+            <button className="rounded-xl border border-white/15 bg-white/5 px-10 py-4 text-base font-semibold text-white backdrop-blur-sm transition-all duration-200 ease-out hover:border-purple-500/40 hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98]">
               View our work
             </button>
           </Link>
@@ -116,16 +116,16 @@ export default function HeroSection() {
       <div className="relative mx-auto w-full max-w-6xl">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {[
-            { value: "100+", label: "Happy clients", glow: "shadow-purple-500/20", border: "border-purple-500/15", bg: "from-purple-500/10 to-transparent" },
-            { value: "5.0 ★", label: "Average rating", glow: "shadow-yellow-500/20", border: "border-yellow-500/15", bg: "from-yellow-500/10 to-transparent" },
-            { value: "24h", label: "Response time", glow: "shadow-green-500/20", border: "border-green-500/15", bg: "from-green-500/10 to-transparent" },
+            { value: "100+", label: "Happy clients", glow: "hover:shadow-purple-500/25", border: "border-purple-500/15", bg: "from-purple-500/10 to-transparent" },
+            { value: "5.0 ★", label: "Average rating", glow: "hover:shadow-yellow-500/20", border: "border-yellow-500/15", bg: "from-yellow-500/10 to-transparent" },
+            { value: "24h", label: "Response time", glow: "hover:shadow-green-500/20", border: "border-green-500/15", bg: "from-green-500/10 to-transparent" },
           ].map((stat) => (
             <div
               key={stat.label}
-              className={`group rounded-2xl border ${stat.border} bg-gradient-to-br ${stat.bg} p-6 text-center backdrop-blur-sm shadow-xl ${stat.glow} transition-all duration-300 hover:scale-[1.02]`}
+              className={`group rounded-2xl border ${stat.border} bg-gradient-to-br ${stat.bg} p-6 text-center backdrop-blur-sm shadow-xl ${stat.glow} transition-all duration-300 hover:scale-[1.02] active:scale-[0.99]`}
             >
-              <p className="text-3xl font-bold text-white">{stat.value}</p>
-              <p className="mt-1 text-sm text-gray-400">{stat.label}</p>
+              <p className="text-3xl font-bold text-white tracking-tight">{stat.value}</p>
+              <p className="mt-1 text-sm text-white/50">{stat.label}</p>
             </div>
           ))}
         </div>

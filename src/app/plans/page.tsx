@@ -49,17 +49,15 @@ export default function PlansPage() {
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-purple-600/10 blur-[120px]" />
           </div>
-          <div className="relative mx-auto max-w-4xl text-center">
+          <div className="relative mx-auto max-w-4xl text-center animate-fade-up">
             <Badge className="mb-6 border-purple-500/30 bg-purple-500/10 text-purple-300 px-4 py-1.5">
               <Sparkles className="mr-2 h-3.5 w-3.5" /> Monthly Plans
             </Badge>
-            <h1 className="mb-5 text-4xl font-bold sm:text-5xl lg:text-6xl">
+            <h1 className="mb-5 text-4xl font-bold tracking-tight leading-[1.1] sm:text-5xl lg:text-6xl">
               Your creative team,{" "}
-              <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                on demand
-              </span>
+              <span className="gradient-text">on demand</span>
             </h1>
-            <p className="mx-auto max-w-2xl text-lg text-gray-400">
+            <p className="mx-auto max-w-2xl text-lg text-white/50 leading-relaxed">
               Fresh designs delivered every month. No contracts, cancel anytime.
               Save up to 25% on one-time orders.
             </p>
@@ -68,54 +66,57 @@ export default function PlansPage() {
 
         {/* Subscription Plans */}
         <section className="px-4 pb-20 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mx-auto max-w-7xl grid gap-6 sm:grid-cols-2 lg:grid-cols-4 items-start">
             {SUBSCRIPTION_PLANS.map((plan) => (
               <div
                 key={plan.slug}
-                className={`relative flex flex-col rounded-2xl border p-6 transition-all duration-300 hover:bg-white/[0.04] ${
+                className={`relative flex flex-col rounded-2xl border p-6 backdrop-blur-sm transition-all duration-300 ${
                   plan.popular
-                    ? "border-purple-500/30 bg-purple-600/5 ring-1 ring-purple-500/20"
-                    : "border-white/[0.06] bg-white/[0.02]"
+                    ? "border-purple-500/40 bg-purple-600/8 ring-1 ring-purple-500/25 scale-[1.04] shadow-2xl shadow-purple-600/15"
+                    : "border-white/[0.08] bg-white/[0.02] hover:border-purple-500/20 hover:bg-white/[0.04] hover:shadow-xl hover:shadow-purple-500/5"
                 }`}
               >
                 {plan.popular && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0">
-                    Most Popular
-                  </Badge>
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                    <span className="inline-flex items-center rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-3 py-1 text-xs font-semibold text-white shadow-lg shadow-purple-600/30">
+                      Most Popular
+                    </span>
+                  </div>
                 )}
                 <div className="mb-4 text-3xl">{plan.icon}</div>
-                <h3 className="text-lg font-bold text-white mb-1">{plan.name}</h3>
-                <p className="text-xs text-gray-500 mb-4">{plan.tagline}</p>
+                <h3 className="text-lg font-bold text-white mb-1 tracking-tight">{plan.name}</h3>
+                <p className="text-xs text-white/35 mb-4">{plan.tagline}</p>
                 <div className="mb-5">
-                  <span className="text-4xl font-bold text-white">
+                  <span className="text-4xl font-bold text-white tracking-tight">
                     {currency === "EUR" ? `€${plan.priceEUR}` : currency === "GBP" ? `£${plan.priceGBP}` : `$${plan.price}`}
                   </span>
-                  <span className="text-sm text-gray-500">/month</span>
+                  <span className="text-sm text-white/35">/month</span>
                 </div>
                 <ul className="space-y-2.5 mb-6 flex-1">
                   {plan.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm text-gray-300">
+                    <li key={f} className="flex items-start gap-2 text-sm text-white/60">
                       <CheckCircle2 className="h-4 w-4 shrink-0 text-purple-400 mt-0.5" />
                       {f}
                     </li>
                   ))}
                 </ul>
-                <p className="text-xs text-gray-600 mb-4">{plan.bestFor}</p>
-                <Button
+                <p className="text-xs text-white/25 mb-4">{plan.bestFor}</p>
+                <button
                   onClick={() => subscribe(plan.slug)}
                   disabled={loadingPlan === plan.slug}
-                  className={`w-full ${
+                  className={`group relative w-full overflow-hidden rounded-xl py-2.5 text-sm font-semibold transition-all duration-200 ease-out active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60 flex items-center justify-center gap-2 ${
                     plan.popular
-                      ? "bg-purple-600 text-white hover:bg-purple-700"
-                      : "border border-white/20 bg-transparent text-white hover:bg-white/10"
+                      ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-600/25 hover:scale-[1.02] hover:shadow-purple-600/40"
+                      : "border border-white/15 bg-white/5 text-white hover:border-purple-500/40 hover:bg-white/10 hover:scale-[1.02]"
                   }`}
                 >
+                  {plan.popular && <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-white/0 via-white/15 to-white/0 transition-transform duration-700 group-hover:translate-x-full" />}
                   {loadingPlan === plan.slug ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <>Get started <ArrowRight className="ml-2 h-4 w-4" /></>
+                    <span className="relative flex items-center gap-2">Get started <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" /></span>
                   )}
-                </Button>
+                </button>
               </div>
             ))}
           </div>

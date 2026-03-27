@@ -8,17 +8,27 @@ import TestimonialsSection from "@/components/sections/TestimonialsSection";
 import FaqSection from "@/components/sections/FaqSection";
 import CtaSection from "@/components/sections/CtaSection";
 
+function SectionDivider() {
+  return <div className="section-divider" />;
+}
+
 export default function HomePage() {
   return (
     <div className="bg-black text-white">
       <Navbar />
       <main>
         <HeroSection />
+        <SectionDivider />
         <ServicesSection />
+        <SectionDivider />
         <PlansTeaser />
+        <SectionDivider />
         <HowItWorks />
+        <SectionDivider />
         <TestimonialsSection />
+        <SectionDivider />
         <FaqSection />
+        <SectionDivider />
         <CtaSection />
       </main>
       <Footer />

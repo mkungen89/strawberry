@@ -64,17 +64,15 @@ export default function TestimonialsSection() {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/[0.03] to-transparent" />
 
       <div className="relative mx-auto max-w-7xl">
-        <div className="mb-16 text-center">
+        <div className="mb-16 text-center animate-fade-up">
           <Badge className="mb-4 border-purple-500/30 bg-purple-500/10 text-purple-300 px-3">
             Testimonials
           </Badge>
-          <h2 className="mb-4 text-3xl font-bold sm:text-4xl lg:text-5xl">
+          <h2 className="mb-4 text-3xl font-bold tracking-tight leading-[1.1] sm:text-4xl lg:text-5xl">
             Loved by{" "}
-            <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              creators worldwide
-            </span>
+            <span className="gradient-text">creators worldwide</span>
           </h2>
-          <p className="mx-auto max-w-2xl text-lg text-gray-400">
+          <p className="mx-auto max-w-2xl text-lg text-white/50 leading-relaxed">
             Over 100 satisfied customers — see what they think about working with us.
           </p>
         </div>
@@ -83,18 +81,18 @@ export default function TestimonialsSection() {
           {testimonials.map((t) => (
             <div
               key={t.name}
-              className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 transition-all duration-300 hover:border-purple-500/20 hover:bg-white/[0.04]"
+              className="group relative rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-sm transition-all duration-300 hover:border-purple-500/25 hover:bg-white/[0.06] hover:shadow-xl hover:shadow-purple-500/[0.07] hover:scale-[1.01]"
             >
               {/* Quote icon */}
-              <Quote className="absolute right-5 top-5 h-8 w-8 text-white/[0.04] group-hover:text-purple-500/10 transition-colors" />
+              <Quote className="absolute right-5 top-5 h-8 w-8 text-white/[0.04] group-hover:text-purple-400/15 transition-all duration-300" />
 
               <div className="mb-5 flex items-center gap-4">
-                <div className={`flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br ${t.gradient} text-sm font-bold text-white shadow-lg`}>
+                <div className={`flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br ${t.gradient} text-sm font-bold text-white shadow-lg ring-2 ring-white/10`}>
                   {t.avatar}
                 </div>
                 <div>
-                  <p className="font-semibold text-white">{t.name}</p>
-                  <p className="text-xs text-gray-500">{t.role}</p>
+                  <p className="font-semibold text-white tracking-tight">{t.name}</p>
+                  <p className="text-xs text-white/40">{t.role}</p>
                 </div>
               </div>
 
@@ -102,16 +100,16 @@ export default function TestimonialsSection() {
                 {[1, 2, 3, 4, 5].map((i) => (
                   <Star
                     key={i}
-                    className={`h-4 w-4 ${i <= t.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-700"}`}
+                    className={`h-4 w-4 ${i <= t.rating ? "fill-yellow-400 text-yellow-400" : "text-white/10"}`}
                   />
                 ))}
               </div>
 
-              <p className="mb-4 text-sm text-gray-300 leading-relaxed">&quot;{t.comment}&quot;</p>
+              <p className="mb-4 text-sm text-white/65 leading-relaxed">&quot;{t.comment}&quot;</p>
 
-              <Badge className="border-white/10 bg-white/[0.05] text-gray-400 text-xs">
+              <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-0.5 text-xs text-white/40">
                 {t.service}
-              </Badge>
+              </span>
             </div>
           ))}
         </div>
