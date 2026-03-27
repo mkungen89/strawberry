@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 
 const MARQUEE_ITEMS = [
@@ -11,15 +10,6 @@ const MARQUEE_ITEMS = [
 export default function HeroSection() {
   return (
     <section className="relative flex min-h-[92vh] items-center overflow-hidden px-4 pb-16 pt-20 sm:px-6 lg:px-8">
-
-      {/* Background image — very subtle */}
-      <Image
-        src="/bg.png"
-        alt=""
-        fill
-        className="pointer-events-none object-cover object-center opacity-[0.07]"
-        priority
-      />
 
       {/* Floating gradient orbs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -41,8 +31,6 @@ export default function HeroSection() {
         />
       </div>
 
-      {/* Grid overlay */}
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.04)_1px,transparent_1px)] bg-[size:72px_72px]" />
       {/* Radial fade-out edges */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_50%,transparent_40%,black_100%)]" />
 
