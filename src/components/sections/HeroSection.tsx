@@ -2,9 +2,10 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 const MARQUEE_ITEMS = [
-  "Logo Design", "Social Media Kit", "YouTube Banners", "Streaming Overlays",
-  "Discord Servers", "SEO Audit", "Copywriting", "Mobile Apps",
-  "Website Development", "Video Shorts", "Growth Strategy", "Brand Identity",
+  "Logo & Branding", "Social Media Kit", "YouTube Thumbnails", "Streaming Overlays",
+  "Discord Servers", "SEO Audit", "Copywriting", "Landing Pages",
+  "Custom Illustrations", "Growth Strategy", "Brand Guidelines", "Content Calendar",
+  "Email Templates", "Streaming Emotes", "Notion Templates", "Community Management",
 ];
 
 export default function HeroSection() {
