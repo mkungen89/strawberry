@@ -1,8 +1,12 @@
 /**
  * Sonnet Coding Agent Spawning & Management
  * Spawns claude-sonnet subagents to build landing pages autonomously
+ * using Claude Code CLI as a detached background process.
  */
 
+import { spawn } from "child_process";
+import { mkdirSync, writeFileSync, createWriteStream } from "fs";
+import { join } from "path";
 import { db } from "@/lib/db";
 
 export interface CodeSessionContext {
@@ -15,46 +19,76 @@ export interface CodeSessionContext {
 }
 
 /**
- * Spawn a Sonnet coding agent to implement the landing page
- * Agent will:
- * - Clone repo locally
- * - Parse VEXCRAFT_BRIEF.md
- * - Implement components based on requirements
- * - Commit and push to GitHub
- * - Vercel auto-deploys on push
+ * Spawn a Sonnet coding agent to implement the landing page.
+ * Runs `claude --dangerously-skip-permissions -p "..."` as a detached
+ * child process. The agent clones the repo, builds the page, commits
+ * and pushes — Vercel auto-deploys on every push.
  */
 export async function spawnLandingPageCodingAgent(
   context: CodeSessionContext
-): Promise<{
-  agentSessionId: string;
-  error?: string;
-}> {
-  const {
-    orderId,
-    repoName,
-    customerBrief,
-    techStack,
-    previewUrl,
-    githubRepo,
-  } = context;
+): Promise<{ agentSessionId: string; error?: string }> {
+  const { orderId, repoName, customerBrief, techStack, previewUrl, githubRepo } = context;
 
-  // Build the prompt for the Sonnet agent
-  const prompt = buildCodingPrompt({
-    orderId,
-    repoName,
-    customerBrief,
-    techStack,
-    previewUrl,
-    githubRepo,
-  });
+  const agentSessionId = `agent-${orderId}-${Date.now()}`;
+  const workDir = `/tmp/agents/${agentSessionId}`;
 
   try {
-    // Spawn agent via exec tool (background mode)
-    // Agent ID will be returned and stored in database
-    // The agent will run in isolated environment with timeout
-    const agentSessionId = `agent-${orderId}-${Date.now()}`;
+    // Create isolated working directory
+    mkdirSync(workDir, { recursive: true });
 
-    // Log the spawning event
+    // Git identity & credential store
+    const gitConfig = [
+      "[user]",
+      "  name = Vexcraft Agent",
+      "  email = agent@vexcraft.io",
+      "[credential]",
+      "  helper = store",
+      "[init]",
+      "  defaultBranch = main",
+    ].join("\n");
+    writeFileSync(join(workDir, ".gitconfig"), gitConfig, { mode: 0o600 });
+
+    if (process.env.GITHUB_TOKEN) {
+      writeFileSync(
+        join(workDir, ".git-credentials"),
+        `https://x-access-token:${process.env.GITHUB_TOKEN}@github.com\n`,
+        { mode: 0o600 }
+      );
+    }
+
+    const prompt = buildCodingPrompt({ orderId, repoName, customerBrief, techStack, previewUrl, githubRepo });
+    const logPath = join(workDir, "agent.log");
+    const logStream = createWriteStream(logPath, { flags: "a" });
+
+    const env: NodeJS.ProcessEnv = {
+      ...process.env,
+      HOME: workDir,
+      GIT_CONFIG_NOSYSTEM: "1",
+      // Ensure ANTHROPIC_API_KEY is forwarded
+      ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ?? "",
+    };
+
+    const agentProcess = spawn(
+      "claude",
+      [
+        "--dangerously-skip-permissions",
+        "--model", "claude-sonnet-4-6",
+        "--bare",
+        "-p", prompt,
+      ],
+      {
+        cwd: workDir,
+        detached: true,
+        stdio: ["ignore", logStream, logStream],
+        env,
+      }
+    );
+
+    // Detach so the process outlives the HTTP request
+    agentProcess.unref();
+
+    const pid = agentProcess.pid ?? null;
+
     await db.auditLog.create({
       data: {
         orderId,
@@ -65,17 +99,17 @@ export async function spawnLandingPageCodingAgent(
         resourceId: agentSessionId,
         details: {
           agentModel: "claude-sonnet-4-6",
-          timeout: "60m",
-          prompt: prompt.substring(0, 200) + "...",
+          pid,
+          workDir,
+          logPath,
+          githubRepo,
+          promptPreview: prompt.substring(0, 300) + "…",
         },
         status: "PENDING",
       },
     });
 
-    // Note: The actual spawning happens via exec tool in the setup route.
-    // This function builds the context and validates prerequisites.
-    // Return the session ID for tracking
-
+    console.log(`[Agent] Spawned PID ${pid} → ${logPath}`);
     return { agentSessionId };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
@@ -104,112 +138,78 @@ interface BuildPromptOptions {
 }
 
 function buildCodingPrompt(options: BuildPromptOptions): string {
-  const {
-    orderId,
-    repoName,
-    customerBrief,
-    techStack,
-    previewUrl,
-    githubRepo,
-  } = options;
+  const { orderId, repoName, customerBrief, techStack, previewUrl, githubRepo } = options;
 
-  const techStackSection = techStack
+  const techSection = techStack
     ? `
 ## Tech Stack
-- Frontend: ${techStack.frontend || "Next.js (default)"}
-- Backend: ${techStack.backend || "API Routes (default)"}
-- Database: ${techStack.database || "PostgreSQL (default)"}
-- Hosting: ${techStack.hosting || "Vercel (default)"}
+- Frontend: ${techStack.frontend || "Next.js"}
+- Backend: ${techStack.backend || "API Routes"}
+- Database: ${techStack.database || "PostgreSQL"}
+- Hosting: ${techStack.hosting || "Vercel"}
 `
     : "";
 
-  return `You are a coding agent building a landing page for Vexcraft.
+  const cloneUrl = `https://github.com/${githubRepo}.git`;
 
-## Mission
-Implement a professional, high-converting landing page based on the customer brief.
+  return `You are a senior fullstack developer. Your job is to build a complete, professional landing page for a Vexcraft customer.
 
-## Order Details
+## Order
 - Order ID: ${orderId}
-- Repository: ${githubRepo}
-- Live Preview: ${previewUrl}
+- Repo: ${githubRepo}
+- Preview: ${previewUrl}
 
 ## Customer Brief
 ${customerBrief}
+${techSection}
 
-${techStackSection}
+## Step-by-step Instructions
 
-## Requirements (CRITICAL - Must Complete All)
+### 1. Clone the repository
+\`\`\`bash
+git clone ${cloneUrl} ${repoName}
+cd ${repoName}
+\`\`\`
 
-### 1. Setup
-- Clone the repo locally
-- Read VEXCRAFT_BRIEF.md thoroughly
-- Understand the customer's requirements, style, and goals
+### 2. Read the brief
+Read VEXCRAFT_BRIEF.md — it contains everything the customer wants.
 
-### 2. Implementation
-- Build React components that match the brief
-- Implement responsive design (mobile-first)
-- Add proper TypeScript types
-- Follow Next.js 16 best practices
-- Use Tailwind CSS for styling
+### 3. Install dependencies
+\`\`\`bash
+npm install
+\`\`\`
 
-### 3. Features to Implement
-- Hero section with compelling headline
-- Features/benefits section
-- Call-to-action buttons
-- Contact form (if requested in brief)
-- Responsive navigation
-- Mobile menu (hamburger)
-- Footer with links
+### 4. Build the landing page
+Implement all sections from the brief:
+- Hero with compelling headline and CTA
+- Features / benefits section
+- Social proof / testimonials (if requested)
+- Contact form (if requested)
+- Responsive navigation + mobile hamburger menu
+- Footer
 
-### 4. Quality Standards
-- No TypeScript errors
-- Accessibility: proper semantic HTML, ARIA labels
-- Performance: optimize images, lazy loading
-- Mobile: test on 375px, 768px, 1024px viewports
-- Clean code: follow conventions, no console errors
+Standards:
+- Next.js 14+ App Router, TypeScript, Tailwind CSS
+- Mobile-first responsive (375px, 768px, 1024px+)
+- Proper semantic HTML and ARIA labels
+- No TypeScript errors: run \`npm run build\` to verify
+- No console errors or warnings
 
-### 5. Git Workflow (CRITICAL!)
-After implementing changes:
-1. \`git add -A\`
-2. \`git commit -m "feat: implement landing page components"\`
-3. **ALWAYS** run: \`git push origin main\`
-4. Wait ~30s for Vercel deployment to start
-5. Verify deployment at ${previewUrl}
+### 5. Commit and push after each feature
+\`\`\`bash
+git add -A
+git commit -m "feat: <feature name>"
+git push origin main
+\`\`\`
+**Push = Deploy. Every push triggers Vercel. Push often.**
 
-**RULE: Push immediately after each feature is complete.**
-Push = Deploy. No push = customer sees nothing.
+### 6. Done when
+- All brief requirements are implemented
+- \`npm run build\` passes with no errors
+- All changes are pushed to main
+- Vercel shows a successful deployment at ${previewUrl}
 
-### 6. Commit Pattern
-Make logical, descriptive commits:
-- \`git commit -m "feat: add hero section"\`
-- \`git commit -m "feat: implement features grid"\`
-- \`git commit -m "feat: add contact form"\`
-- \`git commit -m "style: responsive mobile menu"\`
-
-### 7. Stop Conditions
-You're done when:
-- All customer requirements from brief are implemented
-- No TypeScript or build errors
-- Code is committed and pushed to main
-- Vercel deployment is green (no build errors)
-- Latest commit is visible in GitHub repo
-
-### 8. Error Handling
-If you encounter errors:
-- Check build logs
-- Read error messages carefully
-- Implement fixes
-- Push again
-- Verify Vercel deployment succeeds
-
-## Final Output
-When completely finished:
-1. Verify git log shows your commits
-2. Confirm Vercel shows green deployment
-3. Test ${previewUrl} is live
-4. Report success with commit SHAs
-
-Begin implementation now. Focus on quality and completeness.`;
+Start now. Work systematically through each section. Push after every meaningful feature.`;
 }
 
 /**
@@ -241,9 +241,7 @@ export async function trackAgentProgress(
 /**
  * Get agent session status from audit logs
  */
-export async function getAgentStatus(
-  orderId: string
-): Promise<{
+export async function getAgentStatus(orderId: string): Promise<{
   status: "IDLE" | "RUNNING" | "COMPLETED" | "FAILED";
   lastUpdate: string;
   commits: number;
@@ -261,12 +259,20 @@ export async function getAgentStatus(
     return { status: "IDLE", lastUpdate: new Date().toISOString(), commits: 0 };
   }
 
-  const latestLog = logs[0];
-  const completedLogs = logs.filter((l) => l.action === "AGENT_PROGRESS" && (l.details as any)?.status === "COMPLETED");
+  const latest = logs[0];
+  const completedLogs = logs.filter(
+    (l) => l.action === "AGENT_PROGRESS" && (l.details as Record<string, unknown>)?.status === "COMPLETED"
+  );
+
+  let status: "IDLE" | "RUNNING" | "COMPLETED" | "FAILED" = "RUNNING";
+  if (latest.action === "AGENT_SPAWN_FAILED") status = "FAILED";
+  else if (completedLogs.length > 0) status = "COMPLETED";
 
   return {
-    status: latestLog.action === "AGENT_SPAWN_FAILED" ? "FAILED" : latestLog.action === "AGENT_SPAWNED" ? "RUNNING" : "COMPLETED",
-    lastUpdate: latestLog.createdAt.toISOString(),
-    commits: completedLogs.length > 0 ? ((completedLogs[0].details as any)?.commits?.length ?? 0) : 0,
+    status,
+    lastUpdate: latest.createdAt.toISOString(),
+    commits: completedLogs.length > 0
+      ? ((completedLogs[0].details as Record<string, unknown>)?.commits as unknown[] | undefined)?.length ?? 0
+      : 0,
   };
 }
