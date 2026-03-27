@@ -37,26 +37,25 @@ export async function createLandingPageRepo(
 ): Promise<{ repoUrl: string; cloneUrl: string; repoName: string }> {
   const repoName = `landing-page-${orderId}`;
 
-  // Create repo from template
-  await githubFetch(`/repos/${GITHUB_ORG}/${TEMPLATE_REPO}/generate`, {
+  // Create blank private repo (agent will scaffold Next.js from scratch)
+  await githubFetch(`/orgs/${GITHUB_ORG}/repos`, {
     method: "POST",
     body: JSON.stringify({
-      owner: GITHUB_ORG,
       name: repoName,
       description: `Landing page for ${orderId} — ${customerName}`,
       private: true,
-      include_all_branches: false,
+      auto_init: true, // Creates initial commit so repo is cloneable
     }),
   });
 
-  // Wait briefly for repo to be ready
+  // Wait for repo to be ready
   await new Promise((r) => setTimeout(r, 2000));
 
   // Set topics
   await githubFetch(`/repos/${GITHUB_ORG}/${repoName}/topics`, {
     method: "PUT",
     body: JSON.stringify({ names: ["vexcraft", "landing-page", "generated"] }),
-  }).catch(() => {}); // Non-critical
+  }).catch(() => {});
 
   return {
     repoName,
@@ -100,15 +99,76 @@ ${brief || "No brief provided."}
 > Match the customer's described style, colors, and goals exactly.
 `;
 
-  const encoded = Buffer.from(content).toString("base64");
+  const briefEncoded = Buffer.from(content).toString("base64");
 
+  const agentsMd = `# Agent Instructions
+
+This repository is a Vexcraft customer landing page project.
+
+## Build & Run
+\`\`\`bash
+npm install
+npm run dev      # dev server on port 3000
+npm run build    # production build — must pass before pushing
+\`\`\`
+
+## Rules
+- Read VEXCRAFT_BRIEF.md before writing any code — it is the source of truth
+- Run \`npm run build\` and verify it passes before every \`git push\`
+- After every push, wait for Vercel to deploy and verify the result
+- Make small, focused commits — one feature at a time
+- Never skip the push step — customers only see deployed code
+`;
+
+  const claudeMd = `# CLAUDE.md
+
+## Project
+Vexcraft customer landing page. Requirements are in VEXCRAFT_BRIEF.md.
+
+## Stack
+- Next.js (App Router) + TypeScript
+- Tailwind CSS
+- Deployed on Vercel — every push to main triggers a deployment
+
+## Commands
+\`\`\`bash
+npm run dev      # local dev
+npm run build    # verify before pushing — must pass with zero errors
+npm run lint     # lint check
+\`\`\`
+
+## Critical Rules
+- Always \`npm run build\` before \`git push\`
+- After pushing: poll Vercel API to confirm the deployment is READY
+- If Vercel build fails: read the logs, fix the issue, push again
+- Mobile-first responsive design (375px minimum)
+- No TypeScript errors, no console warnings
+`;
+
+  // Push all three files sequentially (GitHub API requires separate requests)
   await githubFetch(`/repos/${GITHUB_ORG}/${repoName}/contents/VEXCRAFT_BRIEF.md`, {
     method: "PUT",
     body: JSON.stringify({
       message: "chore: add customer brief and tech stack",
-      content: encoded,
+      content: briefEncoded,
     }),
   });
+
+  await githubFetch(`/repos/${GITHUB_ORG}/${repoName}/contents/AGENTS.md`, {
+    method: "PUT",
+    body: JSON.stringify({
+      message: "chore: add agent instructions",
+      content: Buffer.from(agentsMd).toString("base64"),
+    }),
+  }).catch((e) => console.warn("[GitHub] Could not push AGENTS.md:", e.message));
+
+  await githubFetch(`/repos/${GITHUB_ORG}/${repoName}/contents/CLAUDE.md`, {
+    method: "PUT",
+    body: JSON.stringify({
+      message: "chore: add CLAUDE.md for coding agent",
+      content: Buffer.from(claudeMd).toString("base64"),
+    }),
+  }).catch((e) => console.warn("[GitHub] Could not push CLAUDE.md:", e.message));
 }
 
 export async function getGitHubFileChanges(
